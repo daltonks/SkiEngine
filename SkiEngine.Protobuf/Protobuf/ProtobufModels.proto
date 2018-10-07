@@ -1,0 +1,38 @@
+﻿syntax = "proto3";
+package SkiEngine.Protobuf;
+
+message PSpriteSheetAnimationData {
+	repeated PSpriteSheetAnimationStateData states = 1;
+}
+
+message PSpriteSheetAnimationStateData {
+	bool loops = 1;
+	repeated PSpriteSheetAnimationFrameData frames = 2;
+}
+
+message PSpriteSheetAnimationFrameData {
+	double timeMilliseconds = 1;
+	repeated PSpriteData sprites = 2;
+}
+
+message PSpriteData {
+	PRectI textureBounds = 1;
+	PPoint origin = 2;
+	PColor color = 3;
+}
+
+message PRectI {
+	int32 left = 1;
+	int32 top = 2;
+	int32 right = 3;
+	int32 bottom = 4;
+}
+
+message PPoint {
+	float x = 1;
+	float y = 2;
+}
+
+message PColor {
+	uint32 packedValue = 1;
+}

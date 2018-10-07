@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>SkiEngine</RootNamespace>
+  </PropertyGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="&quot;$(ProjectDir)Protobuf\bin\protoc.exe&quot; -I=&quot;$(ProjectDir)Protobuf&quot; --csharp_out=&quot;$(ProjectDir)Protobuf&quot; &quot;$(ProjectDir)Protobuf\ProtobufModels.proto&quot;" />
+  </Target>
+
+  <ItemGroup>
+    <Compile Remove="Protobuf\bin\**" />
+    <Compile Remove="Protobuf\include\**" />
+    <EmbeddedResource Remove="Protobuf\bin\**" />
+    <EmbeddedResource Remove="Protobuf\include\**" />
+    <None Remove="Protobuf\bin\**" />
+    <None Remove="Protobuf\include\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.6.1" />
+  </ItemGroup>
+
+</Project>

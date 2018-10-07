@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="lz4net" Version="1.0.15.93" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="SkiaSharp" Version="1.60.3" />
+    <PackageReference Include="SkiaSharp.Extended" Version="1.60.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SkiEngine.Protobuf\SkiEngine.Protobuf.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SkiEngine.Protobuf\SkiEngine.Protobuf.csproj" />
+    <ProjectReference Include="..\SkiEngine\SkiEngine.csproj" />
+  </ItemGroup>
+
+</Project>
