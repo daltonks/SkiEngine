@@ -215,3 +215,5 @@ FakesAssemblies/
 **/*.Server/GeneratedArtifacts
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
+
+SkiEngine\.TestApp/SkiEngine\.TestApp\.Android/Resources/Resource\.designer\.cs
