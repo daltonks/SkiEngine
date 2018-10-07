@@ -217,3 +217,5 @@ FakesAssemblies/
 _Pvt_Extensions
 
 SkiEngine\.TestApp/SkiEngine\.TestApp\.Android/Resources/Resource\.designer\.cs
+
+Lidgren/
