@@ -8,14 +8,12 @@ namespace SkiEngine.NCS.System
 {
     public class CameraSystem : ISystem
     {
-        private readonly Scene _scene;
-
         private readonly LayeredSets<int, CameraComponent> _layeredCameraComponents = 
             new LayeredSets<int, CameraComponent>(component => component.DrawOrder);
         
-        public CameraSystem(Scene scene)
+        public CameraSystem()
         {
-            _scene = scene;
+
         }
 
         public void OnComponentCreated(IComponent component)
@@ -46,11 +44,11 @@ namespace SkiEngine.NCS.System
 
         }
 
-        public void Draw(UpdateTime updateTime)
+        public void Draw(SKCanvas canvas, UpdateTime updateTime)
         {
             foreach (var cameraComponent in _layeredCameraComponents)
             {
-                cameraComponent.Draw(_scene.Canvas, updateTime);
+                cameraComponent.Draw(canvas, updateTime);
             }
         }
     }

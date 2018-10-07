@@ -10,6 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="3.1.0.697729" />
+    <PackageReference Include="SkiaSharp.Views.Forms" Version="1.60.3" />
+    <PackageReference Include="Xamarin.Forms" Version="3.2.0.871581" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SkiEngine.Aseprite\SkiEngine.Aseprite.csproj" />
+    <ProjectReference Include="..\..\SkiEngine.Networking\SkiEngine.Networking.csproj" />
+    <ProjectReference Include="..\..\SkiEngine.Protobuf\SkiEngine.Protobuf.csproj" />
+    <ProjectReference Include="..\..\SkiEngine\SkiEngine.csproj" />
   </ItemGroup>
 </Project>

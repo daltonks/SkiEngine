@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using SkiaSharp;
 using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
@@ -7,22 +8,25 @@ using SkiEngine.NCS.System;
 
 namespace SkiEngine.NCS
 {
-    public class Scene : IDestroyable<Scene>, IUpdateable, IDrawable
+    public class Scene : IDestroyable<Scene>
     {
         private readonly List<ISystem> _systems = new List<ISystem>();
 
-        public SKCanvas Canvas { get; set; }
+        private readonly UpdateTime _updateTime = new UpdateTime();
+        private readonly Stopwatch _updateStopwatch = new Stopwatch();
+        private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
+
         public event Action<Scene> Destroyed;
 
-        public Scene(SKCanvas canvas)
+        public Scene()
         {
-            Canvas = canvas;
-
             RootNode = new Node { Scene = this };
 
             AddSystem(new InputSystem());
             AddSystem(new UpdateSystem());
-            AddSystem(new CameraSystem(this));
+            AddSystem(new CameraSystem());
+
+            _updateStopwatch.Start();
         }
 
         public Node RootNode { get; }
@@ -55,19 +59,26 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void Update(UpdateTime updateTime)
+        public void UpdateAndDraw(SKCanvas canvas)
         {
-            foreach (var system in _systems)
-            {
-                system.Update(updateTime);
-            }
-        }
+            var stopwatchElapsed = _updateStopwatch.Elapsed;
+            _updateTime.Delta = stopwatchElapsed - _previousStopwatchElapsed;
+            _previousStopwatchElapsed = stopwatchElapsed;
 
-        public void Draw(UpdateTime updateTime)
-        {
             foreach (var system in _systems)
             {
-                system.Draw(updateTime);
+                system.Update(_updateTime);
+            }
+
+            foreach (var system in _systems)
+            {
+                system.Draw(canvas, _updateTime);
+            }
+
+            if (_updateStopwatch.Elapsed.TotalHours >= 1)
+            {
+                _updateStopwatch.Reset();
+                _previousStopwatchElapsed = TimeSpan.Zero;
             }
         }
 

@@ -1,9 +1,10 @@
-﻿using SkiEngine.NCS.System;
+﻿using SkiaSharp;
+using SkiEngine.NCS.System;
 
 namespace SkiEngine.Interfaces
 {
     public interface IDrawable
     {
-        void Draw(UpdateTime updateTime);
+        void Draw(SKCanvas canvas, UpdateTime updateTime);
     }
 }

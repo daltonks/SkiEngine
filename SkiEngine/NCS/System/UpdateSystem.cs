@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SkiaSharp;
 using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
@@ -69,7 +70,7 @@ namespace SkiEngine.NCS.System
             _componentsToRemove.Clear();
         }
 
-        public void Draw(UpdateTime updateTime)
+        public void Draw(SKCanvas canvas, UpdateTime updateTime)
         {
             
         }
