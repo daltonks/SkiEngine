@@ -86,6 +86,7 @@ namespace SkiEngine.NCS.Component
         private SKPoint _lastPoint;
         private float _lastRotation;
         private SKPoint _lastScale;
+        private SKRectI _lastDeviceClipBounds;
         private SKMatrix _worldToPixelMatrix;
         private SKMatrix _pixelToWorldMatrix;
         public void Draw(SKCanvas canvas, int viewTarget)
@@ -98,13 +99,15 @@ namespace SkiEngine.NCS.Component
             var currentPoint = Node.WorldPoint;
             var currentRotation = Node.WorldRotation;
             var currentScale = Node.WorldScale;
+            var currentDeviceClipBounds = canvas.DeviceClipBounds;
 
             // Recreate _worldToPixelMatrix only if it changed
             if (!_lastPoint.Equals(currentPoint)
                 || !_lastRotation.Equals(currentRotation)
-                || !_lastScale.Equals(currentScale))
+                || !_lastScale.Equals(currentScale)
+                || !_lastDeviceClipBounds.Equals(currentDeviceClipBounds))
             {
-                _worldToPixelMatrix = SKMatrix.MakeTranslation(canvas.DeviceClipBounds.Width / 2f, canvas.DeviceClipBounds.Height / 2f);
+                _worldToPixelMatrix = SKMatrix.MakeTranslation(currentDeviceClipBounds.Width / 2f, currentDeviceClipBounds.Height / 2f);
                 SKMatrix.PostConcat(ref _worldToPixelMatrix, SKMatrix.MakeScale(currentScale.X, currentScale.Y));
                 SKMatrix.PostConcat(ref _worldToPixelMatrix, SKMatrix.MakeRotation(currentRotation));
                 SKMatrix.PostConcat(ref _worldToPixelMatrix, SKMatrix.MakeTranslation(-currentPoint.X, -currentPoint.Y));
@@ -114,6 +117,7 @@ namespace SkiEngine.NCS.Component
                 _lastPoint = currentPoint;
                 _lastRotation = currentRotation;
                 _lastScale = currentScale;
+                _lastDeviceClipBounds = currentDeviceClipBounds;
             }
 
             canvas.Save();
