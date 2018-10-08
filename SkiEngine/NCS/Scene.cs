@@ -17,10 +17,11 @@ namespace SkiEngine.NCS
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
 
         public event Action<Scene> Destroyed;
+        public SKColor ClearColor { get; set; }
 
         public Scene()
         {
-            RootNode = new Node { Scene = this };
+            RootNode = new Node(this, SKPoint.Empty, 0, new SKPoint(1, 1));
 
             AddSystem(new InputSystem());
             AddSystem(new UpdateSystem());
@@ -59,7 +60,7 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void UpdateAndDraw(SKCanvas canvas)
+        public void Update()
         {
             var stopwatchElapsed = _updateStopwatch.Elapsed;
             _updateTime.Delta = stopwatchElapsed - _previousStopwatchElapsed;
@@ -70,16 +71,23 @@ namespace SkiEngine.NCS
                 system.Update(_updateTime);
             }
 
-            foreach (var system in _systems)
-            {
-                system.Draw(canvas, _updateTime);
-            }
-
             if (_updateStopwatch.Elapsed.TotalHours >= 1)
             {
                 _updateStopwatch.Reset();
                 _previousStopwatchElapsed = TimeSpan.Zero;
             }
+        }
+
+        public void Draw(SKCanvas canvas, int viewTarget)
+        {
+            canvas.Clear(ClearColor);
+
+            foreach (var system in _systems)
+            {
+                system.Draw(canvas, viewTarget);
+            }
+
+            canvas.Flush();
         }
 
         public void Destroy()

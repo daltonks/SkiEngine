@@ -29,8 +29,8 @@ namespace SkiEngine.Extensions
                 SKRect.Create(
                     transform.WorldPoint.X - spriteData.Origin.X * transform.WorldScale.X, 
                     transform.WorldPoint.Y - spriteData.Origin.Y * transform.WorldScale.Y,
-                    image.Width * transform.WorldScale.X,
-                    image.Height * transform.WorldScale.Y
+                    spriteData.TextureBounds.Width * transform.WorldScale.X,
+                    spriteData.TextureBounds.Height * transform.WorldScale.Y
                 ),
                 paint
             );

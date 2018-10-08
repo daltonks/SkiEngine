@@ -24,7 +24,7 @@ namespace SkiEngine.NCS.Component
             DrawablePart = new DrawableComponentPart(Draw);
         }
 
-        public void Draw(SKCanvas canvas, ITransform transform, UpdateTime updateTime)
+        public void Draw(SKCanvas canvas, ITransform transform)
         {
             canvas.DrawImage(Image, Paint, Data, transform);
         }

@@ -44,11 +44,11 @@ namespace SkiEngine.NCS.System
 
         }
 
-        public void Draw(SKCanvas canvas, UpdateTime updateTime)
+        public void Draw(SKCanvas canvas, int viewTarget)
         {
             foreach (var cameraComponent in _layeredCameraComponents)
             {
-                cameraComponent.Draw(canvas, updateTime);
+                cameraComponent.Draw(canvas, viewTarget);
             }
         }
     }

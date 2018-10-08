@@ -23,9 +23,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkiEngine.TestApp.iOS", "Sk
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkiEngine.TestApp.UWP", "SkiEngine.TestApp\SkiEngine.TestApp.UWP\SkiEngine.TestApp.UWP.csproj", "{24D594B6-6AF4-4047-B74A-EE17EC857796}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkiEngine.TestApp", "SkiEngine.TestApp\SkiEngine.TestApp\SkiEngine.TestApp.csproj", "{0F81AF50-3B71-4697-AAEF-C821B5CEBEA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SkiEngine.TestApp", "SkiEngine.TestApp\SkiEngine.TestApp\SkiEngine.TestApp.csproj", "{0F81AF50-3B71-4697-AAEF-C821B5CEBEA3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test App", "Test App", "{564BDEB9-B245-4784-91E7-F7AFA45589DD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8AC5E64A-3023-4CD2-A373-815199AEEDBC}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -8,17 +8,19 @@ namespace SkiEngine.NCS.Component
 {
     public class CameraComponent : Base.Component
     {
-        public delegate void DrawOrderChangedDelegate(CameraComponent component, int previousDrawOrder);
+        public ISet<int> ViewTargets { get; }
 
+        public delegate void DrawOrderChangedDelegate(CameraComponent component, int previousDrawOrder);
         public event DrawOrderChangedDelegate DrawOrderChanged;
 
         private int _drawOrder;
         private readonly LayeredSets<int, IDrawableComponent> _layeredComponents;
         private readonly Dictionary<IDrawableComponent, int> _componentToLayerMap;
 
-        public CameraComponent(int drawOrder)
+        public CameraComponent(int drawOrder, IEnumerable<int> viewTargets)
         {
             _drawOrder = drawOrder;
+            ViewTargets = new HashSet<int>(viewTargets);
 
             Destroyed += OnDestroyed;
 
@@ -86,8 +88,13 @@ namespace SkiEngine.NCS.Component
         private SKPoint _lastScale;
         private SKMatrix _worldToPixelMatrix;
         private SKMatrix _pixelToWorldMatrix;
-        public void Draw(SKCanvas canvas, UpdateTime updateTime)
+        public void Draw(SKCanvas canvas, int viewTarget)
         {
+            if (!ViewTargets.Contains(viewTarget))
+            {
+                return;
+            }
+
             var currentPoint = Node.WorldPoint;
             var currentRotation = Node.WorldRotation;
             var currentScale = Node.WorldScale;
@@ -115,7 +122,7 @@ namespace SkiEngine.NCS.Component
 
             foreach (var component in _layeredComponents)
             {
-                component.DrawablePart.Draw(canvas, component.Node, updateTime);
+                component.DrawablePart.Draw(canvas, component.Node);
             }
             
             canvas.Restore();

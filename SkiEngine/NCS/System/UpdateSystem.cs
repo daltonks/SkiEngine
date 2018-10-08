@@ -70,7 +70,7 @@ namespace SkiEngine.NCS.System
             _componentsToRemove.Clear();
         }
 
-        public void Draw(SKCanvas canvas, UpdateTime updateTime)
+        public void Draw(SKCanvas canvas, int viewTarget)
         {
             
         }

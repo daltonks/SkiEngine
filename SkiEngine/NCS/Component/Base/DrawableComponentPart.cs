@@ -1,12 +1,11 @@
 ﻿using SkiaSharp;
 using SkiEngine.Interfaces;
-using SkiEngine.NCS.System;
 
 namespace SkiEngine.NCS.Component.Base
 {
     public class DrawableComponentPart
     {
-        public delegate void DrawDelegate(SKCanvas canvas, ITransform transform, UpdateTime updateTime);
+        public delegate void DrawDelegate(SKCanvas canvas, ITransform transform);
 
         private readonly DrawDelegate _drawAction;
 
@@ -15,9 +14,9 @@ namespace SkiEngine.NCS.Component.Base
             _drawAction = drawAction;
         }
 
-        public void Draw(SKCanvas canvas, ITransform transform, UpdateTime updateTime)
+        public void Draw(SKCanvas canvas, ITransform transform)
         {
-            _drawAction.Invoke(canvas, transform, updateTime);
+            _drawAction.Invoke(canvas, transform);
         }
     }
 }

@@ -10,6 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="PrototypeMap.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="PrototypeMap.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SkiaSharp.Views.Forms" Version="1.60.3" />
     <PackageReference Include="Xamarin.Forms" Version="3.2.0.871581" />
   </ItemGroup>

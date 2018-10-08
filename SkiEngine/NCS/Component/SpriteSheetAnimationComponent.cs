@@ -60,7 +60,7 @@ namespace SkiEngine.NCS.Component
             }
         }
 
-        public void Draw(SKCanvas canvas, ITransform transform, UpdateTime updateTime)
+        public void Draw(SKCanvas canvas, ITransform transform)
         {
             foreach (var spriteData in _currentFrame.Sprites)
             {

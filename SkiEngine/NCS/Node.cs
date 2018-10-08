@@ -9,11 +9,6 @@ namespace SkiEngine.NCS
 {
     public class Node : IDestroyable<Node>, ITransform
     {
-        public event Action<Node> Destroyed;
-        public Scene Scene { get; internal set; }
-
-        internal readonly List<IComponent> Components = new List<IComponent>();
-        
         private Node _parent;
 
         private readonly List<Node> _children = new List<Node>();
@@ -22,14 +17,14 @@ namespace SkiEngine.NCS
         private float _relativeRotation;
         private SKPoint _relativeScale;
 
-        public Node(SKPoint relativePoint = default(SKPoint), float relativeRotation = 0)
-            : this(relativePoint, relativeRotation, new SKPoint(1, 1))
-        {
-            
-        }
+        internal readonly List<IComponent> Components = new List<IComponent>();
 
-        public Node(SKPoint relativePoint, float relativeRotation, SKPoint relativeScale)
+        public event Action<Node> Destroyed;
+        public Scene Scene { get; private set; }
+
+        internal Node(Scene scene, SKPoint relativePoint, float relativeRotation, SKPoint relativeScale)
         {
+            Scene = scene;
             _relativePoint = relativePoint;
             _relativeRotation = relativeRotation;
             _relativeScale = relativeScale;
@@ -92,6 +87,28 @@ namespace SkiEngine.NCS
                 child.RecalculateWorldTransform();
             }
         }
+
+        public Node CreateChild()
+        {
+            return CreateChild(new SKPoint(0, 0), 0, new SKPoint(1, 1));
+        }
+
+        public Node CreateChild(SKPoint relativePoint)
+        {
+            return CreateChild(relativePoint, 0, new SKPoint(1, 1));
+        }
+
+        public Node CreateChild(SKPoint relativePoint, float relativeRotation)
+        {
+            return CreateChild(relativePoint, relativeRotation, new SKPoint(1, 1));
+        }
+
+        public Node CreateChild(SKPoint relativePoint, float relativeRotation, SKPoint relativeScale)
+        {
+            var child = new Node(Scene, relativePoint, relativeRotation, relativeScale);
+            AddChild(child);
+            return child;
+        }
         
         public void AddChild(Node child)
         {
@@ -109,7 +126,7 @@ namespace SkiEngine.NCS
 
             child.RecalculateWorldTransform();
 
-            if (Scene != null && !childHadParentPreviously)
+            if (!childHadParentPreviously)
             {
                 HandleComponentCreationRecursively(child);
             }
