@@ -2,7 +2,6 @@
 using SkiEngine.Extensions;
 using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
-using SkiEngine.NCS.System;
 using SkiEngine.Sprite;
 
 namespace SkiEngine.NCS.Component

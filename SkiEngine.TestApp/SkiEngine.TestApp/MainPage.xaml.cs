@@ -10,7 +10,7 @@ namespace SkiEngine.TestApp
 {
     public partial class MainPage : ContentPage
     {
-        private static readonly SKImage tilesetImage;
+        private static readonly SKImage TilesetImage;
 
         static MainPage()
         {
@@ -22,7 +22,7 @@ namespace SkiEngine.TestApp
                 bitmap = SKBitmap.Decode(stream);
             }
 
-            tilesetImage = SKImage.FromBitmap(bitmap);
+            TilesetImage = SKImage.FromBitmap(bitmap);
         }
 
         private readonly Scene _scene = new Scene();
@@ -36,7 +36,7 @@ namespace SkiEngine.TestApp
             cameraNode.AddComponent(cameraComponent);
 
             var spriteNode = _scene.RootNode.CreateChild();
-            var spriteComponent = new SpriteComponent(tilesetImage, new SpriteData(new SKRectI(0, 0, 32, 32)));
+            var spriteComponent = new SpriteComponent(TilesetImage, new SpriteData(new SKRectI(0, 0, 32, 32)));
             spriteNode.AddComponent(spriteComponent);
             cameraComponent.AddDrawable(spriteComponent, 0);
         }
@@ -44,7 +44,11 @@ namespace SkiEngine.TestApp
         private void OnPaintSurface(object sender, SKPaintGLSurfaceEventArgs args)
         {
             _scene.Update();
-            _scene.Draw(args.Surface.Canvas, 0);
+
+            var canvas = args.Surface.Canvas;
+            canvas.Clear();
+            _scene.Draw(canvas, 0);
+            canvas.Flush();
         }
     }
 }

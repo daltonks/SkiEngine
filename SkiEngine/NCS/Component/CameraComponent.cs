@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using SkiaSharp;
 using SkiEngine.NCS.Component.Base;
-using SkiEngine.NCS.System;
 using SkiEngine.Util;
 
 namespace SkiEngine.NCS.Component

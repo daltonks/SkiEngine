@@ -17,7 +17,6 @@ namespace SkiEngine.NCS
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
 
         public event Action<Scene> Destroyed;
-        public SKColor ClearColor { get; set; }
 
         public Scene()
         {
@@ -80,14 +79,10 @@ namespace SkiEngine.NCS
 
         public void Draw(SKCanvas canvas, int viewTarget)
         {
-            canvas.Clear(ClearColor);
-
             foreach (var system in _systems)
             {
                 system.Draw(canvas, viewTarget);
             }
-
-            canvas.Flush();
         }
 
         public void Destroy()
