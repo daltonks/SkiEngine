@@ -107,9 +107,9 @@ namespace SkiEngine.NCS.Component
                 || !_lastDeviceClipBounds.Equals(currentDeviceClipBounds))
             {
                 _worldToPixelMatrix = SKMatrix.MakeTranslation(currentDeviceClipBounds.Width / 2f, currentDeviceClipBounds.Height / 2f);
-                SKMatrix.PostConcat(ref _worldToPixelMatrix, SKMatrix.MakeScale(currentScale.X, currentScale.Y));
-                SKMatrix.PostConcat(ref _worldToPixelMatrix, SKMatrix.MakeRotation(currentRotation));
-                SKMatrix.PostConcat(ref _worldToPixelMatrix, SKMatrix.MakeTranslation(-currentPoint.X, -currentPoint.Y));
+                SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeScale(currentScale.X, currentScale.Y));
+                SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeRotation(currentRotation));
+                SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeTranslation(-currentPoint.X, -currentPoint.Y));
                 
                 _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
 

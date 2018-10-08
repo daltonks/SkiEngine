@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using SkiaSharp;
@@ -15,6 +16,7 @@ namespace SkiEngine.NCS
         private readonly UpdateTime _updateTime = new UpdateTime();
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
+        private readonly ConcurrentQueue<Action> _runNextUpdateActions = new ConcurrentQueue<Action>();
 
         public event Action<Scene> Destroyed;
 
@@ -59,8 +61,18 @@ namespace SkiEngine.NCS
             }
         }
 
+        public void RunNextUpdate(Action action)
+        {
+            _runNextUpdateActions.Enqueue(action);
+        }
+
         public void Update()
         {
+            while(_runNextUpdateActions.TryDequeue(out var action))
+            {
+                action.Invoke();
+            }
+
             var stopwatchElapsed = _updateStopwatch.Elapsed;
             _updateTime.Delta = stopwatchElapsed - _previousStopwatchElapsed;
             _previousStopwatchElapsed = stopwatchElapsed;

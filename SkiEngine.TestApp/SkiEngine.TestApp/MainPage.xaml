@@ -4,7 +4,9 @@
              xmlns:local="clr-namespace:SkiEngine.TestApp"
              xmlns:skiaViews="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
              x:Class="SkiEngine.TestApp.MainPage">
+    <StackLayout>
+        <skiaViews:SKGLView WidthRequest="300" HeightRequest="300" HasRenderLoop="True" EnableTouchEvents="True" PaintSurface="OnPaintSurface1" Touch="OnTouch1" HorizontalOptions="Center" />
+        <skiaViews:SKGLView WidthRequest="300" HeightRequest="300" HasRenderLoop="True" EnableTouchEvents="True" PaintSurface="OnPaintSurface2" Touch="OnTouch2" HorizontalOptions="Center" />
+    </StackLayout>
 
-    <skiaViews:SKGLView x:Name="SkGlView" HasRenderLoop="True" EnableTouchEvents="True" PaintSurface="OnPaintSurface" />
-
-</ContentPage>
+  </ContentPage>
