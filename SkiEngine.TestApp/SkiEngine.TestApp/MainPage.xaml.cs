@@ -122,7 +122,6 @@ namespace SkiEngine.TestApp
                 {
                     switch (argsActionType)
                     {
-
                         case SKTouchAction.Pressed:
                         {
                             // start of a stroke

@@ -6,7 +6,7 @@ namespace SkiEngine.Sprite.Mapping
 {
     public static class SpriteSheetAnimationFrameDataMappingExtensions
     {
-        public static PSpriteSheetAnimationFrameData ToPFrameData(this GSpriteSheetAnimationFrameData frameData)
+        public static PSpriteSheetAnimationFrameData ToPFrameData(this SpriteSheetAnimationFrameData frameData)
         {
             return new PSpriteSheetAnimationFrameData
             {
@@ -15,9 +15,9 @@ namespace SkiEngine.Sprite.Mapping
             };
         }
 
-        public static GSpriteSheetAnimationFrameData ToGFrameData(this PSpriteSheetAnimationFrameData frameData)
+        public static SpriteSheetAnimationFrameData ToGFrameData(this PSpriteSheetAnimationFrameData frameData)
         {
-            return new GSpriteSheetAnimationFrameData
+            return new SpriteSheetAnimationFrameData
             {
                 Duration = TimeSpan.FromMilliseconds(frameData.TimeMilliseconds),
                 Sprites = frameData.Sprites.Select(pSprite => pSprite.ToGSpriteData()).ToArray()

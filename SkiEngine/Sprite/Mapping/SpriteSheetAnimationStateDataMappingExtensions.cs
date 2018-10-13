@@ -5,7 +5,7 @@ namespace SkiEngine.Sprite.Mapping
 {
     public static class SpriteSheetAnimationStateDataMappingExtensions
     {
-        public static PSpriteSheetAnimationStateData ToPStateData(this GSpriteSheetAnimationStateData stateData)
+        public static PSpriteSheetAnimationStateData ToPStateData(this SpriteSheetAnimationStateData stateData)
         {
             return new PSpriteSheetAnimationStateData
             {
@@ -14,9 +14,9 @@ namespace SkiEngine.Sprite.Mapping
             };
         }
 
-        public static GSpriteSheetAnimationStateData ToGStateData(this PSpriteSheetAnimationStateData stateData)
+        public static SpriteSheetAnimationStateData ToGStateData(this PSpriteSheetAnimationStateData stateData)
         {
-            return new GSpriteSheetAnimationStateData
+            return new SpriteSheetAnimationStateData
             {
                 Loops = stateData.Loops,
                 Frames = stateData.Frames.Select(

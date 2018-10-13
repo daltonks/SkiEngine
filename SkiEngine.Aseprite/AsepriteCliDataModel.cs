@@ -54,12 +54,12 @@ namespace SkiEngine.Aseprite
                         select frameGroup.ToArray()
                     )
                 ).Select(
-                    (tagGroup, tagIndex) => new GSpriteSheetAnimationStateData
+                    (tagGroup, tagIndex) => new SpriteSheetAnimationStateData
                     {
                         Frames =
                         (
                             tagGroup.Select((frameGroup, indexInTag) =>
-                                new GSpriteSheetAnimationFrameData
+                                new SpriteSheetAnimationFrameData
                                 {
                                     IndexInState = indexInTag,
                                     Duration = TimeSpan.FromMilliseconds(frameGroup.First().DurationInMillis),

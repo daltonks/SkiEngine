@@ -10,9 +10,9 @@ namespace SkiEngine.Sprite
 {
     public class SpriteSheetAnimationData
     {
-        public IReadOnlyList<GSpriteSheetAnimationStateData> States { get; }
+        public IReadOnlyList<SpriteSheetAnimationStateData> States { get; }
 
-        public SpriteSheetAnimationData(IReadOnlyList<GSpriteSheetAnimationStateData> states)
+        public SpriteSheetAnimationData(IReadOnlyList<SpriteSheetAnimationStateData> states)
         {
             States = states;
         }
@@ -38,13 +38,13 @@ namespace SkiEngine.Sprite
         }
     }
     
-    public class GSpriteSheetAnimationStateData
+    public class SpriteSheetAnimationStateData
     {
         public bool Loops = true;
-        public GSpriteSheetAnimationFrameData[] Frames;
+        public SpriteSheetAnimationFrameData[] Frames;
     }
 
-    public class GSpriteSheetAnimationFrameData
+    public class SpriteSheetAnimationFrameData
     {
         public int IndexInState;
         public TimeSpan Duration;

@@ -16,8 +16,8 @@ namespace SkiEngine.NCS.Component
         public DrawableComponentPart DrawablePart { get; }
         public UpdateableComponentPart UpdateablePart { get; }
 
-        private GSpriteSheetAnimationStateData _currentState;
-        private GSpriteSheetAnimationFrameData _currentFrame;
+        private SpriteSheetAnimationStateData _currentState;
+        private SpriteSheetAnimationFrameData _currentFrame;
 
         public TState State
         {
@@ -39,7 +39,7 @@ namespace SkiEngine.NCS.Component
             DrawablePart = new DrawableComponentPart(Draw);
         }
 
-        private void SetState(GSpriteSheetAnimationStateData state)
+        private void SetState(SpriteSheetAnimationStateData state)
         {
             if (_currentState != state)
             {
