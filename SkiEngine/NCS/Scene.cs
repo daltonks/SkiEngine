@@ -9,7 +9,7 @@ using SkiEngine.NCS.System;
 
 namespace SkiEngine.NCS
 {
-    public class Scene : IDestroyable<Scene>
+    public class Scene : IDrawable, IDestroyable<Scene>
     {
         private readonly List<ISystem> _systems = new List<ISystem>();
 

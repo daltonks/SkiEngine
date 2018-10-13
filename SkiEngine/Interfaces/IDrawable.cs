@@ -4,6 +4,6 @@ namespace SkiEngine.Interfaces
 {
     public interface IDrawable
     {
-        void Draw(SKCanvas canvas);
+        void Draw(SKCanvas canvas, int viewTarget);
     }
 }

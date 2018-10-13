@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using SkiaSharp;
+using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
 
 namespace SkiEngine.NCS.Component
 {
-    public class CameraComponent : Base.Component
+    public class CameraComponent : Base.Component, IDrawable
     {
         public ISet<int> ViewTargets { get; }
 

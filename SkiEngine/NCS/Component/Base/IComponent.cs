@@ -1,15 +1,10 @@
-﻿using System;
+﻿using SkiEngine.Interfaces;
 
 namespace SkiEngine.NCS.Component.Base
 {
-    public interface IComponent
+    public interface IComponent : IDestroyable<IComponent>
     {
-        event Action<IComponent> Destroyed;
-
         Node Node { get; }
         bool CreationHandled { get; set; }
-        bool IsDestroyed { get; }
-
-        void Destroy();
     }
 }
