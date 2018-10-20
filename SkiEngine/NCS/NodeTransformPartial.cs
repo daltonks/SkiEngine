@@ -26,7 +26,7 @@ namespace SkiEngine.NCS
             set
             {
                 _relativePoint = value;
-                _worldTransformIsDirty = true;
+                SetWorldTransformDirty();
             }
         }
 
@@ -37,7 +37,7 @@ namespace SkiEngine.NCS
             {
                 // Wrap rotation to stay between -PI and PI
                 _relativeRotation = value - TwoPi * Math.Floor((value + Math.PI) / TwoPi);
-                _worldTransformIsDirty = true;
+                SetWorldTransformDirty();
             }
         }
 
@@ -47,7 +47,7 @@ namespace SkiEngine.NCS
             set
             {
                 _relativeScale = value;
-                _worldTransformIsDirty = true;
+                SetWorldTransformDirty();
             }
         }
 
@@ -128,6 +128,21 @@ namespace SkiEngine.NCS
             }
         }
 
+        private void SetWorldTransformDirty()
+        {
+            if (_worldTransformIsDirty)
+            {
+                return;
+            }
+
+            _worldTransformIsDirty = true;
+
+            foreach (var child in _children)
+            {
+                child.SetWorldTransformDirty();
+            }
+        }
+
         private void TryRecalculateWorldTransform()
         {
             if (!_worldTransformIsDirty)
@@ -146,11 +161,6 @@ namespace SkiEngine.NCS
                 _worldRotation = _parent.WorldRotation + RelativeRotation;
                 _worldScale = _parent.WorldScale.Multiply(RelativeScale);
                 _worldPoint = _parent.WorldPoint + RelativePoint.Multiply(_parent.WorldScale).Rotate(_parent.WorldRotation);
-            }
-
-            foreach (var child in _children)
-            {
-                child._worldTransformIsDirty = true;
             }
 
             _worldTransformIsDirty = false;

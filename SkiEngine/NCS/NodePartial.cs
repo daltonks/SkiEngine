@@ -68,7 +68,7 @@ namespace SkiEngine.NCS
             
             child._parent = this;
 
-            child._worldTransformIsDirty = true;
+            child.SetWorldTransformDirty();
 
             if (!childHadParentPreviously)
             {
