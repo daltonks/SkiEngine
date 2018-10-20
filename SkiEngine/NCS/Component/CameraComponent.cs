@@ -84,7 +84,7 @@ namespace SkiEngine.NCS.Component
         }
 
         private SKPoint _lastPoint;
-        private float _lastRotation;
+        private double _lastRotation;
         private SKPoint _lastScale;
         private SKRectI _lastDeviceClipBounds;
         private SKMatrix _worldToPixelMatrix;
@@ -109,7 +109,7 @@ namespace SkiEngine.NCS.Component
             {
                 _worldToPixelMatrix = SKMatrix.MakeTranslation(currentDeviceClipBounds.Width / 2f, currentDeviceClipBounds.Height / 2f);
                 SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeScale(currentScale.X, currentScale.Y));
-                SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeRotation(currentRotation));
+                SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeRotation((float) currentRotation));
                 SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeTranslation(-currentPoint.X, -currentPoint.Y));
                 
                 _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);

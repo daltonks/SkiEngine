@@ -39,13 +39,18 @@ namespace SkiEngine.Extensions
         {
             return new SKPoint(p1.X * p2.X, p1.Y * p2.Y);
         }
+
+        public static SKPoint Divide(this SKPoint p1, SKPoint p2)
+        {
+            return new SKPoint(p1.X / p2.X, p1.Y / p2.Y);
+        }
         
         public static SKPoint VectorTo(this SKPoint p1, SKPoint p2)
         {
             return p2 - p1;
         }
 
-        public static SKPoint Rotate(this SKPoint point, float radians)
+        public static SKPoint Rotate(this SKPoint point, double radians)
         {
             var cos = Math.Cos(radians);
             var sin = Math.Sin(radians);

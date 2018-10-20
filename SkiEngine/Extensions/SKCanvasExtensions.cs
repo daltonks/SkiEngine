@@ -20,7 +20,7 @@ namespace SkiEngine.Extensions
             if (rotated)
             {
                 canvas.Save();
-                canvas.RotateRadians(transform.WorldRotation);
+                canvas.RotateRadians((float)transform.WorldRotation);
             }
             
             canvas.DrawImage(

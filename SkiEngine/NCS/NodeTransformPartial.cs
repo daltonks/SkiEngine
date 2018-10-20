@@ -1,19 +1,23 @@
-﻿using SkiaSharp;
+﻿using System;
+using SkiaSharp;
 using SkiEngine.Extensions;
 using SkiEngine.Interfaces;
+// ReSharper disable CompareOfFloatsByEqualityOperator
 
 namespace SkiEngine.NCS
 {
     public partial class Node : ITransform
     {
+        private const double TwoPi = Math.PI * 2;
+
         private bool _worldTransformIsDirty;
 
         private SKPoint _relativePoint;
-        private float _relativeRotation;
+        private double _relativeRotation;
         private SKPoint _relativeScale;
 
         private SKPoint _worldPoint;
-        private float _worldRotation;
+        private double _worldRotation;
         private SKPoint _worldScale;
 
         public SKPoint RelativePoint
@@ -26,12 +30,13 @@ namespace SkiEngine.NCS
             }
         }
 
-        public float RelativeRotation
+        public double RelativeRotation
         {
             get => _relativeRotation;
             set
             {
-                _relativeRotation = value;
+                // Wrap rotation to stay between -PI and PI
+                _relativeRotation = value - TwoPi * Math.Floor((value + Math.PI) / TwoPi);
                 _worldTransformIsDirty = true;
             }
         }
@@ -53,17 +58,47 @@ namespace SkiEngine.NCS
                 TryRecalculateWorldTransform();
                 return _worldPoint;
             }
-            set => _worldPoint = value;
+            set
+            {
+                if (_parent == null)
+                {
+                    RelativePoint = value;
+                }
+                else
+                {
+                    var relativePoint = (value - _parent.WorldPoint).Rotate(-_parent.WorldRotation);
+
+                    relativePoint.X = _parent.WorldScale.X == 0
+                        ? 0
+                        : relativePoint.X / _parent.WorldScale.X;
+
+                    relativePoint.Y = _parent.WorldScale.Y == 0
+                        ? 0
+                        : relativePoint.Y / _parent.WorldScale.Y;
+
+                    RelativePoint = relativePoint;
+                }
+            }
         }
 
-        public float WorldRotation
+        public double WorldRotation
         {
             get
             {
                 TryRecalculateWorldTransform();
                 return _worldRotation;
             }
-            set => _worldRotation = value;
+            set
+            {
+                if (_parent == null)
+                {
+                    RelativeRotation = value;
+                }
+                else
+                {
+                    RelativeRotation = value - _parent.WorldRotation;
+                }
+            }
         }
 
         public SKPoint WorldScale
@@ -73,7 +108,24 @@ namespace SkiEngine.NCS
                 TryRecalculateWorldTransform();
                 return _worldScale;
             }
-            set => _worldScale = value;
+            set
+            {
+                if (_parent == null)
+                {
+                    RelativeScale = value;
+                }
+                else
+                {
+                    RelativeScale = new SKPoint(
+                        _parent.WorldScale.X == 0 
+                            ? 0 
+                            : value.X / _parent.WorldScale.X,
+                        _parent.WorldScale.Y == 0 
+                            ? 0 
+                            : value.Y / _parent.WorldScale.Y
+                    );
+                }
+            }
         }
 
         private void TryRecalculateWorldTransform()
