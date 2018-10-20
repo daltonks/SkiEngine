@@ -1,93 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SkiaSharp;
 using SkiEngine.Extensions;
 using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
+using SkiEngine.Util;
 
 namespace SkiEngine.NCS
 {
-    public class Node : IDestroyable<Node>, ITransform
+    public partial class Node : IDestroyable<Node>
     {
+        public event Action<Node> Destroyed;
+
         private Node _parent;
 
         private readonly List<Node> _children = new List<Node>();
-
-        private SKPoint _relativePoint;
-        private float _relativeRotation;
-        private SKPoint _relativeScale;
-
-        internal readonly List<IComponent> Components = new List<IComponent>();
-
-        public event Action<Node> Destroyed;
-        public Scene Scene { get; private set; }
-
+        
+        private readonly HashSet<IComponent> _components = new HashSet<IComponent>(ReferenceEqualityComparer<IComponent>.Default);
+        
         internal Node(Scene scene, SKPoint relativePoint, float relativeRotation, SKPoint relativeScale)
         {
             Scene = scene;
-            _relativePoint = relativePoint;
-            _relativeRotation = relativeRotation;
-            _relativeScale = relativeScale;
-            RecalculateWorldTransform();
+
+            RelativePoint = relativePoint;
+            RelativeRotation = relativeRotation;
+            RelativeScale = relativeScale;
         }
 
-        public SKPoint RelativePoint
-        {
-            get => _relativePoint;
-            set
-            {
-                _relativePoint = value;
-                RecalculateWorldTransform();
-            }
-        }
-
-        public float RelativeRotation
-        {
-            get => _relativeRotation;
-            set
-            {
-                _relativeRotation = value;
-                RecalculateWorldTransform();
-            }
-        }
-
-        public SKPoint RelativeScale
-        {
-            get => _relativeScale;
-            set
-            {
-                _relativeScale = value;
-                RecalculateWorldTransform();
-            }
-        }
-
-        public SKPoint WorldPoint { get; private set; }
-        public float WorldRotation { get; private set; }
-        public SKPoint WorldScale { get; private set; }
-
+        public Scene Scene { get; private set; }
+        
         public bool IsDestroyed { get; private set; }
-
-        private void RecalculateWorldTransform()
-        {
-            if (_parent == null)
-            {
-                WorldRotation = RelativeRotation;
-                WorldScale = RelativeScale;
-                WorldPoint = RelativePoint;
-            }
-            else
-            {
-                WorldRotation = _parent.WorldRotation + RelativeRotation;
-                WorldScale = _parent.WorldScale.Multiply(RelativeScale);
-                WorldPoint = _parent.WorldPoint + RelativePoint.Multiply(_parent.WorldScale).Rotate(_parent.WorldRotation);
-            }
-
-            foreach (var child in _children)
-            {
-                child.RecalculateWorldTransform();
-            }
-        }
-
+        
         public Node CreateChild()
         {
             return CreateChild(new SKPoint(0, 0), 0, new SKPoint(1, 1));
@@ -124,7 +68,7 @@ namespace SkiEngine.NCS
             
             child._parent = this;
 
-            child.RecalculateWorldTransform();
+            child._worldTransformIsDirty = true;
 
             if (!childHadParentPreviously)
             {
@@ -136,7 +80,7 @@ namespace SkiEngine.NCS
         {
             node.Scene = Scene;
 
-            foreach (var childComponent in node.Components)
+            foreach (var childComponent in node._components)
             {
                 if (!childComponent.CreationHandled)
                 {
@@ -168,7 +112,7 @@ namespace SkiEngine.NCS
 
             component.Node?.RemoveComponent(component);
 
-            Components.Add(component);
+            _components.Add(component);
 
             component.Node = this;
 
@@ -183,7 +127,7 @@ namespace SkiEngine.NCS
 
         private void RemoveComponent(IComponent component)
         {
-            if (!Components.Remove(component))
+            if (!_components.Remove(component))
             {
                 return;
             }
@@ -208,7 +152,7 @@ namespace SkiEngine.NCS
 
             _parent?.RemoveChild(this);
 
-            foreach (var component in Components.ToArray())
+            foreach (var component in _components.ToArray())
             {
                 component.Destroy();
             }
