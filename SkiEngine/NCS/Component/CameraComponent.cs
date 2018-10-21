@@ -17,18 +17,16 @@ namespace SkiEngine.NCS.Component
 
         private SKMatrix _pixelToWorldMatrix;
 
-        public CameraComponent(int drawOrder, IEnumerable<int> viewTargets)
+        public CameraComponent(int drawOrder, int viewTarget)
         {
             _drawOrder = drawOrder;
-            ViewTargets = new HashSet<int>(viewTargets);
-
-            Destroyed += OnDestroyed;
+            ViewTarget = viewTarget;
 
             _layeredComponents = new LayeredSets<int, IDrawableComponent>(component => _componentToLayerMap[component]);
             _componentToLayerMap = new Dictionary<IDrawableComponent, int>(ReferenceEqualityComparer<IDrawableComponent>.Default);
         }
 
-        public ISet<int> ViewTargets { get; }
+        public int ViewTarget { get; set; }
 
         public ref readonly SKMatrix PixelToWorldMatrix => ref _pixelToWorldMatrix;
 
@@ -84,7 +82,7 @@ namespace SkiEngine.NCS.Component
         
         public void Draw(SKCanvas canvas, int viewTarget)
         {
-            if (!ViewTargets.Contains(viewTarget))
+            if (ViewTarget != viewTarget)
             {
                 return;
             }
@@ -107,11 +105,6 @@ namespace SkiEngine.NCS.Component
 
                 component.DrawablePart.Draw(canvas, component.Node);
             }
-        }
-
-        private void OnDestroyed(IComponent component)
-        {
-            
         }
     }
 }

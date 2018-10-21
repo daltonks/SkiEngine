@@ -41,11 +41,11 @@ namespace SkiEngine.TestApp
             InitializeComponent();
 
             var camera1Node = _scene.RootNode.CreateChild();
-            _camera1 = new CameraComponent(0, new[]{ 0 });
+            _camera1 = new CameraComponent(0, 0);
             camera1Node.AddComponent(_camera1);
 
-            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(500, 500), (float) (Math.PI / 8), new SKPoint(4f, 4f));
-            _camera2 = new CameraComponent(0, new[]{ 1 });
+            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(0, 0), 0, new SKPoint(4f, 4f));
+            _camera2 = new CameraComponent(0, 1);
             camera2Node.AddComponent(_camera2);
 
             var scribbleNode = _scene.RootNode.CreateChild();
