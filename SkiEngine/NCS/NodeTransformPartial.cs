@@ -21,7 +21,7 @@ namespace SkiEngine.NCS
         private SKMatrix _localToWorldMatrix;
         private SKMatrix _worldToLocalMatrix;
 
-        public ref readonly SKMatrix LocalToWorldMatrix
+        public ref SKMatrix LocalToWorldMatrix
         {
             get
             {
@@ -31,7 +31,7 @@ namespace SkiEngine.NCS
 
                     if (_parent != null)
                     {
-                        SKMatrix.PreConcat(ref _localToWorldMatrix, _parent.LocalToWorldMatrix);
+                        SKMatrix.PreConcat(ref _localToWorldMatrix, ref _parent.LocalToWorldMatrix);
                     }
 
                     _localToWorldDirty = false;
@@ -41,13 +41,14 @@ namespace SkiEngine.NCS
             }
         }
 
-        public ref readonly SKMatrix WorldToLocalMatrix
+        public ref SKMatrix WorldToLocalMatrix
         {
             get
             {
                 if (_worldToLocalDirty)
                 {
-                    LocalToWorldMatrix.TryInvert(out _worldToLocalMatrix);
+                    ref var localToWorldMatrix = ref LocalToWorldMatrix;
+                    localToWorldMatrix.TryInvert(out _worldToLocalMatrix);
 
                     _worldToLocalDirty = false;
                 }

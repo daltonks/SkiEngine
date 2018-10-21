@@ -4,7 +4,7 @@ namespace SkiEngine.Interfaces
 {
     public interface ITransform
     {
-        ref readonly SKMatrix WorldToLocalMatrix { get; }
-        ref readonly SKMatrix LocalToWorldMatrix { get; }
+        ref SKMatrix WorldToLocalMatrix { get; }
+        ref SKMatrix LocalToWorldMatrix { get; }
     }
 }
