@@ -92,16 +92,16 @@ namespace SkiEngine.NCS.Component
             var deviceClipBounds = canvas.DeviceClipBounds;
             var deviceClipTranslationMatrix = SKMatrix.MakeTranslation(deviceClipBounds.Width / 2f, deviceClipBounds.Height / 2f);
 
-            var cameraMatrix = Node.WorldToLocalMatrix;
+            var worldToPixelMatrix = Node.WorldToLocalMatrix;
 
-            SKMatrix.PreConcat(ref cameraMatrix, ref deviceClipTranslationMatrix);
+            SKMatrix.PostConcat(ref worldToPixelMatrix, ref deviceClipTranslationMatrix);
 
-            cameraMatrix.TryInvert(out _pixelToWorldMatrix);
+            worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
 
             foreach (var component in _layeredComponents)
             {
                 var drawMatrix = component.Node.LocalToWorldMatrix;
-                SKMatrix.PreConcat(ref drawMatrix, ref cameraMatrix);
+                SKMatrix.PostConcat(ref drawMatrix, ref worldToPixelMatrix);
 
                 canvas.SetMatrix(drawMatrix);
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using SkiaSharp;
 using SkiEngine.Extensions;
 using SkiEngine.Interfaces;
@@ -60,7 +61,7 @@ namespace SkiEngine.NCS
             var translationMatrix = SKMatrix.MakeTranslation(_relativePoint.X, _relativePoint.Y);
             var rotationMatrix = SKMatrix.MakeRotation(_relativeRotation);
             var scaleMatrix = SKMatrix.MakeScale(_relativeScale.X, _relativeScale.Y);
-
+            
             result = translationMatrix;
             SKMatrix.PreConcat(ref result, ref rotationMatrix);
             SKMatrix.PreConcat(ref result, ref scaleMatrix);

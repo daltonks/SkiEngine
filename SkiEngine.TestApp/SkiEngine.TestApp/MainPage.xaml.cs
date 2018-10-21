@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiEngine.NCS;
 using SkiEngine.NCS.Component;
+using SkiEngine.Sprite;
 using Xamarin.Forms;
 
 namespace SkiEngine.TestApp
@@ -42,7 +44,7 @@ namespace SkiEngine.TestApp
             _camera1 = new CameraComponent(0, new[]{ 0 });
             camera1Node.AddComponent(_camera1);
 
-            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(-150, -150), (float) Math.PI / 2, new SKPoint(.5f, .5f));
+            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(500, 500), (float) (Math.PI / 8), new SKPoint(4f, 4f));
             _camera2 = new CameraComponent(0, new[]{ 1 });
             camera2Node.AddComponent(_camera2);
 
@@ -72,6 +74,17 @@ namespace SkiEngine.TestApp
 
             _camera1.AddDrawable(scribbleDrawingComponent, 0);
             _camera2.AddDrawable(scribbleDrawingComponent, 0);
+
+            for (var x = -500; x <= 500; x += 25)
+            for (var y = -500; y <= 500; y += 25)
+            {
+                var scale = x == 0 && y == 0 ? new SKPoint(3, 3) : new SKPoint(1, 1);
+                var node = _scene.RootNode.CreateChild(new SKPoint(x, y), 0, scale);
+                var sprite = new SpriteComponent(TilesetImage, new SpriteData(SKRectI.Create(0, 0, 4, 4)));
+                node.AddComponent(sprite);
+                _camera1.AddDrawable(sprite, 1);
+                _camera2.AddDrawable(sprite, 1);
+            }
         }
 
         private void OnPaintSurface1(object sender, SKPaintGLSurfaceEventArgs args)
@@ -120,13 +133,16 @@ namespace SkiEngine.TestApp
             _scene.RunNextUpdate(
                 () =>
                 {
+                    var worldPoint = camera.PixelToWorldMatrix.MapPoint(argsLocation);
+                    Debug.WriteLine(worldPoint);
+
                     switch (argsActionType)
                     {
                         case SKTouchAction.Pressed:
                         {
                             // start of a stroke
                             var p = new SKPath();
-                            p.MoveTo(camera.PixelToWorldMatrix.MapPoint(argsLocation));
+                            p.MoveTo(worldPoint);
                         
                             _temporaryPaths[argsId] = p;
                     
@@ -137,7 +153,7 @@ namespace SkiEngine.TestApp
                             // the stroke, while pressed
                             if (argsInContact && _temporaryPaths.TryGetValue(argsId, out var foundPath))
                             {
-                                foundPath.LineTo(camera.PixelToWorldMatrix.MapPoint(argsLocation));
+                                foundPath.LineTo(worldPoint);
                             }
                             break;
                         }
