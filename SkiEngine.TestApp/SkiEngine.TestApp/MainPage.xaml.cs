@@ -126,7 +126,7 @@ namespace SkiEngine.TestApp
                         {
                             // start of a stroke
                             var p = new SKPath();
-                            p.MoveTo(camera.PixelToWorld(argsLocation));
+                            p.MoveTo(camera.PixelToWorldMatrix.MapPoint(argsLocation));
                         
                             _temporaryPaths[argsId] = p;
                     
@@ -137,7 +137,7 @@ namespace SkiEngine.TestApp
                             // the stroke, while pressed
                             if (argsInContact && _temporaryPaths.TryGetValue(argsId, out var foundPath))
                             {
-                                foundPath.LineTo(camera.PixelToWorld(argsLocation));
+                                foundPath.LineTo(camera.PixelToWorldMatrix.MapPoint(argsLocation));
                             }
                             break;
                         }

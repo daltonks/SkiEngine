@@ -8,14 +8,14 @@ namespace SkiEngine.NCS.Component
 {
     public class CameraComponent : Base.Component, IDrawable
     {
-        public ISet<int> ViewTargets { get; }
-
         public delegate void DrawOrderChangedDelegate(CameraComponent component, int previousDrawOrder);
         public event DrawOrderChangedDelegate DrawOrderChanged;
 
         private int _drawOrder;
         private readonly LayeredSets<int, IDrawableComponent> _layeredComponents;
         private readonly Dictionary<IDrawableComponent, int> _componentToLayerMap;
+
+        private SKMatrix _pixelToWorldMatrix;
 
         public CameraComponent(int drawOrder, IEnumerable<int> viewTargets)
         {
@@ -27,6 +27,10 @@ namespace SkiEngine.NCS.Component
             _layeredComponents = new LayeredSets<int, IDrawableComponent>(component => _componentToLayerMap[component]);
             _componentToLayerMap = new Dictionary<IDrawableComponent, int>(ReferenceEqualityComparer<IDrawableComponent>.Default);
         }
+
+        public ISet<int> ViewTargets { get; }
+
+        public ref readonly SKMatrix PixelToWorldMatrix => ref _pixelToWorldMatrix;
 
         public int DrawOrder
         {
@@ -77,18 +81,7 @@ namespace SkiEngine.NCS.Component
             _componentToLayerMap.Remove(drawableComponent);
             component.Destroyed -= RemoveDrawable;
         }
-
-        public SKPoint PixelToWorld(SKPoint pixelPoint)
-        {
-            return _pixelToWorldMatrix.MapPoint(pixelPoint);
-        }
-
-        private SKPoint _lastPoint;
-        private double _lastRotation;
-        private SKPoint _lastScale;
-        private SKRectI _lastDeviceClipBounds;
-        private SKMatrix _worldToPixelMatrix;
-        private SKMatrix _pixelToWorldMatrix;
+        
         public void Draw(SKCanvas canvas, int viewTarget)
         {
             if (!ViewTargets.Contains(viewTarget))
@@ -96,40 +89,24 @@ namespace SkiEngine.NCS.Component
                 return;
             }
 
-            var currentPoint = Node.WorldPoint;
-            var currentRotation = Node.WorldRotation;
-            var currentScale = Node.WorldScale;
-            var currentDeviceClipBounds = canvas.DeviceClipBounds;
+            var deviceClipBounds = canvas.DeviceClipBounds;
+            var deviceClipTranslationMatrix = SKMatrix.MakeTranslation(deviceClipBounds.Width / 2f, deviceClipBounds.Height / 2f);
 
-            // Recreate _worldToPixelMatrix only if it changed
-            if (!_lastPoint.Equals(currentPoint)
-                || !_lastRotation.Equals(currentRotation)
-                || !_lastScale.Equals(currentScale)
-                || !_lastDeviceClipBounds.Equals(currentDeviceClipBounds))
-            {
-                _worldToPixelMatrix = SKMatrix.MakeTranslation(currentDeviceClipBounds.Width / 2f, currentDeviceClipBounds.Height / 2f);
-                SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeScale(currentScale.X, currentScale.Y));
-                SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeRotation((float) currentRotation));
-                SKMatrix.PreConcat(ref _worldToPixelMatrix, SKMatrix.MakeTranslation(-currentPoint.X, -currentPoint.Y));
-                
-                _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
+            var cameraMatrix = Node.WorldToLocalMatrix;
 
-                _lastPoint = currentPoint;
-                _lastRotation = currentRotation;
-                _lastScale = currentScale;
-                _lastDeviceClipBounds = currentDeviceClipBounds;
-            }
+            SKMatrix.PreConcat(ref cameraMatrix, ref deviceClipTranslationMatrix);
 
-            canvas.Save();
-
-            canvas.Concat(ref _worldToPixelMatrix);
+            cameraMatrix.TryInvert(out _pixelToWorldMatrix);
 
             foreach (var component in _layeredComponents)
             {
+                var drawMatrix = component.Node.LocalToWorldMatrix;
+                SKMatrix.PreConcat(ref drawMatrix, ref cameraMatrix);
+
+                canvas.SetMatrix(drawMatrix);
+
                 component.DrawablePart.Draw(canvas, component.Node);
             }
-            
-            canvas.Restore();
         }
 
         private void OnDestroyed(IComponent component)

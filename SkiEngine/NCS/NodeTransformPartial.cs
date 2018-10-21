@@ -10,34 +10,80 @@ namespace SkiEngine.NCS
     {
         private const double TwoPi = Math.PI * 2;
 
-        private bool _worldTransformIsDirty;
-
         private SKPoint _relativePoint;
-        private double _relativeRotation;
+        private float _relativeRotation;
         private SKPoint _relativeScale;
 
-        private SKPoint _worldPoint;
-        private double _worldRotation;
-        private SKPoint _worldScale;
+        private bool _localToWorldDirty;
+        private bool _worldToLocalDirty;
 
+        private SKMatrix _localToWorldMatrix;
+        private SKMatrix _worldToLocalMatrix;
+
+        public ref readonly SKMatrix LocalToWorldMatrix
+        {
+            get
+            {
+                if (_localToWorldDirty)
+                {
+                    CalculateLocalToParentMatrix(out _localToWorldMatrix);
+
+                    if (_parent != null)
+                    {
+                        SKMatrix.PreConcat(ref _localToWorldMatrix, _parent.LocalToWorldMatrix);
+                    }
+
+                    _localToWorldDirty = false;
+                }
+                
+                return ref _localToWorldMatrix;
+            }
+        }
+
+        public ref readonly SKMatrix WorldToLocalMatrix
+        {
+            get
+            {
+                if (_worldToLocalDirty)
+                {
+                    LocalToWorldMatrix.TryInvert(out _worldToLocalMatrix);
+
+                    _worldToLocalDirty = false;
+                }
+
+                return ref _worldToLocalMatrix;
+            }
+        }
+
+        public void CalculateLocalToParentMatrix(out SKMatrix result)
+        {
+            var translationMatrix = SKMatrix.MakeTranslation(_relativePoint.X, _relativePoint.Y);
+            var rotationMatrix = SKMatrix.MakeRotation(_relativeRotation);
+            var scaleMatrix = SKMatrix.MakeScale(_relativeScale.X, _relativeScale.Y);
+
+            result = translationMatrix;
+            SKMatrix.PreConcat(ref result, ref rotationMatrix);
+            SKMatrix.PreConcat(ref result, ref scaleMatrix);
+        }
+        
         public SKPoint RelativePoint
         {
             get => _relativePoint;
             set
             {
                 _relativePoint = value;
-                SetWorldTransformDirty();
+                SetMatricesDirty();
             }
         }
 
-        public double RelativeRotation
+        public float RelativeRotation
         {
             get => _relativeRotation;
             set
             {
                 // Wrap rotation to stay between -PI and PI
-                _relativeRotation = value - TwoPi * Math.Floor((value + Math.PI) / TwoPi);
-                SetWorldTransformDirty();
+                _relativeRotation = (float) (value - TwoPi * Math.Floor((value + Math.PI) / TwoPi));
+                SetMatricesDirty();
             }
         }
 
@@ -47,123 +93,24 @@ namespace SkiEngine.NCS
             set
             {
                 _relativeScale = value;
-                SetWorldTransformDirty();
+                SetMatricesDirty();
             }
         }
 
-        public SKPoint WorldPoint
+        private void SetMatricesDirty()
         {
-            get
-            {
-                TryRecalculateWorldTransform();
-                return _worldPoint;
-            }
-            set
-            {
-                if (_parent == null)
-                {
-                    RelativePoint = value;
-                }
-                else
-                {
-                    var relativePoint = (value - _parent.WorldPoint).Rotate(-_parent.WorldRotation);
-
-                    relativePoint.X = _parent.WorldScale.X == 0
-                        ? 0
-                        : relativePoint.X / _parent.WorldScale.X;
-
-                    relativePoint.Y = _parent.WorldScale.Y == 0
-                        ? 0
-                        : relativePoint.Y / _parent.WorldScale.Y;
-
-                    RelativePoint = relativePoint;
-                }
-            }
-        }
-
-        public double WorldRotation
-        {
-            get
-            {
-                TryRecalculateWorldTransform();
-                return _worldRotation;
-            }
-            set
-            {
-                if (_parent == null)
-                {
-                    RelativeRotation = value;
-                }
-                else
-                {
-                    RelativeRotation = value - _parent.WorldRotation;
-                }
-            }
-        }
-
-        public SKPoint WorldScale
-        {
-            get
-            {
-                TryRecalculateWorldTransform();
-                return _worldScale;
-            }
-            set
-            {
-                if (_parent == null)
-                {
-                    RelativeScale = value;
-                }
-                else
-                {
-                    RelativeScale = new SKPoint(
-                        _parent.WorldScale.X == 0 
-                            ? 0 
-                            : value.X / _parent.WorldScale.X,
-                        _parent.WorldScale.Y == 0 
-                            ? 0 
-                            : value.Y / _parent.WorldScale.Y
-                    );
-                }
-            }
-        }
-
-        private void SetWorldTransformDirty()
-        {
-            if (_worldTransformIsDirty)
+            if (_localToWorldDirty)
             {
                 return;
             }
 
-            _worldTransformIsDirty = true;
+            _localToWorldDirty = true;
+            _worldToLocalDirty = true;
 
             foreach (var child in _children)
             {
-                child.SetWorldTransformDirty();
+                child.SetMatricesDirty();
             }
-        }
-
-        private void TryRecalculateWorldTransform()
-        {
-            if (!_worldTransformIsDirty)
-            {
-                return;
-            }
-
-            if (_parent == null)
-            {
-                _worldRotation = RelativeRotation;
-                _worldScale = RelativeScale;
-                _worldPoint = RelativePoint;
-            }
-            else
-            {
-                _worldRotation = _parent.WorldRotation + RelativeRotation;
-                _worldScale = _parent.WorldScale.Multiply(RelativeScale);
-                _worldPoint = _parent.WorldPoint + RelativePoint.Multiply(_parent.WorldScale).Rotate(_parent.WorldRotation);
-            }
-
-            _worldTransformIsDirty = false;
         }
     }
 }

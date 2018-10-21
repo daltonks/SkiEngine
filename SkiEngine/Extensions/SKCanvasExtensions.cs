@@ -12,33 +12,22 @@ namespace SkiEngine.Extensions
             this SKCanvas canvas,
             SKImage image, 
             SKPaint paint, 
-            SpriteData spriteData, 
-            ITransform transform
+            SpriteData spriteData
         )
         {
-            var rotated = transform.WorldRotation != 0;
-            if (rotated)
-            {
-                canvas.Save();
-                canvas.RotateRadians((float)transform.WorldRotation);
-            }
-            
+            var origin = spriteData.Origin;
+            var textureBounds = spriteData.TextureBounds;
             canvas.DrawImage(
                 image, 
-                spriteData.TextureBounds, 
+                textureBounds, 
                 SKRect.Create(
-                    transform.WorldPoint.X - spriteData.Origin.X * transform.WorldScale.X, 
-                    transform.WorldPoint.Y - spriteData.Origin.Y * transform.WorldScale.Y,
-                    spriteData.TextureBounds.Width * transform.WorldScale.X,
-                    spriteData.TextureBounds.Height * transform.WorldScale.Y
+                    -origin.X, 
+                    -origin.Y,
+                    textureBounds.Width, 
+                    textureBounds.Height
                 ),
                 paint
             );
-
-            if (rotated)
-            {
-                canvas.Restore();
-            }
         }
     }
 }

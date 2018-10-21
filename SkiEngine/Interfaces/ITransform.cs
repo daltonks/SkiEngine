@@ -4,8 +4,7 @@ namespace SkiEngine.Interfaces
 {
     public interface ITransform
     {
-        SKPoint WorldPoint { get; set; }
-        double WorldRotation { get; set; }
-        SKPoint WorldScale { get; set; }
+        ref readonly SKMatrix WorldToLocalMatrix { get; }
+        ref readonly SKMatrix LocalToWorldMatrix { get; }
     }
 }

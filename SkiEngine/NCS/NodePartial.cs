@@ -68,7 +68,7 @@ namespace SkiEngine.NCS
             
             child._parent = this;
 
-            child.SetWorldTransformDirty();
+            child.SetMatricesDirty();
 
             if (!childHadParentPreviously)
             {

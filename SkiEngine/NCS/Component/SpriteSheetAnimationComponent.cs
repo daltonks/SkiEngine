@@ -64,7 +64,7 @@ namespace SkiEngine.NCS.Component
         {
             foreach (var spriteData in _currentFrame.Sprites)
             {
-                canvas.DrawImage(Image, Paint, spriteData, transform);
+                canvas.DrawImage(Image, Paint, spriteData);
             }
         }
     }

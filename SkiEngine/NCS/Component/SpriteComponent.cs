@@ -25,7 +25,7 @@ namespace SkiEngine.NCS.Component
 
         public void Draw(SKCanvas canvas, ITransform transform)
         {
-            canvas.DrawImage(Image, Paint, Data, transform);
+            canvas.DrawImage(Image, Paint, Data);
         }
     }
 }
