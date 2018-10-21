@@ -45,7 +45,7 @@ namespace SkiEngine.TestApp
             _camera1 = new CameraComponent(0, 0);
             camera1Node.AddComponent(_camera1);
 
-            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(50, 200), (float) Math.PI / 2, new SKPoint(1, 1));
+            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(50, 200), (float) Math.PI / 2, new SKPoint(3, 3));
             _camera2 = new CameraComponent(0, 1);
             camera2Node.AddComponent(_camera2);
 

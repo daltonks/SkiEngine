@@ -79,15 +79,21 @@ namespace SkiEngine.NCS.Component
             _componentToLayerMap.Remove(drawableComponent);
             component.Destroyed -= RemoveDrawable;
         }
-        
+
+        private SKRectI _previousDeviceClipBounds;
+        private SKMatrix _deviceClipBoundsTranslationMatrix;
         public void Draw(SKCanvas canvas)
         {
             var deviceClipBounds = canvas.DeviceClipBounds;
-            var deviceClipTranslationMatrix = SKMatrix.MakeTranslation(deviceClipBounds.Width / 2f, deviceClipBounds.Height / 2f);
+            if (deviceClipBounds != _previousDeviceClipBounds)
+            {
+                _deviceClipBoundsTranslationMatrix = SKMatrix.MakeTranslation(deviceClipBounds.Width / 2f, deviceClipBounds.Height / 2f);
+                _previousDeviceClipBounds = deviceClipBounds;
+            }
 
             var worldToPixelMatrix = Node.WorldToLocalMatrix;
 
-            SKMatrix.PostConcat(ref worldToPixelMatrix, ref deviceClipTranslationMatrix);
+            SKMatrix.PostConcat(ref worldToPixelMatrix, ref _deviceClipBoundsTranslationMatrix);
 
             worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
 
