@@ -48,7 +48,10 @@ namespace SkiEngine.NCS.System
         {
             foreach (var cameraComponent in _layeredCameraComponents)
             {
-                cameraComponent.Draw(canvas, viewTarget);
+                if (cameraComponent.ViewTarget == viewTarget)
+                {
+                    cameraComponent.Draw(canvas);
+                }
             }
         }
     }

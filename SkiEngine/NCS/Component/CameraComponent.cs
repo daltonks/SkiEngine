@@ -6,7 +6,7 @@ using SkiEngine.Util;
 
 namespace SkiEngine.NCS.Component
 {
-    public class CameraComponent : Base.Component, IDrawable
+    public class CameraComponent : Base.Component
     {
         public delegate void DrawOrderChangedDelegate(CameraComponent component, int previousDrawOrder);
         public event DrawOrderChangedDelegate DrawOrderChanged;
@@ -80,13 +80,8 @@ namespace SkiEngine.NCS.Component
             component.Destroyed -= RemoveDrawable;
         }
         
-        public void Draw(SKCanvas canvas, int viewTarget)
+        public void Draw(SKCanvas canvas)
         {
-            if (ViewTarget != viewTarget)
-            {
-                return;
-            }
-
             var deviceClipBounds = canvas.DeviceClipBounds;
             var deviceClipTranslationMatrix = SKMatrix.MakeTranslation(deviceClipBounds.Width / 2f, deviceClipBounds.Height / 2f);
 

@@ -40,14 +40,16 @@ namespace SkiEngine.TestApp
         {
             InitializeComponent();
 
+            // Cameras
             var camera1Node = _scene.RootNode.CreateChild();
             _camera1 = new CameraComponent(0, 0);
             camera1Node.AddComponent(_camera1);
 
-            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(0, 0), 0, new SKPoint(4f, 4f));
+            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(50, 200), (float) Math.PI / 2, new SKPoint(1, 1));
             _camera2 = new CameraComponent(0, 1);
             camera2Node.AddComponent(_camera2);
 
+            // Scribble
             var scribbleNode = _scene.RootNode.CreateChild();
             var scribbleDrawingComponent = new DrawableComponent(
                 (canvas, transform) =>
@@ -75,15 +77,20 @@ namespace SkiEngine.TestApp
             _camera1.AddDrawable(scribbleDrawingComponent, 0);
             _camera2.AddDrawable(scribbleDrawingComponent, 0);
 
-            for (var x = -500; x <= 500; x += 25)
-            for (var y = -500; y <= 500; y += 25)
+            //Sprites
+            var zeroSprite = CreateTileSprite(_scene.RootNode, new SKPoint(0, 0), 0, new SKPoint(1, 1));
+            var secondSprite = CreateTileSprite(zeroSprite.Node, new SKPoint(50, 0), (float) Math.PI / 2, new SKPoint(4, 4));
+            var thirdSprite = CreateTileSprite(secondSprite.Node, new SKPoint(50, 0), (float) Math.PI / 2, new SKPoint(4, 4));
+
+            SpriteComponent CreateTileSprite(Node parent, SKPoint point, float rotation, SKPoint scale)
             {
-                var scale = x == 0 && y == 0 ? new SKPoint(3, 3) : new SKPoint(1, 1);
-                var node = _scene.RootNode.CreateChild(new SKPoint(x, y), 0, scale);
-                var sprite = new SpriteComponent(TilesetImage, new SpriteData(SKRectI.Create(0, 0, 4, 4)));
+                var node = parent.CreateChild(point, rotation, scale);
+                var sprite = new SpriteComponent(TilesetImage, new SpriteData(SKRectI.Create(0, 0, 8, 8)));
                 node.AddComponent(sprite);
                 _camera1.AddDrawable(sprite, 1);
                 _camera2.AddDrawable(sprite, 1);
+
+                return sprite;
             }
         }
 
