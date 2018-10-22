@@ -36,7 +36,6 @@ namespace SkiEngine.NCS.Component
         public ref SKMatrix PixelToWorldMatrix => ref _pixelToWorldMatrix;
 
         public SKRect WorldViewport { get; private set; }
-        public SKRect LocalViewport { get; private set; }
 
         public int DrawOrder
         {
@@ -99,8 +98,8 @@ namespace SkiEngine.NCS.Component
 
             Node.RelativePoint += localBoundingBox.Mid();
 
-            var widthProportion = localBoundingBox.Width / LocalViewport.Width;
-            var heightProportion = localBoundingBox.Height / LocalViewport.Height;
+            var widthProportion = rect.Width / WorldViewport.Width;
+            var heightProportion = rect.Height / WorldViewport.Height;
 
             Node.RelativeScale = Node.RelativeScale.Multiply(
                 widthProportion > heightProportion 
@@ -127,7 +126,6 @@ namespace SkiEngine.NCS.Component
             _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
 
             WorldViewport = _pixelToWorldMatrix.MapRect(deviceClipBounds);
-            LocalViewport = Node.WorldToLocalMatrix.MapRect(WorldViewport);
 
             foreach (var component in _layeredComponents)
             {

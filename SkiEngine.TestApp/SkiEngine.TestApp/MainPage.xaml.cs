@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using SkiaSharp;
@@ -169,6 +170,9 @@ namespace SkiEngine.TestApp
                             // end of a stroke
                             _paths.Add(_temporaryPaths[argsId]);
                             _temporaryPaths.Remove(argsId);
+
+                            _camera1.ZoomTo(_paths.SelectMany(path => path.Points));
+                            _camera2.ZoomTo(_paths.SelectMany(path => path.Points));
                             break;
                         }
                         case SKTouchAction.Cancelled:

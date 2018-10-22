@@ -19,7 +19,6 @@ x64/
 x86/
 build/
 bld/
-[Bb]in/
 [Oo]bj/
 
 # Visual Studio 2015 cache/options directory
@@ -219,3 +218,5 @@ _Pvt_Extensions
 SkiEngine\.TestApp/SkiEngine\.TestApp\.Android/Resources/Resource\.designer\.cs
 
 Lidgren/
+
+SkiEngine\.Protobuf/Protobuf/ProtobufModels\.cs
