@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SkiaSharp;
 
 namespace SkiEngine.Extensions
@@ -59,6 +60,46 @@ namespace SkiEngine.Extensions
                 (float) (point.X * cos - point.Y * sin),
                 (float) (point.X * sin + point.Y * cos)
             );
+        }
+
+        public static SKRect BoundingBox(this IEnumerable<SKPoint> points)
+        {
+            using (var enumerator = points.GetEnumerator())
+            {
+                var hasAtLeastOnePoint = enumerator.MoveNext();
+                if (!hasAtLeastOnePoint)
+                {
+                    return SKRect.Empty;
+                }
+
+                var firstPoint = enumerator.Current;
+                var result = SKRect.Create(firstPoint.X, firstPoint.Y, 0, 0);
+
+                while (enumerator.MoveNext())
+                {
+                    var point = enumerator.Current;
+
+                    if (point.X < result.Left)
+                    {
+                        result.Left = point.X;
+                    }
+                    else if (point.X > result.Right)
+                    {
+                        result.Right = point.X;
+                    }
+
+                    if (point.Y < result.Top)
+                    {
+                        result.Top = point.Y;
+                    }
+                    else if (point.Y > result.Bottom)
+                    {
+                        result.Bottom = point.Y;
+                    }
+                }
+
+                return result;
+            }
         }
     }
 }

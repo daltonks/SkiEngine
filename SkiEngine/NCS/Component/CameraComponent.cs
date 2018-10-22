@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using SkiaSharp;
+using SkiEngine.Extensions;
 using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
@@ -15,20 +18,25 @@ namespace SkiEngine.NCS.Component
         private readonly LayeredSets<int, IDrawableComponent> _layeredComponents;
         private readonly Dictionary<IDrawableComponent, int> _componentToLayerMap;
 
+        private SKMatrix _worldToPixelMatrix;
         private SKMatrix _pixelToWorldMatrix;
 
         public CameraComponent(int drawOrder, int viewTarget)
         {
             _drawOrder = drawOrder;
             ViewTarget = viewTarget;
-
+            
             _layeredComponents = new LayeredSets<int, IDrawableComponent>(component => _componentToLayerMap[component]);
             _componentToLayerMap = new Dictionary<IDrawableComponent, int>(ReferenceEqualityComparer<IDrawableComponent>.Default);
         }
 
         public int ViewTarget { get; set; }
 
-        public ref readonly SKMatrix PixelToWorldMatrix => ref _pixelToWorldMatrix;
+        public ref SKMatrix WorldToPixelMatrix => ref _worldToPixelMatrix;
+        public ref SKMatrix PixelToWorldMatrix => ref _pixelToWorldMatrix;
+
+        public SKRect WorldViewport { get; private set; }
+        public SKRect LocalViewport { get; private set; }
 
         public int DrawOrder
         {
@@ -80,6 +88,27 @@ namespace SkiEngine.NCS.Component
             component.Destroyed -= RemoveDrawable;
         }
 
+        public void ZoomTo(IEnumerable<SKPoint> worldPoints)
+        {
+            ZoomTo(worldPoints.BoundingBox());
+        }
+
+        public void ZoomTo(SKRect rect)
+        {
+            var localBoundingBox = Node.WorldToLocalMatrix.MapRect(rect);
+
+            Node.RelativePoint += localBoundingBox.Mid();
+
+            var widthProportion = localBoundingBox.Width / LocalViewport.Width;
+            var heightProportion = localBoundingBox.Height / LocalViewport.Height;
+
+            Node.RelativeScale = Node.RelativeScale.Multiply(
+                widthProportion > heightProportion 
+                    ? widthProportion 
+                    : heightProportion
+            );
+        }
+
         private SKRectI _previousDeviceClipBounds;
         private SKMatrix _deviceClipBoundsTranslationMatrix;
         public void Draw(SKCanvas canvas)
@@ -91,16 +120,19 @@ namespace SkiEngine.NCS.Component
                 _previousDeviceClipBounds = deviceClipBounds;
             }
 
-            var worldToPixelMatrix = Node.WorldToLocalMatrix;
+            _worldToPixelMatrix = Node.WorldToLocalMatrix;
 
-            SKMatrix.PostConcat(ref worldToPixelMatrix, ref _deviceClipBoundsTranslationMatrix);
+            SKMatrix.PostConcat(ref _worldToPixelMatrix, ref _deviceClipBoundsTranslationMatrix);
 
-            worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
+            _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
+
+            WorldViewport = _pixelToWorldMatrix.MapRect(deviceClipBounds);
+            LocalViewport = Node.WorldToLocalMatrix.MapRect(WorldViewport);
 
             foreach (var component in _layeredComponents)
             {
                 var drawMatrix = component.Node.LocalToWorldMatrix;
-                SKMatrix.PostConcat(ref drawMatrix, ref worldToPixelMatrix);
+                SKMatrix.PostConcat(ref drawMatrix, ref _worldToPixelMatrix);
 
                 canvas.SetMatrix(drawMatrix);
 
