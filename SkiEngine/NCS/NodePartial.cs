@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using SkiaSharp;
-using SkiEngine.Extensions;
 using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
@@ -12,8 +11,6 @@ namespace SkiEngine.NCS
     public partial class Node : IDestroyable<Node>
     {
         public event Action<Node> Destroyed;
-
-        private Node _parent;
 
         private readonly List<Node> _children = new List<Node>();
         
@@ -27,6 +24,8 @@ namespace SkiEngine.NCS
             RelativeRotation = relativeRotation;
             RelativeScale = relativeScale;
         }
+
+        public Node Parent { get; private set; }
 
         public Scene Scene { get; private set; }
         
@@ -56,17 +55,17 @@ namespace SkiEngine.NCS
         
         public void AddChild(Node child)
         {
-            if (child._parent == this)
+            if (child.Parent == this)
             {
                 return;
             }
 
-            var childHadParentPreviously = child._parent != null;
-            child._parent?.RemoveChild(child);
+            var childHadParentPreviously = child.Parent != null;
+            child.Parent?.RemoveChild(child);
             
             _children.Add(child);
             
-            child._parent = this;
+            child.Parent = this;
 
             child.SetMatricesDirty();
 
@@ -99,7 +98,7 @@ namespace SkiEngine.NCS
         {
             if (_children.Remove(child))
             {
-                child._parent = null;
+                child.Parent = null;
             }
         }
 
@@ -150,7 +149,7 @@ namespace SkiEngine.NCS
 
             IsDestroyed = true;
 
-            _parent?.RemoveChild(this);
+            Parent?.RemoveChild(this);
 
             foreach (var component in _components.ToArray())
             {

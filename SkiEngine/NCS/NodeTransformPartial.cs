@@ -29,9 +29,9 @@ namespace SkiEngine.NCS
                 {
                     CalculateLocalToParentMatrix(out _localToWorldMatrix);
 
-                    if (_parent != null)
+                    if (Parent != null)
                     {
-                        SKMatrix.PreConcat(ref _localToWorldMatrix, ref _parent.LocalToWorldMatrix);
+                        SKMatrix.PreConcat(ref _localToWorldMatrix, ref Parent.LocalToWorldMatrix);
                     }
 
                     _localToWorldDirty = false;
@@ -55,17 +55,6 @@ namespace SkiEngine.NCS
 
                 return ref _worldToLocalMatrix;
             }
-        }
-
-        public void CalculateLocalToParentMatrix(out SKMatrix result)
-        {
-            var translationMatrix = SKMatrix.MakeTranslation(_relativePoint.X, _relativePoint.Y);
-            var rotationMatrix = SKMatrix.MakeRotation(_relativeRotation);
-            var scaleMatrix = SKMatrix.MakeScale(_relativeScale.X, _relativeScale.Y);
-            
-            result = translationMatrix;
-            SKMatrix.PreConcat(ref result, ref rotationMatrix);
-            SKMatrix.PreConcat(ref result, ref scaleMatrix);
         }
         
         public SKPoint RelativePoint
@@ -97,6 +86,23 @@ namespace SkiEngine.NCS
                 _relativeScale = value;
                 SetMatricesDirty();
             }
+        }
+
+        public SKPoint WorldPoint
+        {
+            get => LocalToWorldMatrix.MapPoint(SKPoint.Empty);
+            set => RelativePoint = Parent?.WorldToLocalMatrix.MapPoint(value) ?? value;
+        }
+
+        public void CalculateLocalToParentMatrix(out SKMatrix result)
+        {
+            var translationMatrix = SKMatrix.MakeTranslation(_relativePoint.X, _relativePoint.Y);
+            var rotationMatrix = SKMatrix.MakeRotation(_relativeRotation);
+            var scaleMatrix = SKMatrix.MakeScale(_relativeScale.X, _relativeScale.Y);
+            
+            result = translationMatrix;
+            SKMatrix.PreConcat(ref result, ref rotationMatrix);
+            SKMatrix.PreConcat(ref result, ref scaleMatrix);
         }
 
         private void SetMatricesDirty()

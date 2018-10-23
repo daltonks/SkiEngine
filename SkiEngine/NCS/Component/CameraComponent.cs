@@ -89,17 +89,10 @@ namespace SkiEngine.NCS.Component
 
         public void ZoomTo(IEnumerable<SKPoint> worldPoints)
         {
-            ZoomTo(worldPoints.BoundingBox());
-        }
-
-        public void ZoomTo(SKRect rect)
-        {
-            var localBoundingBox = Node.WorldToLocalMatrix.MapRect(rect);
-
-            Node.RelativePoint += localBoundingBox.Mid();
-
-            var widthProportion = rect.Width / WorldViewport.Width;
-            var heightProportion = rect.Height / WorldViewport.Height;
+            var localBoundingBox = worldPoints.Select(Node.WorldToLocalMatrix.MapPoint).BoundingBox();
+            Node.WorldPoint = Node.LocalToWorldMatrix.MapPoint(localBoundingBox.Mid());
+            var widthProportion = localBoundingBox.Width / _previousDeviceClipBounds.Width;
+            var heightProportion = localBoundingBox.Height / _previousDeviceClipBounds.Height;
 
             Node.RelativeScale = Node.RelativeScale.Multiply(
                 widthProportion > heightProportion 
