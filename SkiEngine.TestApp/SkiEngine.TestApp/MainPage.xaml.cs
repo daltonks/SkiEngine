@@ -168,11 +168,15 @@ namespace SkiEngine.TestApp
                         case SKTouchAction.Released:
                         {
                             // end of a stroke
-                            _paths.Add(_temporaryPaths[argsId]);
-                            _temporaryPaths.Remove(argsId);
+                            if (_temporaryPaths.TryGetValue(argsId, out var foundPath))
+                            {
+                                _paths.Add(foundPath);
+                                _temporaryPaths.Remove(argsId);
 
-                            _camera1.ZoomTo(_paths.SelectMany(path => path.Points));
-                            _camera2.ZoomTo(_paths.SelectMany(path => path.Points));
+                                _camera1.ZoomTo(_paths.SelectMany(path => path.Points));
+                                _camera2.ZoomTo(_paths.SelectMany(path => path.Points));
+                            }
+                            
                             break;
                         }
                         case SKTouchAction.Cancelled:
