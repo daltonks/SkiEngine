@@ -1,0 +1,3 @@
+[submodule "Lidgren"]
+	path = Lidgren
+	url = https://github.com/daltonks/lidgren-network-gen3.git
