@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using SkiaSharp;
 using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
@@ -17,6 +18,7 @@ namespace SkiEngine.NCS
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
         private readonly ConcurrentQueue<Action> _runNextUpdateActions = new ConcurrentQueue<Action>();
+        private readonly ReaderWriterLockSlim _updateReaderWriterLock = new ReaderWriterLockSlim();
 
         public event Action<Scene> Destroyed;
 
@@ -68,18 +70,26 @@ namespace SkiEngine.NCS
 
         public void Update()
         {
-            while(_runNextUpdateActions.TryDequeue(out var action))
-            {
-                action.Invoke();
-            }
-
             var stopwatchElapsed = _updateStopwatch.Elapsed;
             _updateTime.Delta = stopwatchElapsed - _previousStopwatchElapsed;
             _previousStopwatchElapsed = stopwatchElapsed;
 
-            foreach (var system in _systems)
+            _updateReaderWriterLock.EnterWriteLock();
+            try
             {
-                system.Update(_updateTime);
+                while (_runNextUpdateActions.TryDequeue(out var action))
+                {
+                    action.Invoke();
+                }
+
+                foreach (var system in _systems)
+                {
+                    system.Update(_updateTime);
+                }
+            }
+            finally
+            {
+                _updateReaderWriterLock.ExitWriteLock();
             }
 
             if (_updateStopwatch.Elapsed.TotalHours >= 1)
@@ -91,9 +101,17 @@ namespace SkiEngine.NCS
 
         public void Draw(SKCanvas canvas, int viewTarget)
         {
-            foreach (var system in _systems)
+            _updateReaderWriterLock.EnterReadLock();
+            try
             {
-                system.Draw(canvas, viewTarget);
+                foreach (var system in _systems)
+                {
+                    system.Draw(canvas, viewTarget);
+                }
+            }
+            finally
+            {
+                _updateReaderWriterLock.ExitReadLock();
             }
         }
 
@@ -105,6 +123,8 @@ namespace SkiEngine.NCS
             }
 
             IsDestroyed = true;
+
+            _updateReaderWriterLock.Dispose();
 
             RootNode.Destroy();
 

@@ -35,7 +35,6 @@ namespace SkiEngine.TestApp
         private readonly List<SKPath> _paths = new List<SKPath>();
         private readonly CameraComponent _camera1;
         private readonly CameraComponent _camera2;
-        private readonly SemaphoreSlim _updateSemaphore = new SemaphoreSlim(1);
 
         public MainPage()
         {
@@ -97,27 +96,21 @@ namespace SkiEngine.TestApp
 
         private void OnPaintSurface1(object sender, SKPaintGLSurfaceEventArgs args)
         {
-            _updateSemaphore.Wait();
             _scene.Update();
-            _updateSemaphore.Release();
 
             var canvas = args.Surface.Canvas;
+
             canvas.Clear(SKColors.Black);
-
             _scene.Draw(canvas, 0);
-
             canvas.Flush();
         }
 
         private void OnPaintSurface2(object sender, SKPaintGLSurfaceEventArgs args)
         {
             var canvas = args.Surface.Canvas;
+
             canvas.Clear(SKColors.Black);
-
-            _updateSemaphore.Wait();
             _scene.Draw(canvas, 1);
-            _updateSemaphore.Release();
-
             canvas.Flush();
         }
 

@@ -30,4 +30,8 @@
     <ProjectReference Include="..\..\SkiEngine.Xamarin\SkiEngine.Xamarin.csproj" />
     <ProjectReference Include="..\..\SkiEngine\SkiEngine.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\" />
+  </ItemGroup>
 </Project>
