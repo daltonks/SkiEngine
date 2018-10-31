@@ -21,6 +21,11 @@ namespace SkiEngine.NCS.System
             
         }
 
+        public void OnNodeZChanged(Node node, int previousZ)
+        {
+            
+        }
+
         public void OnNodeDestroyed(Node node)
         {
             

@@ -82,6 +82,14 @@ namespace SkiEngine.NCS
             }
         }
 
+        internal void OnNodeZChanged(Node node, int previousZ)
+        {
+            foreach (var system in _systems)
+            {
+                system.OnNodeZChanged(node, previousZ);
+            }
+        }
+
         internal void OnNodeDestroyed(Node node)
         {
             foreach (var system in _systems)

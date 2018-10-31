@@ -14,6 +14,7 @@ namespace SkiEngine.NCS
         private SKPoint _relativePoint;
         private float _relativeRotation;
         private SKPoint _relativeScale;
+        private int _worldZ;
 
         private bool _localToWorldDirty;
         private bool _worldToLocalDirty;
@@ -67,6 +68,16 @@ namespace SkiEngine.NCS
             }
         }
 
+        public int RelativeZ
+        {
+            get => Parent == null ? WorldZ : WorldZ - Parent.WorldZ;
+            set
+            {
+                var parentWorldZ = Parent?.WorldZ ?? 0;
+                WorldZ = parentWorldZ + value;
+            }
+        }
+
         public float RelativeRotation
         {
             get => _relativeRotation;
@@ -92,6 +103,29 @@ namespace SkiEngine.NCS
         {
             get => LocalToWorldMatrix.MapPoint(SKPoint.Empty);
             set => RelativePoint = Parent?.WorldToLocalMatrix.MapPoint(value) ?? value;
+        }
+
+        public int WorldZ
+        {
+            get => _worldZ;
+            set
+            {
+                if (_worldZ == value)
+                {
+                    return;
+                }
+
+                var previousZ = _worldZ;
+                _worldZ = value;
+
+                var difference = value - _worldZ;
+                foreach (var child in _children)
+                {
+                    child.WorldZ += difference;
+                }
+
+                Scene.OnNodeZChanged(this, previousZ);
+            }
         }
 
         public void CalculateLocalToParentMatrix(out SKMatrix result)
