@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.Extensions;
@@ -28,7 +29,7 @@ namespace SkiEngine.NCS.Component
             _componentToLayerMap = new Dictionary<IDrawableComponent, OrderAndDepth>(ReferenceEqualityComparer<IDrawableComponent>.Default);
         }
 
-        public struct OrderAndDepth
+        public struct OrderAndDepth : IComparable<OrderAndDepth>
         {
             private readonly int _order;
             private readonly int _depth;
@@ -57,6 +58,14 @@ namespace SkiEngine.NCS.Component
                 hashCode = hashCode * -1521134295 + _order.GetHashCode();
                 hashCode = hashCode * -1521134295 + _depth.GetHashCode();
                 return hashCode;
+            }
+
+            public int CompareTo(OrderAndDepth other)
+            {
+                var orderComparison = _order.CompareTo(other._order);
+                return orderComparison != 0
+                    ? orderComparison
+                    : _depth.CompareTo(other._depth);
             }
         }
 
