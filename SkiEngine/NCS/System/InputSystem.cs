@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using SkiaSharp;
 using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
 
 namespace SkiEngine.NCS.System
 {
-    public class InputSystem : ISystem
+    public class InputSystem : ISystem, IUpdateable
     {
         private readonly LayeredSets<int, InputComponentPart> _layeredComponentParts = 
             new LayeredSets<int, InputComponentPart>(inputPart => inputPart.HandlingOrder);
@@ -14,6 +13,16 @@ namespace SkiEngine.NCS.System
         private bool _currentlyUpdating;
         private readonly List<IComponent> _componentsToAdd = new List<IComponent>();
         private readonly List<IComponent> _componentsToRemove = new List<IComponent>();
+
+        public void OnNodeCreated(Node node)
+        {
+            
+        }
+
+        public void OnNodeDestroyed(Node node)
+        {
+            
+        }
 
         public void OnComponentCreated(IComponent component)
         {
@@ -63,11 +72,6 @@ namespace SkiEngine.NCS.System
                 OnComponentDestroyed(componentToRemove);
             }
             _componentsToRemove.Clear();
-        }
-
-        public void Draw(SKCanvas canvas, int viewTarget)
-        {
-
         }
     }
 }

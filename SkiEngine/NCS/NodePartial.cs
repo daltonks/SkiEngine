@@ -11,9 +11,11 @@ namespace SkiEngine.NCS
     public partial class Node : IDestroyable<Node>
     {
         public event Action<Node> Destroyed;
+        public event Action DepthChanged;
+
+        private int _depth;
 
         private readonly List<Node> _children = new List<Node>();
-        
         private readonly HashSet<IComponent> _components = new HashSet<IComponent>(ReferenceEqualityComparer<IComponent>.Default);
         
         internal Node(Scene scene, SKPoint relativePoint, float relativeRotation, SKPoint relativeScale)
@@ -30,6 +32,19 @@ namespace SkiEngine.NCS
         public Scene Scene { get; private set; }
         
         public bool IsDestroyed { get; private set; }
+
+        public int Depth
+        {
+            get => _depth;
+            private set
+            {
+                if (_depth != value)
+                {
+                    _depth = value;
+                    DepthChanged?.Invoke();
+                }
+            }
+        }
         
         public Node CreateChild()
         {
@@ -50,6 +65,7 @@ namespace SkiEngine.NCS
         {
             var child = new Node(Scene, relativePoint, relativeRotation, relativeScale);
             AddChild(child);
+            Scene.OnNodeCreated(child);
             return child;
         }
         
@@ -66,6 +82,8 @@ namespace SkiEngine.NCS
             _children.Add(child);
             
             child.Parent = this;
+
+            child.Depth = Depth + 1;
 
             child.SetMatricesDirty();
 
@@ -160,6 +178,8 @@ namespace SkiEngine.NCS
             {
                 child.Destroy();
             }
+
+            Scene.OnNodeDestroyed(this);
 
             Destroyed?.Invoke(this);
         }

@@ -13,6 +13,8 @@ namespace SkiEngine.NCS
     public class Scene : IDrawable, IDestroyable<Scene>
     {
         private readonly List<ISystem> _systems = new List<ISystem>();
+        private readonly List<IUpdateable> _updateableSystems = new List<IUpdateable>();
+        private readonly List<IDrawable> _drawableSystems = new List<IDrawable>();
 
         private readonly UpdateTime _updateTime = new UpdateTime();
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
@@ -29,6 +31,11 @@ namespace SkiEngine.NCS
             AddSystem(new InputSystem());
             AddSystem(new UpdateSystem());
             AddSystem(new CameraSystem());
+        }
+
+        public void Start()
+        {
+            OnNodeCreated(RootNode);
 
             _updateStopwatch.Start();
         }
@@ -40,14 +47,50 @@ namespace SkiEngine.NCS
         public void AddSystem(ISystem system)
         {
             _systems.Add(system);
+
+            if (system is IUpdateable updateableSystem)
+            {
+                _updateableSystems.Add(updateableSystem);
+            }
+
+            if (system is IDrawable drawableSystem)
+            {
+                _drawableSystems.Add(drawableSystem);
+            }
         }
 
         public void RemoveSystem(ISystem system)
         {
             _systems.Remove(system);
+
+            if (system is IUpdateable updateableSystem)
+            {
+                _updateableSystems.Remove(updateableSystem);
+            }
+
+            if (system is IDrawable drawableSystem)
+            {
+                _drawableSystems.Remove(drawableSystem);
+            }
         }
 
-        public void OnComponentCreated(IComponent component)
+        internal void OnNodeCreated(Node node)
+        {
+            foreach (var system in _systems)
+            {
+                system.OnNodeCreated(node);
+            }
+        }
+
+        internal void OnNodeDestroyed(Node node)
+        {
+            foreach (var system in _systems)
+            {
+                system.OnNodeDestroyed(node);
+            }
+        }
+
+        internal void OnComponentCreated(IComponent component)
         {
             foreach (var system in _systems)
             {
@@ -55,7 +98,7 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void OnComponentDestroyed(IComponent component)
+        internal void OnComponentDestroyed(IComponent component)
         {
             foreach (var system in _systems)
             {
@@ -82,7 +125,7 @@ namespace SkiEngine.NCS
                     action.Invoke();
                 }
 
-                foreach (var system in _systems)
+                foreach (var system in _updateableSystems)
                 {
                     system.Update(_updateTime);
                 }
@@ -104,7 +147,7 @@ namespace SkiEngine.NCS
             _updateReaderWriterLock.EnterReadLock();
             try
             {
-                foreach (var system in _systems)
+                foreach (var system in _drawableSystems)
                 {
                     system.Draw(canvas, viewTarget);
                 }

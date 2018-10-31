@@ -40,6 +40,8 @@ namespace SkiEngine.TestApp
         {
             InitializeComponent();
 
+            _scene.Start();
+
             // Cameras
             var camera1Node = _scene.RootNode.CreateChild();
             _camera1 = new CameraComponent(0, 0);

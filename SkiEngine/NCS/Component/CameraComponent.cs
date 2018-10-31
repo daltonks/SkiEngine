@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using SkiaSharp;
 using SkiEngine.Extensions;
-using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
 
@@ -15,8 +13,8 @@ namespace SkiEngine.NCS.Component
         public event DrawOrderChangedDelegate DrawOrderChanged;
 
         private int _drawOrder;
-        private readonly LayeredSets<int, IDrawableComponent> _layeredComponents;
-        private readonly Dictionary<IDrawableComponent, int> _componentToLayerMap;
+        private readonly LayeredSets<OrderAndDepth, IDrawableComponent> _layeredComponents;
+        private readonly Dictionary<IDrawableComponent, OrderAndDepth> _componentToLayerMap;
 
         private SKMatrix _worldToPixelMatrix;
         private SKMatrix _pixelToWorldMatrix;
@@ -26,8 +24,40 @@ namespace SkiEngine.NCS.Component
             _drawOrder = drawOrder;
             ViewTarget = viewTarget;
             
-            _layeredComponents = new LayeredSets<int, IDrawableComponent>(component => _componentToLayerMap[component]);
-            _componentToLayerMap = new Dictionary<IDrawableComponent, int>(ReferenceEqualityComparer<IDrawableComponent>.Default);
+            _layeredComponents = new LayeredSets<OrderAndDepth, IDrawableComponent>(component => _componentToLayerMap[component]);
+            _componentToLayerMap = new Dictionary<IDrawableComponent, OrderAndDepth>(ReferenceEqualityComparer<IDrawableComponent>.Default);
+        }
+
+        public struct OrderAndDepth
+        {
+            private readonly int _order;
+            private readonly int _depth;
+
+            public OrderAndDepth(int order, int depth)
+            {
+                _order = order;
+                _depth = depth;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (!(obj is OrderAndDepth))
+                {
+                    return false;
+                }
+
+                var depth = (OrderAndDepth)obj;
+                return _order == depth._order 
+                    && _depth == depth._depth;
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = -425239920;
+                hashCode = hashCode * -1521134295 + _order.GetHashCode();
+                hashCode = hashCode * -1521134295 + _depth.GetHashCode();
+                return hashCode;
+            }
         }
 
         public int ViewTarget { get; set; }
@@ -63,13 +93,13 @@ namespace SkiEngine.NCS.Component
             if (_componentToLayerMap.ContainsKey(component))
             {
                 var previousLayer = _componentToLayerMap[component];
-                _componentToLayerMap[component] = order;
+                _componentToLayerMap[component] = new OrderAndDepth(order, component.Node.Depth);
                 _layeredComponents.Update(component, previousLayer);
             }
             else
             {
                 component.Destroyed += RemoveDrawable;
-                _componentToLayerMap[component] = order;
+                _componentToLayerMap[component] = new OrderAndDepth(order, component.Node.Depth);
                 _layeredComponents.Add(component);
             }
         }

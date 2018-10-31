@@ -6,7 +6,7 @@ using SkiEngine.Util;
 
 namespace SkiEngine.NCS.System
 {
-    public class CameraSystem : ISystem
+    public class CameraSystem : ISystem, IDrawable
     {
         private readonly LayeredSets<int, CameraComponent> _layeredCameraComponents = 
             new LayeredSets<int, CameraComponent>(component => component.DrawOrder);
@@ -14,6 +14,16 @@ namespace SkiEngine.NCS.System
         public CameraSystem()
         {
 
+        }
+
+        public void OnNodeCreated(Node node)
+        {
+            
+        }
+
+        public void OnNodeDestroyed(Node node)
+        {
+            
         }
 
         public void OnComponentCreated(IComponent component)
@@ -37,11 +47,6 @@ namespace SkiEngine.NCS.System
         private void OnCameraDrawOrderChanged(CameraComponent cameraComponent, int previousDrawOrder)
         {
             _layeredCameraComponents.Update(cameraComponent, previousDrawOrder);
-        }
-
-        public void Update(UpdateTime updateTime)
-        {
-
         }
 
         public void Draw(SKCanvas canvas, int viewTarget)
