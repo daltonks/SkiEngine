@@ -14,8 +14,8 @@ namespace SkiEngine.NCS.Component
         public event DrawOrderChangedDelegate DrawOrderChanged;
 
         private int _drawOrder;
-        private readonly LayeredSets<OrderAndDepth, IDrawableComponent> _layeredComponents;
-        private readonly Dictionary<IDrawableComponent, OrderAndDepth> _componentToLayerMap;
+        private readonly LayeredSets<int, IDrawableComponent> _zToComponentsMap;
+        private readonly Dictionary<IDrawableComponent, int> _componentToZMap;
 
         private SKMatrix _worldToPixelMatrix;
         private SKMatrix _pixelToWorldMatrix;
@@ -25,48 +25,8 @@ namespace SkiEngine.NCS.Component
             _drawOrder = drawOrder;
             ViewTarget = viewTarget;
             
-            _layeredComponents = new LayeredSets<OrderAndDepth, IDrawableComponent>(component => _componentToLayerMap[component]);
-            _componentToLayerMap = new Dictionary<IDrawableComponent, OrderAndDepth>(ReferenceEqualityComparer<IDrawableComponent>.Default);
-        }
-
-        public struct OrderAndDepth : IComparable<OrderAndDepth>
-        {
-            private readonly int _order;
-            private readonly int _depth;
-
-            public OrderAndDepth(int order, int depth)
-            {
-                _order = order;
-                _depth = depth;
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (!(obj is OrderAndDepth))
-                {
-                    return false;
-                }
-
-                var depth = (OrderAndDepth)obj;
-                return _order == depth._order 
-                    && _depth == depth._depth;
-            }
-
-            public override int GetHashCode()
-            {
-                var hashCode = -425239920;
-                hashCode = hashCode * -1521134295 + _order.GetHashCode();
-                hashCode = hashCode * -1521134295 + _depth.GetHashCode();
-                return hashCode;
-            }
-
-            public int CompareTo(OrderAndDepth other)
-            {
-                var orderComparison = _order.CompareTo(other._order);
-                return orderComparison != 0
-                    ? orderComparison
-                    : _depth.CompareTo(other._depth);
-            }
+            _zToComponentsMap = new LayeredSets<int, IDrawableComponent>(component => _componentToZMap[component]);
+            _componentToZMap = new Dictionary<IDrawableComponent, int>(ReferenceEqualityComparer<IDrawableComponent>.Default);
         }
 
         public int ViewTarget { get; set; }
@@ -92,24 +52,24 @@ namespace SkiEngine.NCS.Component
             }
         }
 
-        public void AddDrawable(IDrawableComponent component, int order)
+        public void AddDrawable(IDrawableComponent component)
         {
             if (component == null)
             {
                 return;
             }
 
-            if (_componentToLayerMap.ContainsKey(component))
+            if (_componentToZMap.ContainsKey(component))
             {
-                var previousLayer = _componentToLayerMap[component];
-                _componentToLayerMap[component] = new OrderAndDepth(order, component.Node.Depth);
-                _layeredComponents.Update(component, previousLayer);
+                var previousZ = _componentToZMap[component];
+                _componentToZMap[component] = component.Node.WorldZ;
+                _zToComponentsMap.Update(component, previousZ);
             }
             else
             {
                 component.Destroyed += RemoveDrawable;
-                _componentToLayerMap[component] = new OrderAndDepth(order, component.Node.Depth);
-                _layeredComponents.Add(component);
+                _componentToZMap[component] = component.Node.WorldZ;
+                _zToComponentsMap.Add(component);
             }
         }
 
@@ -121,8 +81,8 @@ namespace SkiEngine.NCS.Component
         private void RemoveDrawable(IComponent component)
         {
             var drawableComponent = (IDrawableComponent) component;
-            _layeredComponents.Remove(drawableComponent);
-            _componentToLayerMap.Remove(drawableComponent);
+            _zToComponentsMap.Remove(drawableComponent);
+            _componentToZMap.Remove(drawableComponent);
             component.Destroyed -= RemoveDrawable;
         }
 
@@ -159,7 +119,7 @@ namespace SkiEngine.NCS.Component
 
             WorldViewport = _pixelToWorldMatrix.MapRect(deviceClipBounds);
 
-            foreach (var component in _layeredComponents)
+            foreach (var component in _zToComponentsMap)
             {
                 var drawMatrix = component.Node.LocalToWorldMatrix;
                 SKMatrix.PostConcat(ref drawMatrix, ref _worldToPixelMatrix);

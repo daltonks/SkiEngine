@@ -47,7 +47,7 @@ namespace SkiEngine.TestApp
             _camera1 = new CameraComponent(0, 0);
             camera1Node.AddComponent(_camera1);
 
-            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(50, 200), (float) Math.PI / 8, new SKPoint(3, 3));
+            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(50, 200), 0, (float) Math.PI / 8, new SKPoint(3, 3));
             _camera2 = new CameraComponent(0, 1);
             camera2Node.AddComponent(_camera2);
 
@@ -76,24 +76,30 @@ namespace SkiEngine.TestApp
             );
             scribbleNode.AddComponent(scribbleDrawingComponent);
 
-            _camera1.AddDrawable(scribbleDrawingComponent, 0);
-            _camera2.AddDrawable(scribbleDrawingComponent, 0);
+            _camera1.AddDrawable(scribbleDrawingComponent);
+            _camera2.AddDrawable(scribbleDrawingComponent);
 
             //Sprites
-            var zeroSprite = CreateTileSprite(_scene.RootNode, new SKPoint(0, 0), 0, new SKPoint(1, 1));
-            var secondSprite = CreateTileSprite(zeroSprite.Node, new SKPoint(50, 0), (float) Math.PI / 2, new SKPoint(4, 4));
-            var thirdSprite = CreateTileSprite(secondSprite.Node, new SKPoint(50, 0), (float) Math.PI / 2, new SKPoint(4, 4));
+            var zeroSprite = CreateTileSprite(_scene.RootNode, new InitialNodeTransform());
+            var secondSprite = CreateTileSprite(
+                zeroSprite.Node, 
+                new InitialNodeTransform(new SKPoint(50, 0), 0, (float) Math.PI / 2, new SKPoint(4, 4))
+            );
+            var thirdSprite = CreateTileSprite(
+                secondSprite.Node, 
+                new InitialNodeTransform(new SKPoint(50, 0), 0, (float) Math.PI / 2, new SKPoint(4, 4))
+            );
+        }
 
-            SpriteComponent CreateTileSprite(Node parent, SKPoint point, float rotation, SKPoint scale)
-            {
-                var node = parent.CreateChild(point, rotation, scale);
-                var sprite = new SpriteComponent(TilesetImage, new SpriteData(SKRectI.Create(0, 0, 8, 8)));
-                node.AddComponent(sprite);
-                _camera1.AddDrawable(sprite, 1);
-                _camera2.AddDrawable(sprite, 1);
+        private SpriteComponent CreateTileSprite(Node parent, InitialNodeTransform transform)
+        {
+            var node = parent.CreateChild(transform);
+            var sprite = new SpriteComponent(TilesetImage, new SpriteData(SKRectI.Create(0, 0, 8, 8)));
+            node.AddComponent(sprite);
+            _camera1.AddDrawable(sprite);
+            _camera2.AddDrawable(sprite);
 
-                return sprite;
-            }
+            return sprite;
         }
 
         private void OnPaintSurface1(object sender, SKPaintGLSurfaceEventArgs args)

@@ -11,20 +11,17 @@ namespace SkiEngine.NCS
     public partial class Node : IDestroyable<Node>
     {
         public event Action<Node> Destroyed;
-        public event Action DepthChanged;
-
-        private int _depth;
 
         private readonly List<Node> _children = new List<Node>();
         private readonly HashSet<IComponent> _components = new HashSet<IComponent>(ReferenceEqualityComparer<IComponent>.Default);
         
-        internal Node(Scene scene, SKPoint relativePoint, float relativeRotation, SKPoint relativeScale)
+        internal Node(Scene scene, InitialNodeTransform initialTransform)
         {
             Scene = scene;
 
-            RelativePoint = relativePoint;
-            RelativeRotation = relativeRotation;
-            RelativeScale = relativeScale;
+            RelativePoint = initialTransform.RelativePoint;
+            RelativeRotation = initialTransform.RelativeRotation;
+            RelativeScale = initialTransform.RelativeScale;
         }
 
         public Node Parent { get; private set; }
@@ -33,38 +30,36 @@ namespace SkiEngine.NCS
         
         public bool IsDestroyed { get; private set; }
 
-        public int Depth
-        {
-            get => _depth;
-            private set
-            {
-                if (_depth != value)
-                {
-                    _depth = value;
-                    DepthChanged?.Invoke();
-                }
-            }
-        }
-        
         public Node CreateChild()
         {
-            return CreateChild(new SKPoint(0, 0), 0, new SKPoint(1, 1));
+            return CreateChild(new InitialNodeTransform());
         }
 
         public Node CreateChild(SKPoint relativePoint)
         {
-            return CreateChild(relativePoint, 0, new SKPoint(1, 1));
+            return CreateChild(new InitialNodeTransform(relativePoint));
         }
 
-        public Node CreateChild(SKPoint relativePoint, float relativeRotation)
+        public Node CreateChild(SKPoint relativePoint, int relativeZ)
         {
-            return CreateChild(relativePoint, relativeRotation, new SKPoint(1, 1));
+            return CreateChild(new InitialNodeTransform(relativePoint, relativeZ));
         }
 
-        public Node CreateChild(SKPoint relativePoint, float relativeRotation, SKPoint relativeScale)
+        public Node CreateChild(SKPoint relativePoint, int relativeZ, float relativeRotation)
         {
-            var child = new Node(Scene, relativePoint, relativeRotation, relativeScale);
+            return CreateChild(new InitialNodeTransform(relativePoint, relativeZ, relativeRotation));
+        }
+
+        public Node CreateChild(SKPoint relativePoint, int relativeZ, float relativeRotation, SKPoint relativeScale)
+        {
+            return CreateChild(new InitialNodeTransform(relativePoint, relativeZ, relativeRotation, relativeScale));
+        }
+
+        public Node CreateChild(InitialNodeTransform initialNodeTransform)
+        {
+            var child = new Node(Scene, initialNodeTransform);
             AddChild(child);
+            child._worldZ = WorldZ + initialNodeTransform.RelativeZ;
             Scene.OnNodeCreated(child);
             return child;
         }
@@ -80,10 +75,12 @@ namespace SkiEngine.NCS
             child.Parent?.RemoveChild(child);
             
             _children.Add(child);
-            
+
+            var previousRelativeZ = child.RelativeZ;
+
             child.Parent = this;
 
-            child.Depth = Depth + 1;
+            child.RelativeZ = previousRelativeZ;
 
             child.SetMatricesDirty();
 
@@ -182,6 +179,45 @@ namespace SkiEngine.NCS
             Scene.OnNodeDestroyed(this);
 
             Destroyed?.Invoke(this);
+        }
+    }
+
+    public class InitialNodeTransform
+    {
+        public SKPoint RelativePoint { get; set; }
+        public float RelativeRotation { get; set; }
+        public SKPoint RelativeScale { get; set; } = new SKPoint(1, 1);
+        public int RelativeZ { get; set; }
+
+        public InitialNodeTransform()
+        {
+
+        }
+
+        public InitialNodeTransform(SKPoint relativePoint)
+        {
+            RelativePoint = relativePoint;
+        }
+
+        public InitialNodeTransform(SKPoint relativePoint, int relativeZ)
+        {
+            RelativePoint = relativePoint;
+            RelativeZ = relativeZ;
+        }
+
+        public InitialNodeTransform(SKPoint relativePoint, int relativeZ, float relativeRotation)
+        {
+            RelativePoint = relativePoint;
+            RelativeZ = relativeZ;
+            RelativeRotation = relativeRotation;
+        }
+
+        public InitialNodeTransform(SKPoint relativePoint, int relativeZ, float relativeRotation, SKPoint relativeScale)
+        {
+            RelativePoint = relativePoint;
+            RelativeZ = relativeZ;
+            RelativeRotation = relativeRotation;
+            RelativeScale = relativeScale;
         }
     }
 }

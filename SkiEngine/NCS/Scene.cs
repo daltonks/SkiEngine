@@ -26,7 +26,7 @@ namespace SkiEngine.NCS
 
         public Scene()
         {
-            RootNode = new Node(this, SKPoint.Empty, 0, new SKPoint(1, 1));
+            RootNode = new Node(this, new InitialNodeTransform());
 
             AddSystem(new InputSystem());
             AddSystem(new UpdateSystem());
