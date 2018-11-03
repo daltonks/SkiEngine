@@ -13,7 +13,6 @@ namespace SkiEngine.NCS.Component
         public SKImage Image { get; set; }
         public SKPaint Paint { get; set; }
         public SpriteSheetAnimationData Data { get; }
-        public DrawableComponentPart DrawablePart { get; }
         public UpdateableComponentPart UpdateablePart { get; }
 
         private SpriteSheetAnimationStateData _currentState;
@@ -36,7 +35,6 @@ namespace SkiEngine.NCS.Component
             SetState(Data.States[0]);
 
             UpdateablePart = new UpdateableComponentPart(Update);
-            DrawablePart = new DrawableComponentPart(Draw);
         }
 
         private void SetState(SpriteSheetAnimationStateData state)

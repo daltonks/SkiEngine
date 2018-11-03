@@ -1,7 +1,10 @@
-﻿namespace SkiEngine.NCS.Component.Base
+﻿using SkiaSharp;
+using SkiEngine.Interfaces;
+
+namespace SkiEngine.NCS.Component.Base
 {
     public interface IDrawableComponent : IComponent
     {
-        DrawableComponentPart DrawablePart { get; }
+        void Draw(SKCanvas canvas, ITransform transform);
     }
 }

@@ -5,8 +5,10 @@
              xmlns:skiaViews="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
              x:Class="SkiEngine.TestApp.MainPage">
     <StackLayout>
-        <skiaViews:SKGLView WidthRequest="500" HeightRequest="500" HasRenderLoop="True" EnableTouchEvents="True" PaintSurface="OnPaintSurface1" Touch="OnTouch1" HorizontalOptions="Center" />
-        <skiaViews:SKGLView WidthRequest="500" HeightRequest="500" HasRenderLoop="True" EnableTouchEvents="True" PaintSurface="OnPaintSurface2" Touch="OnTouch2" HorizontalOptions="Center" />
+        <!--<skiaViews:SKGLView WidthRequest="500" HeightRequest="500" HasRenderLoop="True" EnableTouchEvents="True" PaintSurface="OnPaintSurface1" Touch="OnTouch1" HorizontalOptions="Center" />
+        <skiaViews:SKGLView WidthRequest="500" HeightRequest="500" HasRenderLoop="True" EnableTouchEvents="True" PaintSurface="OnPaintSurface2" Touch="OnTouch2" HorizontalOptions="Center" />-->
+
+        <skiaViews:SKGLView HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HasRenderLoop="True" EnableTouchEvents="True" PaintSurface="OnPaintSurface1" Touch="OnTouch1" />
     </StackLayout>
 
   </ContentPage>

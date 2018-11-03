@@ -35,8 +35,6 @@ namespace SkiEngine.NCS
 
         public void Start()
         {
-            OnNodeCreated(RootNode);
-
             _updateStopwatch.Start();
         }
 
@@ -74,27 +72,11 @@ namespace SkiEngine.NCS
             }
         }
 
-        internal void OnNodeCreated(Node node)
-        {
-            foreach (var system in _systems)
-            {
-                system.OnNodeCreated(node);
-            }
-        }
-
         internal void OnNodeZChanged(Node node, int previousZ)
         {
             foreach (var system in _systems)
             {
                 system.OnNodeZChanged(node, previousZ);
-            }
-        }
-
-        internal void OnNodeDestroyed(Node node)
-        {
-            foreach (var system in _systems)
-            {
-                system.OnNodeDestroyed(node);
             }
         }
 

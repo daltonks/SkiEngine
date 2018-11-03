@@ -134,7 +134,7 @@ namespace SkiEngine.NCS.Component
 
                 canvas.SetMatrix(drawMatrix);
 
-                component.DrawablePart.Draw(canvas, component.Node);
+                component.Draw(canvas, component.Node);
             }
         }
     }

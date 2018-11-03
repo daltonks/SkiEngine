@@ -63,7 +63,6 @@ namespace SkiEngine.NCS
             var child = new Node(Scene, initialNodeTransform);
             AddChild(child);
             child._worldZ = WorldZ + initialNodeTransform.RelativeZ;
-            Scene.OnNodeCreated(child);
             return child;
         }
         
@@ -193,8 +192,6 @@ namespace SkiEngine.NCS
             {
                 child.Destroy();
             }
-
-            Scene.OnNodeDestroyed(this);
 
             Destroyed?.Invoke(this);
         }

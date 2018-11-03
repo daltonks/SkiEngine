@@ -11,16 +11,12 @@ namespace SkiEngine.NCS.Component
         public SKImage Image { get; set; }
         public SKPaint Paint { get; set; }
         public SpriteData Data { get; set; }
-
-        public DrawableComponentPart DrawablePart { get; }
-
+        
         public SpriteComponent(SKImage image, SpriteData data, SKPaint paint = null)
         {
             Image = image;
             Data = data;
             Paint = paint;
-
-            DrawablePart = new DrawableComponentPart(Draw);
         }
 
         public void Draw(SKCanvas canvas, ITransform transform)
