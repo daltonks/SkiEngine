@@ -14,7 +14,7 @@ namespace SkiEngine.NCS.Component
         public event DrawOrderChangedDelegate DrawOrderChanged;
 
         private int _drawOrder;
-        private readonly LayeredSets<int, IDrawableComponent> _zToComponentsMap;
+        private readonly LayeredSets<int, IDrawableComponent> _componentLayeredSets;
         private readonly Dictionary<IDrawableComponent, int> _componentToZMap;
 
         private SKMatrix _worldToPixelMatrix;
@@ -25,7 +25,7 @@ namespace SkiEngine.NCS.Component
             _drawOrder = drawOrder;
             ViewTarget = viewTarget;
             
-            _zToComponentsMap = new LayeredSets<int, IDrawableComponent>(component => _componentToZMap[component]);
+            _componentLayeredSets = new LayeredSets<int, IDrawableComponent>(component => _componentToZMap[component]);
             _componentToZMap = new Dictionary<IDrawableComponent, int>(ReferenceEqualityComparer<IDrawableComponent>.Default);
         }
 
@@ -52,6 +52,14 @@ namespace SkiEngine.NCS.Component
             }
         }
 
+        internal void OnZChanged(IDrawableComponent drawableComponent, int previousZ)
+        {
+            if (_componentLayeredSets.Remove(drawableComponent, previousZ))
+            {
+                _componentLayeredSets.Add(drawableComponent);
+            }
+        }
+
         public void AddDrawable(IDrawableComponent component)
         {
             if (component == null)
@@ -63,13 +71,13 @@ namespace SkiEngine.NCS.Component
             {
                 var previousZ = _componentToZMap[component];
                 _componentToZMap[component] = component.Node.WorldZ;
-                _zToComponentsMap.Update(component, previousZ);
+                _componentLayeredSets.Update(component, previousZ);
             }
             else
             {
                 component.Destroyed += RemoveDrawable;
                 _componentToZMap[component] = component.Node.WorldZ;
-                _zToComponentsMap.Add(component);
+                _componentLayeredSets.Add(component);
             }
         }
 
@@ -81,7 +89,7 @@ namespace SkiEngine.NCS.Component
         private void RemoveDrawable(IComponent component)
         {
             var drawableComponent = (IDrawableComponent) component;
-            _zToComponentsMap.Remove(drawableComponent);
+            _componentLayeredSets.Remove(drawableComponent);
             _componentToZMap.Remove(drawableComponent);
             component.Destroyed -= RemoveDrawable;
         }
@@ -119,7 +127,7 @@ namespace SkiEngine.NCS.Component
 
             WorldViewport = _pixelToWorldMatrix.MapRect(deviceClipBounds);
 
-            foreach (var component in _zToComponentsMap)
+            foreach (var component in _componentLayeredSets)
             {
                 var drawMatrix = component.Node.LocalToWorldMatrix;
                 SKMatrix.PostConcat(ref drawMatrix, ref _worldToPixelMatrix);

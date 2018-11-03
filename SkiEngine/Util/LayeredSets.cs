@@ -62,19 +62,19 @@ namespace SkiEngine.Util
             return Remove(item, _getLayerFunc.Invoke(item));
         }
 
-        private bool Remove(TItem item, TLayer layer)
+        public bool Remove(TItem item, TLayer previousLayer)
         {
             var removedItem = false;
 
-            if (_layers.TryGetValue(layer, out var layerSet))
+            if (_layers.TryGetValue(previousLayer, out var layerSet))
             {
                 removedItem = layerSet.Remove(item);
 
                 if (layerSet.Count == 0)
                 {
-                    _layers.Remove(layer);
+                    _layers.Remove(previousLayer);
 
-                    var layerSetOrderIndex = _orderedLayers.BinarySearch(layer, _layerComparer);
+                    var layerSetOrderIndex = _orderedLayers.BinarySearch(previousLayer, _layerComparer);
                     _orderedLayers.RemoveAt(layerSetOrderIndex);
                 }
             }

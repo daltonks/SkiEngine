@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using System.Collections.Generic;
+using SkiaSharp;
 using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component;
 using SkiEngine.NCS.Component.Base;
@@ -11,10 +12,8 @@ namespace SkiEngine.NCS.System
         private readonly LayeredSets<int, CameraComponent> _layeredCameraComponents = 
             new LayeredSets<int, CameraComponent>(component => component.DrawOrder);
         
-        public CameraSystem()
-        {
-
-        }
+        private readonly Dictionary<Node, HashSet<IDrawableComponent>> _nodeToDrawableComponentsMap = 
+            new Dictionary<Node, HashSet<IDrawableComponent>>(ReferenceEqualityComparer<Node>.Default);
 
         public void OnNodeCreated(Node node)
         {
@@ -23,7 +22,14 @@ namespace SkiEngine.NCS.System
 
         public void OnNodeZChanged(Node node, int previousZ)
         {
-            
+            if (_nodeToDrawableComponentsMap.TryGetValue(node, out var drawableComponents))
+            {
+                foreach (var cameraComponent in _layeredCameraComponents)
+                foreach (var drawableComponent in drawableComponents)
+                {
+                    cameraComponent.OnZChanged(drawableComponent, previousZ);
+                }
+            }
         }
 
         public void OnNodeDestroyed(Node node)
@@ -33,19 +39,41 @@ namespace SkiEngine.NCS.System
 
         public void OnComponentCreated(IComponent component)
         {
-            if (component is CameraComponent cameraComponent)
+            switch (component)
             {
-                _layeredCameraComponents.Add(cameraComponent);
-                cameraComponent.DrawOrderChanged += OnCameraDrawOrderChanged;
+                case CameraComponent cameraComponent:
+                    _layeredCameraComponents.Add(cameraComponent);
+                    cameraComponent.DrawOrderChanged += OnCameraDrawOrderChanged;
+                    break;
+                case IDrawableComponent drawableComponent:
+                    var node = drawableComponent.Node;
+
+                    if(!_nodeToDrawableComponentsMap.TryGetValue(node, out var nodeDrawableComponents))
+                    {
+                        nodeDrawableComponents = _nodeToDrawableComponentsMap[node] = new HashSet<IDrawableComponent>();
+                    }
+
+                    nodeDrawableComponents.Add(drawableComponent);
+                    break;
             }
         }
 
         public void OnComponentDestroyed(IComponent component)
         {
-            if (component is CameraComponent cameraComponent)
+            switch (component)
             {
-                _layeredCameraComponents.Remove(cameraComponent);
-                cameraComponent.DrawOrderChanged -= OnCameraDrawOrderChanged;
+                case CameraComponent cameraComponent:
+                    _layeredCameraComponents.Remove(cameraComponent);
+                    cameraComponent.DrawOrderChanged -= OnCameraDrawOrderChanged;
+                    break;
+                case IDrawableComponent drawableComponent:
+                    var nodeDrawableComponents = _nodeToDrawableComponentsMap[drawableComponent.Node];
+                    nodeDrawableComponents.Remove(drawableComponent);
+                    if (nodeDrawableComponents.Count == 0)
+                    {
+                        _nodeToDrawableComponentsMap.Remove(drawableComponent.Node);
+                    }
+                    break;
             }
         }
 
