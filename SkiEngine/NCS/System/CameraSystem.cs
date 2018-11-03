@@ -12,11 +12,6 @@ namespace SkiEngine.NCS.System
         private readonly LayeredSets<int, CameraComponent> _layeredCameraComponents = 
             new LayeredSets<int, CameraComponent>(component => component.DrawOrder);
 
-        public void OnNodeCreated(Node node)
-        {
-            
-        }
-
         public void OnNodeZChanged(Node node, int previousZ)
         {
             var drawableComponents = node.DrawableComponents;
@@ -31,11 +26,6 @@ namespace SkiEngine.NCS.System
             {
                 cameraComponent.OnZChanged(drawableComponent, previousZ);
             }
-        }
-
-        public void OnNodeDestroyed(Node node)
-        {
-            
         }
 
         public void OnComponentCreated(IComponent component)
