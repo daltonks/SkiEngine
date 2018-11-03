@@ -11,9 +11,6 @@ namespace SkiEngine.NCS.System
     {
         private readonly LayeredSets<int, CameraComponent> _layeredCameraComponents = 
             new LayeredSets<int, CameraComponent>(component => component.DrawOrder);
-        
-        private readonly Dictionary<Node, HashSet<IDrawableComponent>> _nodeToDrawableComponentsMap = 
-            new Dictionary<Node, HashSet<IDrawableComponent>>(ReferenceEqualityComparer<Node>.Default);
 
         public void OnNodeCreated(Node node)
         {
@@ -22,13 +19,17 @@ namespace SkiEngine.NCS.System
 
         public void OnNodeZChanged(Node node, int previousZ)
         {
-            if (_nodeToDrawableComponentsMap.TryGetValue(node, out var drawableComponents))
+            var drawableComponents = node.DrawableComponents;
+
+            if (drawableComponents == null)
             {
-                foreach (var cameraComponent in _layeredCameraComponents)
-                foreach (var drawableComponent in drawableComponents)
-                {
-                    cameraComponent.OnZChanged(drawableComponent, previousZ);
-                }
+                return;
+            }
+
+            foreach (var cameraComponent in _layeredCameraComponents)
+            foreach (var drawableComponent in drawableComponents)
+            {
+                cameraComponent.OnZChanged(drawableComponent, previousZ);
             }
         }
 
@@ -45,16 +46,6 @@ namespace SkiEngine.NCS.System
                     _layeredCameraComponents.Add(cameraComponent);
                     cameraComponent.DrawOrderChanged += OnCameraDrawOrderChanged;
                     break;
-                case IDrawableComponent drawableComponent:
-                    var node = drawableComponent.Node;
-
-                    if(!_nodeToDrawableComponentsMap.TryGetValue(node, out var nodeDrawableComponents))
-                    {
-                        nodeDrawableComponents = _nodeToDrawableComponentsMap[node] = new HashSet<IDrawableComponent>();
-                    }
-
-                    nodeDrawableComponents.Add(drawableComponent);
-                    break;
             }
         }
 
@@ -65,14 +56,6 @@ namespace SkiEngine.NCS.System
                 case CameraComponent cameraComponent:
                     _layeredCameraComponents.Remove(cameraComponent);
                     cameraComponent.DrawOrderChanged -= OnCameraDrawOrderChanged;
-                    break;
-                case IDrawableComponent drawableComponent:
-                    var nodeDrawableComponents = _nodeToDrawableComponentsMap[drawableComponent.Node];
-                    nodeDrawableComponents.Remove(drawableComponent);
-                    if (nodeDrawableComponents.Count == 0)
-                    {
-                        _nodeToDrawableComponentsMap.Remove(drawableComponent.Node);
-                    }
                     break;
             }
         }
