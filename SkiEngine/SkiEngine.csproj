@@ -16,4 +16,8 @@
     <ProjectReference Include="..\SkiEngine.Protobuf\SkiEngine.Protobuf.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Sprite\Mapping\" />
+  </ItemGroup>
+
 </Project>

@@ -4,7 +4,7 @@ using System.IO;
 using Google.Protobuf;
 using LZ4;
 using SkiEngine.Protobuf;
-using SkiEngine.Sprite.Mapping;
+using SkiEngine.ProtobufMapping.Sprite;
 
 namespace SkiEngine.Sprite
 {
