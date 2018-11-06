@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using SkiaSharp;
 
-namespace SkiEngine.Extensions
+namespace SkiEngine.Extensions.SkiaSharp
 {
     public static class SKPointExtensions
     {

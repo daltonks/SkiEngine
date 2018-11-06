@@ -1,6 +1,6 @@
 ﻿using SkiaSharp;
 
-namespace SkiEngine.Extensions
+namespace SkiEngine.Extensions.SkiaSharp
 {
     public static class SKRectExtensions
     {

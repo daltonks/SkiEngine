@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using Google.Protobuf;
 using LZ4;
+using SkiEngine.Extensions.Protobuf.Sprite;
 using SkiEngine.Protobuf;
-using SkiEngine.ProtobufMapping.Sprite;
 
-namespace SkiEngine.Sprite
+namespace SkiEngine.NCS.Component.Sprite
 {
     public class SpriteSheetAnimationData
     {

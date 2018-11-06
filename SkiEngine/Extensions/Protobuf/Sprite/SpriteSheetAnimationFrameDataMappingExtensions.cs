@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
+using SkiEngine.NCS.Component.Sprite;
 using SkiEngine.Protobuf;
-using SkiEngine.Sprite;
 
-namespace SkiEngine.ProtobufMapping.Sprite
+namespace SkiEngine.Extensions.Protobuf.Sprite
 {
     public static class SpriteSheetAnimationFrameDataMappingExtensions
     {

@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using SkiaSharp;
 using SkiEngine.Extensions;
-using SkiEngine.Interfaces;
+
 // ReSharper disable CompareOfFloatsByEqualityOperator
 
 namespace SkiEngine.NCS
 {
-    public partial class Node : ITransform
+    public partial class Node
     {
         private const double TwoPi = Math.PI * 2;
 

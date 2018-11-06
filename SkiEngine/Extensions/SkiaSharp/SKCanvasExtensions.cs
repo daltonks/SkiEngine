@@ -1,10 +1,9 @@
 ﻿using SkiaSharp;
-using SkiEngine.Interfaces;
-using SkiEngine.Sprite;
+using SkiEngine.NCS.Component.Sprite;
 
 // ReSharper disable CompareOfFloatsByEqualityOperator
 
-namespace SkiEngine.Extensions
+namespace SkiEngine.Extensions.SkiaSharp
 {
     public static class SKCanvasExtensions
     {

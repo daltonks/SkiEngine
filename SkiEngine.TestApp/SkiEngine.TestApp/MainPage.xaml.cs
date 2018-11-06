@@ -8,7 +8,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiEngine.NCS;
 using SkiEngine.NCS.Component;
-using SkiEngine.Sprite;
+using SkiEngine.NCS.Component.Sprite;
 using Xamarin.Forms;
 
 namespace SkiEngine.TestApp
@@ -54,7 +54,7 @@ namespace SkiEngine.TestApp
             // Scribble
             var scribbleNode = _scene.RootNode.CreateChild();
             var scribbleDrawingComponent = new DrawableComponent(
-                (canvas, transform) =>
+                (canvas) =>
                 {
                     var touchPathStroke = new SKPaint
                     {

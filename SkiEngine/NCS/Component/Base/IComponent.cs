@@ -1,6 +1,4 @@
-﻿using SkiEngine.Interfaces;
-
-namespace SkiEngine.NCS.Component.Base
+﻿namespace SkiEngine.NCS.Component.Base
 {
     public interface IComponent : IDestroyable<IComponent>
     {

@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using SkiaSharp;
-using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
 
 namespace SkiEngine.NCS.System
 {
-    public class CameraSystem : ISystem, IDrawable
+    public class CameraSystem : ISystem, IDrawableSystem
     {
         private readonly LayeredSets<int, CameraComponent> _layeredCameraComponents = 
             new LayeredSets<int, CameraComponent>(component => component.DrawOrder);

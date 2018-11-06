@@ -1,12 +1,11 @@
 ﻿using System;
 using SkiaSharp;
 using SkiEngine.Extensions;
-using SkiEngine.Interfaces;
+using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.NCS.System;
-using SkiEngine.Sprite;
 
-namespace SkiEngine.NCS.Component
+namespace SkiEngine.NCS.Component.Sprite
 {
     public class SpriteSheetAnimationComponent<TState, TLayer> : Base.Component, IDrawableComponent, IUpdateableComponent
     {
@@ -58,7 +57,7 @@ namespace SkiEngine.NCS.Component
             }
         }
 
-        public void Draw(SKCanvas canvas, ITransform transform)
+        public void Draw(SKCanvas canvas)
         {
             foreach (var spriteData in _currentFrame.Sprites)
             {

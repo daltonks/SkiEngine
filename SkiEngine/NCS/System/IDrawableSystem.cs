@@ -1,8 +1,8 @@
 ﻿using SkiaSharp;
 
-namespace SkiEngine.Interfaces
+namespace SkiEngine.NCS.System
 {
-    public interface IDrawable
+    public interface IDrawableSystem
     {
         void Draw(SKCanvas canvas, int viewTarget);
     }

@@ -1,7 +1,6 @@
-﻿using SkiEngine.NCS;
-using SkiEngine.NCS.Component.Base;
+﻿using SkiEngine.NCS.Component.Base;
 
-namespace SkiEngine.Interfaces
+namespace SkiEngine.NCS.System
 {
     public interface ISystem
     {

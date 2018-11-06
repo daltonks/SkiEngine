@@ -1,7 +1,7 @@
 ﻿using SkiaSharp;
 using SkiEngine.Protobuf;
 
-namespace SkiEngine.ProtobufMapping
+namespace SkiEngine.Extensions.Protobuf
 {
     public static class RectIMappingExtensions
     {

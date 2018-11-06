@@ -1,10 +1,9 @@
 ﻿using System;
-using SkiEngine.Interfaces;
 using SkiEngine.NCS.System;
 
 namespace SkiEngine.NCS.Component.Base
 {
-    public class UpdateableComponentPart : IUpdateable
+    public class UpdateableComponentPart
     {
         public delegate void UpdateOrderChangedDelegate(UpdateableComponentPart componentPart, int previousUpdateOrder);
 

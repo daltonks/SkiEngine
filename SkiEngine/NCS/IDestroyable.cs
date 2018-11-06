@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SkiEngine.Interfaces
+namespace SkiEngine.NCS
 {
     public interface IDestroyable<out T>
     {

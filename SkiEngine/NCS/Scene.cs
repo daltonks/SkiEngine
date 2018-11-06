@@ -4,26 +4,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using SkiaSharp;
-using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.NCS.System;
 
 namespace SkiEngine.NCS
 {
-    public class Scene : IDrawable, IDestroyable<Scene>
+    public class Scene : IDestroyable<Scene>
     {
+        public event Action<Scene> Destroyed;
+
         private readonly List<ISystem> _systems = new List<ISystem>();
-        private readonly List<IUpdateable> _updateableSystems = new List<IUpdateable>();
-        private readonly List<IDrawable> _drawableSystems = new List<IDrawable>();
+        private readonly List<IUpdateableSystem> _updateableSystems = new List<IUpdateableSystem>();
+        private readonly List<IDrawableSystem> _drawableSystems = new List<IDrawableSystem>();
 
         private readonly UpdateTime _updateTime = new UpdateTime();
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
         private readonly ConcurrentQueue<Action> _runNextUpdateActions = new ConcurrentQueue<Action>();
         private readonly ReaderWriterLockSlim _updateReaderWriterLock = new ReaderWriterLockSlim();
-
-        public event Action<Scene> Destroyed;
-
+        
         public Scene()
         {
             RootNode = new Node(this, new InitialNodeTransform());
@@ -33,25 +32,27 @@ namespace SkiEngine.NCS
             AddSystem(new CameraSystem());
         }
 
-        public void Start()
-        {
-            _updateStopwatch.Start();
-        }
-
         public Node RootNode { get; }
 
         public bool IsDestroyed { get; private set; }
 
+        public IReadOnlyList<ISystem> Systems => _systems;
+
+        public void Start()
+        {
+            _updateStopwatch.Start();
+        }
+        
         public void AddSystem(ISystem system)
         {
             _systems.Add(system);
 
-            if (system is IUpdateable updateableSystem)
+            if (system is IUpdateableSystem updateableSystem)
             {
                 _updateableSystems.Add(updateableSystem);
             }
 
-            if (system is IDrawable drawableSystem)
+            if (system is IDrawableSystem drawableSystem)
             {
                 _drawableSystems.Add(drawableSystem);
             }
@@ -61,12 +62,12 @@ namespace SkiEngine.NCS
         {
             _systems.Remove(system);
 
-            if (system is IUpdateable updateableSystem)
+            if (system is IUpdateableSystem updateableSystem)
             {
                 _updateableSystems.Remove(updateableSystem);
             }
 
-            if (system is IDrawable drawableSystem)
+            if (system is IDrawableSystem drawableSystem)
             {
                 _drawableSystems.Remove(drawableSystem);
             }

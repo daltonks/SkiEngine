@@ -1,7 +1,7 @@
-﻿using SkiEngine.Protobuf;
-using SkiEngine.Sprite;
+﻿using SkiEngine.NCS.Component.Sprite;
+using SkiEngine.Protobuf;
 
-namespace SkiEngine.ProtobufMapping.Sprite
+namespace SkiEngine.Extensions.Protobuf.Sprite
 {
     public static class SpriteDataMappingExtensions
     {

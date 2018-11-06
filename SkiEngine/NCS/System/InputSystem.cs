@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-using SkiEngine.Interfaces;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
 
 namespace SkiEngine.NCS.System
 {
-    public class InputSystem : ISystem, IUpdateable
+    public class InputSystem : ISystem, IUpdateableSystem
     {
         private readonly LayeredSets<int, InputComponentPart> _layeredComponentParts = 
             new LayeredSets<int, InputComponentPart>(inputPart => inputPart.HandlingOrder);

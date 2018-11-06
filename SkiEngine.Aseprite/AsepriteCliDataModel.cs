@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using SkiaSharp;
 using SkiEngine.Extensions;
-using SkiEngine.Sprite;
+using SkiEngine.NCS.Component.Sprite;
 
 namespace SkiEngine.Aseprite
 {

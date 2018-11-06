@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.Extensions;
+using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
 
@@ -134,7 +135,7 @@ namespace SkiEngine.NCS.Component
 
                 canvas.SetMatrix(drawMatrix);
 
-                component.Draw(canvas, component.Node);
+                component.Draw(canvas);
             }
         }
     }

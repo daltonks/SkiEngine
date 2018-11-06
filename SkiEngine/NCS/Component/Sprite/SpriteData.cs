@@ -1,6 +1,6 @@
 ﻿using SkiaSharp;
 
-namespace SkiEngine.Sprite
+namespace SkiEngine.NCS.Component.Sprite
 {
     public class SpriteData {
         public SKRectI TextureBounds { get; set; }

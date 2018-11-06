@@ -1,10 +1,9 @@
 ﻿using SkiaSharp;
 using SkiEngine.Extensions;
-using SkiEngine.Interfaces;
+using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
-using SkiEngine.Sprite;
 
-namespace SkiEngine.NCS.Component
+namespace SkiEngine.NCS.Component.Sprite
 {
     public class SpriteComponent : Base.Component, IDrawableComponent
     {
@@ -19,7 +18,7 @@ namespace SkiEngine.NCS.Component
             Paint = paint;
         }
 
-        public void Draw(SKCanvas canvas, ITransform transform)
+        public void Draw(SKCanvas canvas)
         {
             canvas.DrawImage(Image, Paint, Data);
         }
