@@ -128,7 +128,7 @@ namespace SkiEngine.NCS
 
             if (_updateStopwatch.Elapsed.TotalHours >= 1)
             {
-                _updateStopwatch.Reset();
+                _updateStopwatch.Restart();
                 _previousStopwatchElapsed = TimeSpan.Zero;
             }
         }
