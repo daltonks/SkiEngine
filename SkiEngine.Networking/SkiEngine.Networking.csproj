@@ -6,8 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Lidgren\Lidgren.Network.MultiTarget\Lidgren.Network.MultiTarget.csproj" />
-    <ProjectReference Include="..\SkiEngine\SkiEngine.csproj" />
   </ItemGroup>
 
 </Project>

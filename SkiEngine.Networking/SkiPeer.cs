@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Lidgren.Network;
-using SkiEngine.NCS.Component.Base;
 
 namespace SkiEngine.Networking
 {
-    public abstract class PeerComponent : Component
+    public abstract class SkiPeer
     {
         public delegate void StatusRespondedAwaitingApprovalDelegate(NetIncomingMessage im, string reason);
         public delegate void StatusNoneDelegate(NetIncomingMessage im, string reason);
@@ -45,7 +44,7 @@ namespace SkiEngine.Networking
         protected readonly Dictionary<Type, PacketMetadata> TypeToPacketMetadata = new Dictionary<Type, PacketMetadata>();
         protected readonly Dictionary<int, PacketMetadata> IndexToPacketMetadata = new Dictionary<int, PacketMetadata>();
 
-        protected PeerComponent(string password = "")
+        protected SkiPeer(string password = "")
         {
             Password = password ?? "";
         }
@@ -156,7 +155,7 @@ namespace SkiEngine.Networking
         }
     }
 
-    public abstract class PeerComponent<T> : PeerComponent where T : NetPeer
+    public abstract class SkiPeer<T> : SkiPeer, IDisposable where T : NetPeer
     {
         public event Action Started;
 
@@ -166,11 +165,9 @@ namespace SkiEngine.Networking
         private volatile bool _running;
         private Thread _receiveMessageThread;
         
-        protected PeerComponent(T lidgrenPeer, string password = "") : base(password)
+        protected SkiPeer(T lidgrenPeer, string password = "") : base(password)
         {
             LidgrenPeer = lidgrenPeer;
-
-            Destroyed += OnDestroyed;
         }
 
         public void StartReadMessagesConcurrently()
@@ -222,7 +219,7 @@ namespace SkiEngine.Networking
             LidgrenPeer.FlushSendQueue();
         }
 
-        private void OnDestroyed(IComponent component)
+        public void Dispose()
         {
             _running = false;
             _receiveMessageThread?.Join();

@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Lidgren.Network;
-using SkiEngine.Util;
 
 namespace SkiEngine.Networking
 {
-    public abstract class ServerComponent : PeerComponent<NetServer>
+    public abstract class SkiServer : SkiPeer<NetServer>
     {
         private readonly float _updateTimeMilliseconds;
 
-        protected ServerComponent(NetPeerConfiguration config, string password = "", float updateTimeMilliseconds = 1000f / 60f)
+        protected SkiServer(NetPeerConfiguration config, string password = "", float updateTimeMilliseconds = 1000f / 60f)
             : base(new NetServer(config), password)
         {
             _updateTimeMilliseconds = updateTimeMilliseconds;

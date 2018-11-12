@@ -1,20 +1,16 @@
 ﻿using Lidgren.Network;
-using SkiEngine.NCS.Component.Base;
-using SkiEngine.NCS.System;
 
 namespace SkiEngine.Networking
 {
-    public abstract class ClientComponent : PeerComponent<NetClient>, IUpdateableComponent
+    public abstract class SkiClient : SkiPeer<NetClient>
     {
-        public UpdateableComponentPart UpdateablePart { get; }
-
-        protected ClientComponent(NetPeerConfiguration config, string password = "")
+        protected SkiClient(NetPeerConfiguration config, string password = "")
             : base(new NetClient(config), password)
         {
-            UpdateablePart = new UpdateableComponentPart(Update) { UpdateOrder = int.MinValue };
+            
         }
 
-        private void Update(UpdateTime updateTime)
+        public void Update()
         {
             while (IncomingMessages.TryDequeue(out var incomingMessage))
             {

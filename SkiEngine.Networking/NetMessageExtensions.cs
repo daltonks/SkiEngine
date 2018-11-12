@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf;
 using Lidgren.Network;
-using SkiaSharp;
 
 namespace SkiEngine.Networking
 {
@@ -18,12 +17,6 @@ namespace SkiEngine.Networking
             netMessage.Write(protobufModel.ToByteArray());
         }
 
-        public static void Write(this NetOutgoingMessage netMessage, SKPoint point)
-        {
-            netMessage.Write(point.X);
-            netMessage.Write(point.Y);
-        }
-
         public static T ReadDelimited<T>(this NetIncomingMessage netMessage, MessageParser<T> parser) where T : IMessage<T>
         {
             var sizeInBytes = netMessage.ReadVariableInt32();
@@ -35,11 +28,6 @@ namespace SkiEngine.Networking
         public static T Read<T>(this NetIncomingMessage netMessage, MessageParser<T> parser) where T : IMessage<T>
         {
             return parser.ParseFrom(netMessage.Data, netMessage.PositionInBytes, netMessage.Data.Length - netMessage.PositionInBytes);
-        }
-        
-        public static SKPoint ReadPoint(this NetIncomingMessage netMessage)
-        {
-            return new SKPoint(netMessage.ReadFloat(), netMessage.ReadFloat());
         }
     }
 }

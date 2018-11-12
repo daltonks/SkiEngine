@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 
 // From https://gist.github.com/DraTeots/436019368d32007284f8a12f1ba0f545
-namespace SkiEngine.Util
+namespace SkiEngine.Networking
 {
     /// <summary>
     /// Hight precision non overlapping timer
