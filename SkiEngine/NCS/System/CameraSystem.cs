@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using SkiaSharp;
+﻿using SkiaSharp;
 using SkiEngine.NCS.Component;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;

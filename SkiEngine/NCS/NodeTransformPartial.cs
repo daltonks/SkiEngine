@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using SkiaSharp;
-using SkiEngine.Extensions;
 
 // ReSharper disable CompareOfFloatsByEqualityOperator
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using SkiaSharp;
-using SkiEngine.Extensions;
 using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.NCS.System;

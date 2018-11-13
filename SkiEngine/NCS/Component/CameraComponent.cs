@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SkiaSharp;
-using SkiEngine.Extensions;
 using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
