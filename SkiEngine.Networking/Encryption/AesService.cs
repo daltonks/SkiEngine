@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
-using Assets.CryptographyAssembly.Interfaces;
 
 namespace SkiEngine.Networking.Encryption
 {
-    public class AesService : IAesService
+    public class AesService
     {
         private const int KeySizeInBytes = 16;
 
