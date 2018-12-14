@@ -6,7 +6,7 @@
         {
             this.InitializeComponent();
 
-            LoadApplication(new SkiEngine.TestApp.App());
+            LoadApplication(new TestApp.App());
         }
     }
 }
