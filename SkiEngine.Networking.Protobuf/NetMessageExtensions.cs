@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf;
 using Lidgren.Network;
 
-namespace SkiEngine.Networking
+namespace SkiEngine.Networking.Protobuf
 {
     public static class NetMessageExtensions
     {
