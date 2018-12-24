@@ -20,11 +20,12 @@ namespace SkiEngine.Networking
             _emptyConstructorInfo = packetType.GetConstructor(Type.EmptyTypes);
         }
 
-        public void Receive(NetIncomingMessage message)
+        public IPacket Receive(NetIncomingMessage message)
         {
             var packetObject = (IPacket)_emptyConstructorInfo.Invoke(EmptyObjectArray);
             packetObject.ReadFrom(message);
             Received?.Invoke(packetObject, message.SenderConnection);
+            return packetObject;
         }
     }
 }

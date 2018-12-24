@@ -8,8 +8,8 @@ namespace SkiEngine.Networking
     {
         private readonly float _updateTimeMilliseconds;
 
-        protected SkiServer(NetPeerConfiguration config, string password = "", float updateTimeMilliseconds = 1000f / 60f)
-            : base(new NetServer(config), password)
+        protected SkiServer(NetPeerConfiguration config, float updateTimeMilliseconds = 1000f / 60f)
+            : base(new NetServer(config))
         {
             _updateTimeMilliseconds = updateTimeMilliseconds;
             config.EnableMessageType(NetIncomingMessageType.ConnectionApproval);

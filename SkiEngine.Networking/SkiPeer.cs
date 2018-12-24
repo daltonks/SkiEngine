@@ -23,8 +23,6 @@ namespace SkiEngine.Networking
         public delegate void ErrorMessageDelegate(string message);
         public delegate void WarningMessageDelegate(string message);
         
-        protected const string IncorrectPasswordReason = "INCORRECT_PASSWORD";
-
         public event StatusRespondedAwaitingApprovalDelegate StatusRespondedAwaitingApproval;
         public event StatusNoneDelegate StatusNone;
         public event StatusInitiatedConnectDelegate StatusInitiatedConnect;
@@ -39,15 +37,8 @@ namespace SkiEngine.Networking
         public event ErrorMessageDelegate ErrorMessage;
         public event WarningMessageDelegate WarningMessage;
 
-        protected string Password { get; }
-
         protected readonly Dictionary<Type, PacketMetadata> TypeToPacketMetadata = new Dictionary<Type, PacketMetadata>();
         protected readonly Dictionary<int, PacketMetadata> IndexToPacketMetadata = new Dictionary<int, PacketMetadata>();
-
-        protected SkiPeer(string password = "")
-        {
-            Password = password ?? "";
-        }
 
         public void RegisterPacketType<TPacket>() where TPacket : IPacket
         {
@@ -62,7 +53,7 @@ namespace SkiEngine.Networking
             packetMetadata.Received += (obj, connection) => onReceivedAction.Invoke((TPacket)obj, connection);
         }
 
-        protected abstract bool AllowJoin(NetIncomingMessage im);
+        protected abstract bool AllowJoin(IPacket hailPacket = null);
 
         protected void ProcessMessage(NetIncomingMessage im)
         {
@@ -120,23 +111,20 @@ namespace SkiEngine.Networking
 
                 // Received data
                 case NetIncomingMessageType.Data:
-                    var packetIndex = im.ReadInt32();
-                    if (IndexToPacketMetadata.TryGetValue(packetIndex, out var metadata))
-                    {
-                        metadata.Receive(im);
-                    }
+                    ReadPacket(im);
                     break;
 
                 // Connection approval
                 case NetIncomingMessageType.ConnectionApproval:
-                    var password = im.ReadString() ?? "";
-                    if (password == Password && AllowJoin(im))
+                    var packet = ReadPacket(im);
+
+                    if (AllowJoin(packet))
                     {
                         im.SenderConnection.Approve();
                     }
                     else
                     {
-                        im.SenderConnection.Deny(IncorrectPasswordReason);
+                        im.SenderConnection.Deny();
                     }
                     break;
 
@@ -153,6 +141,17 @@ namespace SkiEngine.Networking
                     break;
             }
         }
+
+        private IPacket ReadPacket(NetIncomingMessage incomingMessage)
+        {
+            var packetIndex = incomingMessage.ReadVariableInt32();
+            if (IndexToPacketMetadata.TryGetValue(packetIndex, out var metadata))
+            {
+                return metadata.Receive(incomingMessage);
+            }
+
+            return null;
+        }
     }
 
     public abstract class SkiPeer<T> : SkiPeer, IDisposable where T : NetPeer
@@ -165,7 +164,7 @@ namespace SkiEngine.Networking
         private volatile bool _running;
         private Thread _receiveMessageThread;
         
-        protected SkiPeer(T lidgrenPeer, string password = "") : base(password)
+        protected SkiPeer(T lidgrenPeer)
         {
             LidgrenPeer = lidgrenPeer;
         }
@@ -209,7 +208,7 @@ namespace SkiEngine.Networking
             }
 
             message = LidgrenPeer.CreateMessage();
-            message.Write(metadata.Index);
+            message.WriteVariableInt32(metadata.Index);
             packet.WriteTo(message);
             return true;
         }

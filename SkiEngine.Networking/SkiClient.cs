@@ -4,8 +4,7 @@ namespace SkiEngine.Networking
 {
     public abstract class SkiClient : SkiPeer<NetClient>
     {
-        protected SkiClient(NetPeerConfiguration config, string password = "")
-            : base(new NetClient(config), password)
+        protected SkiClient(NetPeerConfiguration config) : base(new NetClient(config))
         {
             
         }
@@ -19,11 +18,23 @@ namespace SkiEngine.Networking
             }
         }
 
-        public void Connect(string host, int port)
+        public void Connect(string host, int port, IPacket hailPacket = null)
         {
             LidgrenPeer.Start();
-            var hail = LidgrenPeer.CreateMessage(Password);
-            LidgrenPeer.Connect(host, port, hail);
+
+            NetOutgoingMessage hailMessage;
+
+            if (hailPacket == null)
+            {
+                hailMessage = LidgrenPeer.CreateMessage();
+                hailMessage.WriteVariableInt32(-1);
+            }
+            else
+            {
+                TryCreateOutgoingMessage(hailPacket, out hailMessage);
+            }
+            
+            LidgrenPeer.Connect(host, port, hailMessage);
 
             StartReadMessagesConcurrently();
         }
@@ -36,7 +47,7 @@ namespace SkiEngine.Networking
             }
         }
 
-        protected override bool AllowJoin(NetIncomingMessage im)
+        protected override bool AllowJoin(IPacket hailPacket = null)
         {
             return true;
         }
