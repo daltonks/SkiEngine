@@ -38,18 +38,14 @@ namespace SkiEngine.Networking
 
         public void Send(NetConnection recipient, IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            if(TryCreateOutgoingMessage(packet, out var message))
-            {
-                LidgrenPeer.SendMessage(message, recipient, deliveryMethod, sequenceChannel);
-            }
+            var message = CreateOutgoingMessage(packet);
+            LidgrenPeer.SendMessage(message, recipient, deliveryMethod, sequenceChannel);
         }
 
         public void Send(IList<NetConnection> recipients, IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            if(TryCreateOutgoingMessage(packet, out var message))
-            {
-                LidgrenPeer.SendMessage(message, recipients, deliveryMethod, sequenceChannel);
-            }
+            var message = CreateOutgoingMessage(packet);
+            LidgrenPeer.SendMessage(message, recipients, deliveryMethod, sequenceChannel);
         }
 
         public void SendAll(IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
@@ -59,10 +55,8 @@ namespace SkiEngine.Networking
                 return;
             }
 
-            if(TryCreateOutgoingMessage(packet, out var message))
-            {
-                LidgrenPeer.SendMessage(message, LidgrenPeer.Connections, deliveryMethod, sequenceChannel);
-            }
+            var message = CreateOutgoingMessage(packet);
+            LidgrenPeer.SendMessage(message, LidgrenPeer.Connections, deliveryMethod, sequenceChannel);
         }
 
         public void SendAllExcept(NetConnection dontSendTo, IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
@@ -73,10 +67,8 @@ namespace SkiEngine.Networking
                 return;
             }
 
-            if (TryCreateOutgoingMessage(packet, out var message))
-            {
-                LidgrenPeer.SendMessage(message, allExceptConnection, deliveryMethod, sequenceChannel);
-            }
+            var message = CreateOutgoingMessage(packet);
+            LidgrenPeer.SendMessage(message, allExceptConnection, deliveryMethod, sequenceChannel);
         }
     }
 }

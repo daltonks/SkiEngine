@@ -31,7 +31,7 @@ namespace SkiEngine.Networking
             }
             else
             {
-                TryCreateOutgoingMessage(hailPacket, out hailMessage);
+                hailMessage = CreateOutgoingMessage(hailPacket);
             }
             
             LidgrenPeer.Connect(host, port, hailMessage);
@@ -41,10 +41,8 @@ namespace SkiEngine.Networking
 
         public void Send(IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            if(TryCreateOutgoingMessage(packet, out var message))
-            {
-                LidgrenPeer.SendMessage(message, LidgrenPeer.ServerConnection, deliveryMethod, sequenceChannel);
-            }
+            var message = CreateOutgoingMessage(packet);
+            LidgrenPeer.SendMessage(message, LidgrenPeer.ServerConnection, deliveryMethod, sequenceChannel);
         }
 
         protected override bool AllowJoin(IPacket hailPacket = null)

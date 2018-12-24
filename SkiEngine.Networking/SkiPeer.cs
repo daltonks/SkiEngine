@@ -9,33 +9,22 @@ namespace SkiEngine.Networking
 {
     public abstract class SkiPeer
     {
-        public delegate void StatusRespondedAwaitingApprovalDelegate(NetIncomingMessage im, string reason);
-        public delegate void StatusNoneDelegate(NetIncomingMessage im, string reason);
-        public delegate void StatusInitiatedConnectDelegate(NetIncomingMessage im, string reason);
-        public delegate void StatusReceivedInitiationDelegate(NetIncomingMessage im, string reason);
-        public delegate void StatusRespondedConnectDelegate(NetIncomingMessage im, string reason);
-        public delegate void StatusConnectedDelegate(NetIncomingMessage im, string reason);
-        public delegate void StatusDisconnectingDelegate(NetIncomingMessage im, string reason);
-        public delegate void StatusDisconnectedDelegate(NetIncomingMessage im, string reason);
-
-        public delegate void DebugMessageDelegate(string message);
-        public delegate void VerboseDebugMessageDelegate(string message);
-        public delegate void ErrorMessageDelegate(string message);
-        public delegate void WarningMessageDelegate(string message);
+        public delegate void StatusDelegate(NetIncomingMessage im, string reason);
+        public delegate void LogMessageDelegate(string message);
         
-        public event StatusRespondedAwaitingApprovalDelegate StatusRespondedAwaitingApproval;
-        public event StatusNoneDelegate StatusNone;
-        public event StatusInitiatedConnectDelegate StatusInitiatedConnect;
-        public event StatusReceivedInitiationDelegate StatusReceivedInitiation;
-        public event StatusRespondedConnectDelegate StatusRespondedConnect;
-        public event StatusConnectedDelegate StatusConnected;
-        public event StatusDisconnectingDelegate StatusDisconnecting;
-        public event StatusDisconnectedDelegate StatusDisconnected;
+        public event StatusDelegate StatusRespondedAwaitingApproval;
+        public event StatusDelegate StatusNone;
+        public event StatusDelegate StatusInitiatedConnect;
+        public event StatusDelegate StatusReceivedInitiation;
+        public event StatusDelegate StatusRespondedConnect;
+        public event StatusDelegate StatusConnected;
+        public event StatusDelegate StatusDisconnecting;
+        public event StatusDelegate StatusDisconnected;
 
-        public event DebugMessageDelegate DebugMessage;
-        public event VerboseDebugMessageDelegate VerboseDebugMessage;
-        public event ErrorMessageDelegate ErrorMessage;
-        public event WarningMessageDelegate WarningMessage;
+        public event LogMessageDelegate DebugMessage;
+        public event LogMessageDelegate VerboseDebugMessage;
+        public event LogMessageDelegate ErrorMessage;
+        public event LogMessageDelegate WarningMessage;
 
         protected readonly Dictionary<Type, PacketMetadata> TypeToPacketMetadata = new Dictionary<Type, PacketMetadata>();
         protected readonly Dictionary<int, PacketMetadata> IndexToPacketMetadata = new Dictionary<int, PacketMetadata>();
@@ -154,17 +143,17 @@ namespace SkiEngine.Networking
         }
     }
 
-    public abstract class SkiPeer<T> : SkiPeer, IDisposable where T : NetPeer
+    public abstract class SkiPeer<TNetPeer> : SkiPeer, IDisposable where TNetPeer : NetPeer
     {
         public event Action Started;
 
-        protected T LidgrenPeer { get; }
+        protected TNetPeer LidgrenPeer { get; }
         protected readonly ConcurrentQueue<NetIncomingMessage> IncomingMessages = new ConcurrentQueue<NetIncomingMessage>();
 
         private volatile bool _running;
         private Thread _receiveMessageThread;
         
-        protected SkiPeer(T lidgrenPeer)
+        protected SkiPeer(TNetPeer lidgrenPeer)
         {
             LidgrenPeer = lidgrenPeer;
         }
@@ -198,19 +187,17 @@ namespace SkiEngine.Networking
             }
         }
 
-        protected bool TryCreateOutgoingMessage(IPacket packet, out NetOutgoingMessage message)
+        protected NetOutgoingMessage CreateOutgoingMessage(IPacket packet)
         {
-            if (!TypeToPacketMetadata.TryGetValue(packet.GetType(), out var metadata))
+            if (TypeToPacketMetadata.TryGetValue(packet.GetType(), out var metadata))
             {
-                Debug.Fail($"{packet.GetType()} not registered!");
-                message = null;
-                return false;
+                var message = LidgrenPeer.CreateMessage();
+                message.WriteVariableInt32(metadata.Index);
+                packet.WriteTo(message);
+                return message;
             }
 
-            message = LidgrenPeer.CreateMessage();
-            message.WriteVariableInt32(metadata.Index);
-            packet.WriteTo(message);
-            return true;
+            throw new ArgumentException($"{packet.GetType()} not registered!");
         }
 
         public void FlushSendQueue()
