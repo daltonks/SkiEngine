@@ -26,23 +26,23 @@ namespace SkiEngine.Networking
         public event LogMessageDelegate ErrorMessage;
         public event LogMessageDelegate WarningMessage;
 
-        protected readonly Dictionary<Type, PacketMetadata> TypeToPacketMetadata = new Dictionary<Type, PacketMetadata>();
-        protected readonly Dictionary<int, PacketMetadata> IndexToPacketMetadata = new Dictionary<int, PacketMetadata>();
+        protected readonly Dictionary<Type, NetMessageMetadata> TypeToMessageMetadata = new Dictionary<Type, NetMessageMetadata>();
+        protected readonly Dictionary<int, NetMessageMetadata> IndexToMessageMetadata = new Dictionary<int, NetMessageMetadata>();
 
-        public void RegisterPacketType<TPacket>() where TPacket : IPacket
+        public void RegisterMessageType<TMessage>() where TMessage : INetMessage
         {
-            var type = typeof(TPacket);
-            var index = TypeToPacketMetadata.Count;
-            TypeToPacketMetadata[type] = IndexToPacketMetadata[index] = new PacketMetadata(typeof(TPacket), index);
+            var type = typeof(TMessage);
+            var index = TypeToMessageMetadata.Count;
+            TypeToMessageMetadata[type] = IndexToMessageMetadata[index] = new NetMessageMetadata(typeof(TMessage), index);
         }
 
-        public void RegisterReceiveHandler<TPacket>(Action<TPacket, NetConnection> onReceivedAction) where TPacket : IPacket
+        public void RegisterReceiveHandler<TMessage>(Action<TMessage, NetConnection> onReceivedAction) where TMessage : INetMessage
         {
-            var packetMetadata = TypeToPacketMetadata[typeof(TPacket)];
-            packetMetadata.Received += (obj, connection) => onReceivedAction.Invoke((TPacket)obj, connection);
+            var messageMetadata = TypeToMessageMetadata[typeof(TMessage)];
+            messageMetadata.Received += (obj, connection) => onReceivedAction.Invoke((TMessage)obj, connection);
         }
 
-        protected abstract bool AllowJoin(IPacket hailPacket = null);
+        protected abstract bool AllowConnection(INetMessage hailNetMessage = null);
 
         protected void ProcessMessage(NetIncomingMessage im)
         {
@@ -100,14 +100,14 @@ namespace SkiEngine.Networking
 
                 // Received data
                 case NetIncomingMessageType.Data:
-                    ReadPacket(im);
+                    ReadMessage(im);
                     break;
 
                 // Connection approval
                 case NetIncomingMessageType.ConnectionApproval:
-                    var packet = ReadPacket(im);
+                    var message = ReadMessage(im);
 
-                    if (AllowJoin(packet))
+                    if (AllowConnection(message))
                     {
                         im.SenderConnection.Approve();
                     }
@@ -131,15 +131,12 @@ namespace SkiEngine.Networking
             }
         }
 
-        private IPacket ReadPacket(NetIncomingMessage incomingMessage)
+        private INetMessage ReadMessage(NetIncomingMessage incomingMessage)
         {
-            var packetIndex = incomingMessage.ReadVariableInt32();
-            if (IndexToPacketMetadata.TryGetValue(packetIndex, out var metadata))
-            {
-                return metadata.Receive(incomingMessage);
-            }
-
-            return null;
+            var messageIndex = incomingMessage.ReadVariableInt32();
+            return IndexToMessageMetadata.TryGetValue(messageIndex, out var metadata) 
+                ? metadata.Receive(incomingMessage) 
+                : null;
         }
     }
 
@@ -156,6 +153,9 @@ namespace SkiEngine.Networking
         protected SkiPeer(TNetPeer lidgrenPeer)
         {
             LidgrenPeer = lidgrenPeer;
+            LidgrenPeer.RegisterReceivedCallback(
+                state => { }
+            );
         }
 
         public void StartReadMessagesConcurrently()
@@ -187,17 +187,20 @@ namespace SkiEngine.Networking
             }
         }
 
-        protected NetOutgoingMessage CreateOutgoingMessage(IPacket packet)
+        protected NetOutgoingMessage CreateOutgoingMessage(INetMessage netMessage)
         {
-            if (TypeToPacketMetadata.TryGetValue(packet.GetType(), out var metadata))
+            if (TypeToMessageMetadata.TryGetValue(netMessage.GetType(), out var metadata))
             {
-                var message = LidgrenPeer.CreateMessage();
-                message.WriteVariableInt32(metadata.Index);
-                packet.WriteTo(message);
-                return message;
+                var estimatedSizeBytes = netMessage.EstimateSizeBytes();
+                var outgoingMessage = estimatedSizeBytes == null 
+                    ? LidgrenPeer.CreateMessage() 
+                    : LidgrenPeer.CreateMessage(estimatedSizeBytes.Value + 4);
+                outgoingMessage.WriteVariableInt32(metadata.Index);
+                netMessage.WriteTo(outgoingMessage);
+                return outgoingMessage;
             }
 
-            throw new ArgumentException($"{packet.GetType()} not registered!");
+            throw new ArgumentException($"{netMessage.GetType()} not registered!");
         }
 
         public void FlushSendQueue()

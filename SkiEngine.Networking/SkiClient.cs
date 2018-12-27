@@ -18,20 +18,20 @@ namespace SkiEngine.Networking
             }
         }
 
-        public void Connect(string host, int port, IPacket hailPacket = null)
+        public void Connect(string host, int port, INetMessage hailNetMessage = null)
         {
             LidgrenPeer.Start();
 
             NetOutgoingMessage hailMessage;
 
-            if (hailPacket == null)
+            if (hailNetMessage == null)
             {
                 hailMessage = LidgrenPeer.CreateMessage();
                 hailMessage.WriteVariableInt32(-1);
             }
             else
             {
-                hailMessage = CreateOutgoingMessage(hailPacket);
+                hailMessage = CreateOutgoingMessage(hailNetMessage);
             }
             
             LidgrenPeer.Connect(host, port, hailMessage);
@@ -39,13 +39,13 @@ namespace SkiEngine.Networking
             StartReadMessagesConcurrently();
         }
 
-        public void Send(IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
+        public void Send(INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            var message = CreateOutgoingMessage(packet);
+            var message = CreateOutgoingMessage(netMessage);
             LidgrenPeer.SendMessage(message, LidgrenPeer.ServerConnection, deliveryMethod, sequenceChannel);
         }
 
-        protected override bool AllowJoin(IPacket hailPacket = null)
+        protected override bool AllowConnection(INetMessage hailNetMessage = null)
         {
             return true;
         }

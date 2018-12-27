@@ -36,30 +36,30 @@ namespace SkiEngine.Networking
 
         protected abstract void Update(double deltaSeconds);
 
-        public void Send(NetConnection recipient, IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
+        public void Send(NetConnection recipient, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            var message = CreateOutgoingMessage(packet);
+            var message = CreateOutgoingMessage(netMessage);
             LidgrenPeer.SendMessage(message, recipient, deliveryMethod, sequenceChannel);
         }
 
-        public void Send(IList<NetConnection> recipients, IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
+        public void Send(IList<NetConnection> recipients, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            var message = CreateOutgoingMessage(packet);
+            var message = CreateOutgoingMessage(netMessage);
             LidgrenPeer.SendMessage(message, recipients, deliveryMethod, sequenceChannel);
         }
 
-        public void SendAll(IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
+        public void SendAll(INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             if(!LidgrenPeer.Connections.Any())
             {
                 return;
             }
 
-            var message = CreateOutgoingMessage(packet);
+            var message = CreateOutgoingMessage(netMessage);
             LidgrenPeer.SendMessage(message, LidgrenPeer.Connections, deliveryMethod, sequenceChannel);
         }
 
-        public void SendAllExcept(NetConnection dontSendTo, IPacket packet, NetDeliveryMethod deliveryMethod, int sequenceChannel)
+        public void SendAllExcept(NetConnection dontSendTo, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             var allExceptConnection = LidgrenPeer.Connections.Where(c => c != dontSendTo).ToList();
             if (!allExceptConnection.Any())
@@ -67,7 +67,7 @@ namespace SkiEngine.Networking
                 return;
             }
 
-            var message = CreateOutgoingMessage(packet);
+            var message = CreateOutgoingMessage(netMessage);
             LidgrenPeer.SendMessage(message, allExceptConnection, deliveryMethod, sequenceChannel);
         }
     }

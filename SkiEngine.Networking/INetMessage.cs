@@ -2,8 +2,9 @@
 
 namespace SkiEngine.Networking
 {
-    public interface IPacket
+    public interface INetMessage
     {
+        int? EstimateSizeBytes();
         void WriteTo(NetOutgoingMessage message);
         void ReadFrom(NetIncomingMessage message);
     }
