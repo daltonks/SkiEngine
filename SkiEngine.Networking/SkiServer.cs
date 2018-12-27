@@ -4,8 +4,10 @@ using Lidgren.Network;
 
 namespace SkiEngine.Networking
 {
-    public abstract class SkiServer : SkiPeer<NetServer>
+    public abstract class SkiServer : SkiPeer
     {
+        private NetServer LidgrenServer => (NetServer) LidgrenPeer;
+
         private readonly float _updateTimeMilliseconds;
 
         protected SkiServer(NetPeerConfiguration config, float updateTimeMilliseconds = 1000f / 60f)
@@ -28,7 +30,7 @@ namespace SkiEngine.Networking
             while (IncomingMessages.TryDequeue(out var incomingMessage))
             {
                 ProcessMessage(incomingMessage);
-                LidgrenPeer.Recycle(incomingMessage);
+                LidgrenServer.Recycle(incomingMessage);
             }
 
             Update(_updateTimeMilliseconds / 1000);
@@ -39,36 +41,36 @@ namespace SkiEngine.Networking
         public void Send(NetConnection recipient, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             var message = CreateOutgoingMessage(netMessage);
-            LidgrenPeer.SendMessage(message, recipient, deliveryMethod, sequenceChannel);
+            LidgrenServer.SendMessage(message, recipient, deliveryMethod, sequenceChannel);
         }
 
         public void Send(IList<NetConnection> recipients, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             var message = CreateOutgoingMessage(netMessage);
-            LidgrenPeer.SendMessage(message, recipients, deliveryMethod, sequenceChannel);
+            LidgrenServer.SendMessage(message, recipients, deliveryMethod, sequenceChannel);
         }
 
         public void SendAll(INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            if(!LidgrenPeer.Connections.Any())
+            if(!LidgrenServer.Connections.Any())
             {
                 return;
             }
 
             var message = CreateOutgoingMessage(netMessage);
-            LidgrenPeer.SendMessage(message, LidgrenPeer.Connections, deliveryMethod, sequenceChannel);
+            LidgrenServer.SendMessage(message, LidgrenServer.Connections, deliveryMethod, sequenceChannel);
         }
 
         public void SendAllExcept(NetConnection dontSendTo, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            var allExceptConnection = LidgrenPeer.Connections.Where(c => c != dontSendTo).ToList();
+            var allExceptConnection = LidgrenServer.Connections.Where(c => c != dontSendTo).ToList();
             if (!allExceptConnection.Any())
             {
                 return;
             }
 
             var message = CreateOutgoingMessage(netMessage);
-            LidgrenPeer.SendMessage(message, allExceptConnection, deliveryMethod, sequenceChannel);
+            LidgrenServer.SendMessage(message, allExceptConnection, deliveryMethod, sequenceChannel);
         }
     }
 }

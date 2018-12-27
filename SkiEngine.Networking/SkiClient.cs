@@ -2,8 +2,10 @@
 
 namespace SkiEngine.Networking
 {
-    public abstract class SkiClient : SkiPeer<NetClient>
+    public abstract class SkiClient : SkiPeer
     {
+        private NetClient LidgrenClient => (NetClient) LidgrenPeer;
+
         protected SkiClient(NetPeerConfiguration config) : base(new NetClient(config))
         {
             
@@ -14,19 +16,19 @@ namespace SkiEngine.Networking
             while (IncomingMessages.TryDequeue(out var incomingMessage))
             {
                 ProcessMessage(incomingMessage);
-                LidgrenPeer.Recycle(incomingMessage);
+                LidgrenClient.Recycle(incomingMessage);
             }
         }
 
         public void Connect(string host, int port, INetMessage hailNetMessage = null)
         {
-            LidgrenPeer.Start();
+            LidgrenClient.Start();
 
             NetOutgoingMessage hailMessage;
 
             if (hailNetMessage == null)
             {
-                hailMessage = LidgrenPeer.CreateMessage();
+                hailMessage = LidgrenClient.CreateMessage();
                 hailMessage.WriteVariableInt32(-1);
             }
             else
@@ -34,7 +36,7 @@ namespace SkiEngine.Networking
                 hailMessage = CreateOutgoingMessage(hailNetMessage);
             }
             
-            LidgrenPeer.Connect(host, port, hailMessage);
+            LidgrenClient.Connect(host, port, hailMessage);
 
             StartReadMessagesConcurrently();
         }
@@ -42,10 +44,10 @@ namespace SkiEngine.Networking
         public void Send(INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             var message = CreateOutgoingMessage(netMessage);
-            LidgrenPeer.SendMessage(message, LidgrenPeer.ServerConnection, deliveryMethod, sequenceChannel);
+            LidgrenClient.SendMessage(message, LidgrenClient.ServerConnection, deliveryMethod, sequenceChannel);
         }
 
-        protected override bool AllowConnection(INetMessage hailNetMessage = null)
+        protected override bool AllowConnection(NetIncomingMessage incomingMessage, INetMessage message)
         {
             return true;
         }
