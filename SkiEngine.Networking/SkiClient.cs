@@ -47,7 +47,7 @@ namespace SkiEngine.Networking
             LidgrenClient.SendMessage(message, LidgrenClient.ServerConnection, deliveryMethod, sequenceChannel);
         }
 
-        protected override bool AllowConnection(NetIncomingMessage incomingMessage, INetMessage message)
+        protected override bool AllowConnection(INetMessage message)
         {
             return true;
         }

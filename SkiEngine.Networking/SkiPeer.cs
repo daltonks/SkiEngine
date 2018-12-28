@@ -56,7 +56,7 @@ namespace SkiEngine.Networking
             messageMetadata.Received += (obj, connection) => onReceivedAction.Invoke((TMessage)obj, connection);
         }
 
-        protected abstract bool AllowConnection(NetIncomingMessage incomingMessage, INetMessage message);
+        protected abstract bool AllowConnection(INetMessage message);
 
         public void StartReadMessagesConcurrently()
         {
@@ -170,7 +170,7 @@ namespace SkiEngine.Networking
                 // Connection approval
                 case NetIncomingMessageType.ConnectionApproval:
                     var message = ReadMessage(im);
-                    if (AllowConnection(im, message))
+                    if (AllowConnection(message))
                     {
                         im.SenderConnection.Approve();
                     }
