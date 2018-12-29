@@ -28,12 +28,12 @@ namespace SkiEngine.Networking
         public event LogMessageDelegate VerboseDebugMessage;
         public event LogMessageDelegate ErrorMessage;
         public event LogMessageDelegate WarningMessage;
-
-        protected readonly Dictionary<Type, NetMessageMetadata> TypeToMessageMetadata = new Dictionary<Type, NetMessageMetadata>();
-        protected readonly Dictionary<int, NetMessageMetadata> IndexToMessageMetadata = new Dictionary<int, NetMessageMetadata>();
         
         protected NetPeer LidgrenPeer { get; }
         protected readonly ConcurrentQueue<NetIncomingMessage> IncomingMessages = new ConcurrentQueue<NetIncomingMessage>();
+
+        private readonly Dictionary<Type, NetMessageMetadata> _typeToMessageMetadata = new Dictionary<Type, NetMessageMetadata>();
+        private readonly Dictionary<int, NetMessageMetadata> _indexToMessageMetadata = new Dictionary<int, NetMessageMetadata>();
 
         private volatile bool _running;
         private Thread _receiveMessageThread;
@@ -43,21 +43,21 @@ namespace SkiEngine.Networking
             LidgrenPeer = lidgrenPeer;
         }
 
+        protected abstract bool AllowConnection(INetMessage message);
+
         public void RegisterMessageType<TMessage>() where TMessage : INetMessage
         {
             var type = typeof(TMessage);
-            var index = TypeToMessageMetadata.Count;
-            TypeToMessageMetadata[type] = IndexToMessageMetadata[index] = new NetMessageMetadata(typeof(TMessage), index);
+            var index = _typeToMessageMetadata.Count;
+            _typeToMessageMetadata[type] = _indexToMessageMetadata[index] = new NetMessageMetadata(typeof(TMessage), index);
         }
 
         public void RegisterReceiveHandler<TMessage>(Action<TMessage, NetConnection> onReceivedAction) where TMessage : INetMessage
         {
-            var messageMetadata = TypeToMessageMetadata[typeof(TMessage)];
+            var messageMetadata = _typeToMessageMetadata[typeof(TMessage)];
             messageMetadata.Received += (obj, connection) => onReceivedAction.Invoke((TMessage)obj, connection);
         }
-
-        protected abstract bool AllowConnection(INetMessage message);
-
+        
         public void StartReadMessagesConcurrently()
         {
             if (_receiveMessageThread != null)
@@ -89,7 +89,7 @@ namespace SkiEngine.Networking
 
         protected NetOutgoingMessage CreateOutgoingMessage(INetMessage netMessage)
         {
-            if (TypeToMessageMetadata.TryGetValue(netMessage.GetType(), out var metadata))
+            if (_typeToMessageMetadata.TryGetValue(netMessage.GetType(), out var metadata))
             {
                 var estimatedSizeBytes = netMessage.EstimateSizeBytes();
                 var outgoingMessage = estimatedSizeBytes == null 
@@ -125,7 +125,7 @@ namespace SkiEngine.Networking
                 case NetIncomingMessageType.VerboseDebugMessage:
                     VerboseDebugMessage?.Invoke(im.ReadString());
                     break;
-
+                        
                 // StatusChanged
                 case NetIncomingMessageType.StatusChanged:
                     var status = (NetConnectionStatus)im.ReadByte();
@@ -196,7 +196,7 @@ namespace SkiEngine.Networking
             INetMessage ReadMessage(NetIncomingMessage incomingMessage)
             {
                 var messageIndex = incomingMessage.ReadVariableInt32();
-                return IndexToMessageMetadata.TryGetValue(messageIndex, out var metadata) 
+                return _indexToMessageMetadata.TryGetValue(messageIndex, out var metadata) 
                     ? metadata.Receive(incomingMessage) 
                     : null;
             }
