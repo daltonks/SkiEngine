@@ -1,4 +1,5 @@
-﻿using Lidgren.Network;
+﻿using System.Threading;
+using Lidgren.Network;
 
 namespace SkiEngine.Networking
 {
@@ -6,23 +7,15 @@ namespace SkiEngine.Networking
     {
         private NetClient LidgrenClient => (NetClient) LidgrenPeer;
 
-        protected SkiClient(NetPeerConfiguration config) : base(new NetClient(config))
+        protected SkiClient(NetPeerConfiguration config, SynchronizationContext receiveMessageContext = null) 
+            : base(new NetClient(config), receiveMessageContext)
         {
             
         }
 
-        public void Update()
-        {
-            while (IncomingMessages.TryDequeue(out var incomingMessage))
-            {
-                ProcessMessage(incomingMessage);
-                LidgrenClient.Recycle(incomingMessage);
-            }
-        }
-
         public void Connect(string host, int port, INetMessage hailNetMessage = null)
         {
-            LidgrenClient.Start();
+            StartInternal();
 
             NetOutgoingMessage hailMessage;
 
@@ -37,8 +30,6 @@ namespace SkiEngine.Networking
             }
             
             LidgrenClient.Connect(host, port, hailMessage);
-
-            StartReadMessagesConcurrently();
         }
 
         public void Send(INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)

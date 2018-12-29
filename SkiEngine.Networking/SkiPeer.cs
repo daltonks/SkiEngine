@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -13,8 +12,6 @@ namespace SkiEngine.Networking
         public delegate void LogMessageDelegate(string message);
         public delegate void DataReceivedDelegate(NetIncomingMessage incomingMessage);
         
-        public event Action Started;
-
         public event StatusDelegate StatusRespondedAwaitingApproval;
         public event StatusDelegate StatusNone;
         public event StatusDelegate StatusInitiatedConnect;
@@ -30,17 +27,17 @@ namespace SkiEngine.Networking
         public event LogMessageDelegate WarningMessage;
         
         protected NetPeer LidgrenPeer { get; }
-        protected readonly ConcurrentQueue<NetIncomingMessage> IncomingMessages = new ConcurrentQueue<NetIncomingMessage>();
 
         private readonly Dictionary<Type, NetMessageMetadata> _typeToMessageMetadata = new Dictionary<Type, NetMessageMetadata>();
         private readonly Dictionary<int, NetMessageMetadata> _indexToMessageMetadata = new Dictionary<int, NetMessageMetadata>();
 
-        private volatile bool _running;
-        private Thread _receiveMessageThread;
+        private readonly SynchronizationContext _receiveMessageContext;
+        private bool _disposed;
 
-        protected SkiPeer(NetPeer lidgrenPeer)
+        protected SkiPeer(NetPeer lidgrenPeer, SynchronizationContext receiveMessageContext = null)
         {
             LidgrenPeer = lidgrenPeer;
+            _receiveMessageContext = receiveMessageContext;
         }
 
         protected abstract bool AllowConnection(INetMessage message);
@@ -57,33 +54,33 @@ namespace SkiEngine.Networking
             var messageMetadata = _typeToMessageMetadata[typeof(TMessage)];
             messageMetadata.Received += (obj, connection) => onReceivedAction.Invoke((TMessage)obj, connection);
         }
-        
-        public void StartReadMessagesConcurrently()
+
+        protected void StartInternal()
         {
-            if (_receiveMessageThread != null)
+            if (_receiveMessageContext == null)
             {
-                throw new InvalidOperationException("A thread is already running!");
-            }
+                LidgrenPeer.Start();
 
-            _receiveMessageThread = new Thread(StartReadMessagesAndBlock);
-            _receiveMessageThread.Start();
-
-            Started?.Invoke();
-        }
-
-        private void StartReadMessagesAndBlock()
-        {
-            LidgrenPeer.Start();
-            _running = true;
-
-            while (_running)
-            {
-                NetIncomingMessage im;
-                while ((im = LidgrenPeer.ReadMessage()) != null)
+                var thread = new Thread(() =>
                 {
-                    IncomingMessages.Enqueue(im);
-                }
-                Thread.Sleep(1);
+                    while (!_disposed)
+                    {
+                        if (LidgrenPeer.MessageReceivedEvent.WaitOne())
+                        {
+                            ProcessMessage(LidgrenPeer.ReadMessage());
+                        }
+                    }
+                });
+                thread.Start();
+            }
+            else
+            {
+                LidgrenPeer.RegisterReceivedCallback(
+                    _ => ProcessMessage(LidgrenPeer.ReadMessage()),
+                    _receiveMessageContext
+                );
+
+                LidgrenPeer.Start();
             }
         }
 
@@ -193,6 +190,8 @@ namespace SkiEngine.Networking
                     break;
             }
 
+            LidgrenPeer.Recycle(im);
+
             INetMessage ReadMessage(NetIncomingMessage incomingMessage)
             {
                 var messageIndex = incomingMessage.ReadVariableInt32();
@@ -204,8 +203,7 @@ namespace SkiEngine.Networking
 
         public void Dispose()
         {
-            _running = false;
-            _receiveMessageThread?.Join();
+            _disposed = true;
             LidgrenPeer.Shutdown("Disposed");
         }
     }

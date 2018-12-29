@@ -8,36 +8,16 @@ namespace SkiEngine.Networking
     {
         private NetServer LidgrenServer => (NetServer) LidgrenPeer;
 
-        private readonly float _updateTimeMilliseconds;
-
-        protected SkiServer(NetPeerConfiguration config, float updateTimeMilliseconds = 1000f / 60f)
-            : base(new NetServer(config))
+        protected SkiServer(NetPeerConfiguration config) : base(new NetServer(config))
         {
-            _updateTimeMilliseconds = updateTimeMilliseconds;
             config.EnableMessageType(NetIncomingMessageType.ConnectionApproval);
-
-            Started += () =>
-            {
-                var timer = new HighResolutionTimer(_updateTimeMilliseconds);
-                timer.Elapsed += Update;
-                timer.Start();
-            };
         }
 
-        private void Update(object sender, HighResolutionTimerElapsedEventArgs args)
+        public void Start()
         {
-            // Process incoming messages
-            while (IncomingMessages.TryDequeue(out var incomingMessage))
-            {
-                ProcessMessage(incomingMessage);
-                LidgrenServer.Recycle(incomingMessage);
-            }
-
-            Update(_updateTimeMilliseconds / 1000);
+            StartInternal();
         }
-
-        protected abstract void Update(double deltaSeconds);
-
+        
         public void Send(NetConnection recipient, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             var message = CreateOutgoingMessage(netMessage);
