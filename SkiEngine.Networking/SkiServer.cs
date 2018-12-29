@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Lidgren.Network;
 
 namespace SkiEngine.Networking
@@ -8,7 +9,8 @@ namespace SkiEngine.Networking
     {
         private NetServer LidgrenServer => (NetServer) LidgrenPeer;
 
-        protected SkiServer(NetPeerConfiguration config) : base(new NetServer(config))
+        protected SkiServer(NetPeerConfiguration config, SynchronizationContext receiveMessageContext = null) 
+            : base(new NetServer(config), receiveMessageContext)
         {
             config.EnableMessageType(NetIncomingMessageType.ConnectionApproval);
         }
