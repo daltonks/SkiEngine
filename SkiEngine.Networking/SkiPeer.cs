@@ -42,6 +42,8 @@ namespace SkiEngine.Networking
 
         protected abstract bool AllowConnection(NetIncomingMessage incomingMessage);
         protected abstract bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage);
+        protected abstract bool CanDecrypt(NetIncomingMessage incomingMessage);
+        protected abstract byte[] Decrypt(NetIncomingMessage incomingMessage);
 
         public void RegisterMessageType<TMessage>() where TMessage : INetMessage
         {
@@ -164,6 +166,14 @@ namespace SkiEngine.Networking
 
                 // Received data
                 case NetIncomingMessageType.Data:
+                    if (CanDecrypt(im))
+                    {
+                        var decryptedBytes = Decrypt(im);
+                        var decryptedMessage = LidgrenPeer.CreateIncomingMessage(NetIncomingMessageType.Data, decryptedBytes);
+                        LidgrenPeer.Recycle(im);
+                        im = decryptedMessage;
+                    }
+                    
                     var messageIndex = im.ReadVariableInt32();
                     if (_indexToMessageMetadata.TryGetValue(messageIndex, out var metadata))
                     {

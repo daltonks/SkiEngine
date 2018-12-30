@@ -10,6 +10,7 @@ namespace SkiEngine.Networking
     {
         private NetClient LidgrenClient => (NetClient) LidgrenPeer;
 
+        private bool _handshakeCompleted;
         private ClientCryptoService _clientCryptoService;
         private Type _nextExpectedMessageType = typeof(XmlRsaPublicKeyMessage);
 
@@ -38,6 +39,16 @@ namespace SkiEngine.Networking
             LidgrenClient.Connect(host, port, hailMessage);
         }
 
+        protected override bool CanDecrypt(NetIncomingMessage incomingMessage)
+        {
+            return _handshakeCompleted;
+        }
+
+        protected override byte[] Decrypt(NetIncomingMessage incomingMessage)
+        {
+            return _clientCryptoService.Decrypt(incomingMessage.Data);
+        }
+
         protected override bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage)
         {
             var disconnect = _nextExpectedMessageType != null && netMessage.GetType() != _nextExpectedMessageType;
@@ -64,7 +75,10 @@ namespace SkiEngine.Networking
                     case AesEncryptedAesKeyMessage aesEncryptedAesKeyMessage:
                         _clientCryptoService.ReceivedAesEncryptedAesKey(
                             aesEncryptedAesKeyMessage.AesEncryptedAesKey,
-                            onSuccess: null,
+                            onSuccess: () =>
+                            {
+                                _handshakeCompleted = true;
+                            },
                             onFail: () =>
                             {
                                 disconnect = true;
@@ -87,6 +101,15 @@ namespace SkiEngine.Networking
         public void Send(INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             var message = CreateOutgoingMessage(netMessage);
+
+            if (_handshakeCompleted)
+            {
+                var encryptedBytes = _clientCryptoService.Encrypt(message.Data);
+                var encryptedMessage = LidgrenClient.CreateMessage(encryptedBytes.Length);
+                LidgrenClient.Recycle(message);
+                message = encryptedMessage;
+            }
+            
             LidgrenClient.SendMessage(message, LidgrenClient.ServerConnection, deliveryMethod, sequenceChannel);
         }
 

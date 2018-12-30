@@ -43,46 +43,38 @@ namespace SkiEngine.Networking
             return _connectionMap[incomingMessage.SenderConnection].AllowHandling(incomingMessage, netMessage);
         }
 
+        protected override bool CanDecrypt(NetIncomingMessage incomingMessage)
+        {
+            return _connectionMap[incomingMessage.SenderConnection].HandshakeCompleted;
+        }
+
+        protected override byte[] Decrypt(NetIncomingMessage incomingMessage)
+        {
+            return _connectionMap[incomingMessage.SenderConnection].Decrypt(incomingMessage.Data);
+        }
+
         public void Send(NetConnection recipient, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
+            var connection = _connectionMap[recipient];
+
             var message = CreateOutgoingMessage(netMessage);
+            if (connection.HandshakeCompleted)
+            {
+                var encryptedBytes = connection.Encrypt(message.Data);
+                var encryptedMessage = LidgrenServer.CreateMessage(encryptedBytes.Length);
+                LidgrenServer.Recycle(message);
+                message = encryptedMessage;
+            }
+            
             LidgrenServer.SendMessage(message, recipient, deliveryMethod, sequenceChannel);
-        }
-
-        public void Send(IList<NetConnection> recipients, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
-        {
-            var message = CreateOutgoingMessage(netMessage);
-            LidgrenServer.SendMessage(message, recipients, deliveryMethod, sequenceChannel);
-        }
-
-        public void SendAll(INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
-        {
-            if(!LidgrenServer.Connections.Any())
-            {
-                return;
-            }
-
-            var message = CreateOutgoingMessage(netMessage);
-            LidgrenServer.SendMessage(message, LidgrenServer.Connections, deliveryMethod, sequenceChannel);
-        }
-
-        public void SendAllExcept(NetConnection dontSendTo, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
-        {
-            var allExceptConnection = LidgrenServer.Connections.Where(c => c != dontSendTo).ToList();
-            if (!allExceptConnection.Any())
-            {
-                return;
-            }
-
-            var message = CreateOutgoingMessage(netMessage);
-            LidgrenServer.SendMessage(message, allExceptConnection, deliveryMethod, sequenceChannel);
         }
 
         private class SkiServerConnection
         {
-            private readonly SkiServer _skiServer;
+            public bool HandshakeCompleted { get; private set; }
 
-            private bool _handshakeCompleted;
+            private readonly SkiServer _skiServer;
+            private AesService _aesService;
             
             public SkiServerConnection(SkiServer skiServer)
             {
@@ -93,7 +85,7 @@ namespace SkiEngine.Networking
             {
                 var disconnect = false;
 
-                if (!_handshakeCompleted)
+                if (!HandshakeCompleted)
                 {
                     if (netMessage is RsaEncryptedAesKeyMessage rsaEncryptedAesKeyMessage)
                     {
@@ -108,7 +100,9 @@ namespace SkiEngine.Networking
                                     0
                                 );
 
-                                _handshakeCompleted = true;
+                                _aesService = serviceAndEncryptedKey.AesService;
+
+                                HandshakeCompleted = true;
                             },
                             onFail: () =>
                             {
@@ -128,6 +122,16 @@ namespace SkiEngine.Networking
                 }
 
                 return !disconnect;
+            }
+
+            public byte[] Encrypt(byte[] data)
+            {
+                return _aesService.Encrypt(data);
+            }
+
+            public byte[] Decrypt(byte[] data)
+            {
+                return _aesService.Decrypt(data);
             }
         }
     }
