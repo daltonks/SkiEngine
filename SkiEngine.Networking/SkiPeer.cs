@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Lidgren.Network;
+using SkiEngine.Networking.Messages;
 
 namespace SkiEngine.Networking
 {
@@ -38,6 +39,11 @@ namespace SkiEngine.Networking
         {
             LidgrenPeer = lidgrenPeer;
             _receiveMessageContext = receiveMessageContext;
+
+            RegisterMessageType<AesEncryptedAesKeyMessage>();
+            RegisterMessageType<RequestXmlRsaPublicKeyMessage>();
+            RegisterMessageType<RsaEncryptedAesKeyMessage>();
+            RegisterMessageType<XmlRsaPublicKeyMessage>();
         }
 
         protected abstract bool AllowConnection(NetIncomingMessage incomingMessage);

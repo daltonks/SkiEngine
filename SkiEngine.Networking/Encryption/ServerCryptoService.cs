@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using NETCore.Encrypt.Extensions.Internal;
 
 namespace SkiEngine.Networking.Encryption
 {
@@ -14,7 +15,7 @@ namespace SkiEngine.Networking.Encryption
         public ServerCryptoService()
         {
             _rsaServiceProvider = new RSACryptoServiceProvider(RsaKeySizeInBytes * 8);
-            XmlRsaPublicKey = _rsaServiceProvider.ToXmlString(false);
+            XmlRsaPublicKey = _rsaServiceProvider.ToXmlStringWorkaround(false);
         }
 
         public void ReceivedRsaEncryptedAesKey(byte[] rsaEncryptedAesKeyFromClient, Action<AesServiceAndEncryptedKey> sendAesEncryptedAesKeyToClient, Action onFail)

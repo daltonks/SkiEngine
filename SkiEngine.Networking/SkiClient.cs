@@ -17,14 +17,19 @@ namespace SkiEngine.Networking
         protected SkiClient(NetPeerConfiguration config, SynchronizationContext receiveMessageContext = null) 
             : base(new NetClient(config), receiveMessageContext)
         {
-            
+            StatusConnected += OnConnected;
         }
-
+        
         public void Connect(string host, int port)
         {
             StartInternal();
             
             LidgrenClient.Connect(host, port);
+        }
+
+        private void OnConnected(NetIncomingMessage im, string reason)
+        {
+            Send(new RequestXmlRsaPublicKeyMessage(), NetDeliveryMethod.ReliableOrdered, 0);
         }
 
         protected override bool CanDecrypt(NetIncomingMessage incomingMessage)

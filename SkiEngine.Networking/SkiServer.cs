@@ -30,7 +30,7 @@ namespace SkiEngine.Networking
 
         private void OnConnected(NetIncomingMessage im, string reason)
         {
-            _connectionMap[im.SenderConnection] = new SkiServerConnection(this);
+            _connectionMap[im.SenderConnection] = new SkiServerConnection(this, im.SenderConnection);
         }
 
         private void OnDisconnected(NetIncomingMessage im, string reason)
@@ -74,11 +74,13 @@ namespace SkiEngine.Networking
             public bool HandshakeCompleted { get; private set; }
 
             private readonly SkiServer _skiServer;
+            private readonly NetConnection _netConnection;
             private AesService _aesService;
             
-            public SkiServerConnection(SkiServer skiServer)
+            public SkiServerConnection(SkiServer skiServer, NetConnection netConnection)
             {
                 _skiServer = skiServer;
+                _netConnection = netConnection;
             }
 
             public bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage)
@@ -87,32 +89,41 @@ namespace SkiEngine.Networking
 
                 if (!HandshakeCompleted)
                 {
-                    if (netMessage is RsaEncryptedAesKeyMessage rsaEncryptedAesKeyMessage)
+                    switch (netMessage)
                     {
-                        _skiServer._serverCryptoService.ReceivedRsaEncryptedAesKey(
-                            rsaEncryptedAesKeyMessage.RsaEncryptedAesKey,
-                            serviceAndEncryptedKey =>
-                            {
-                                _skiServer.Send(
-                                    incomingMessage.SenderConnection, 
-                                    new AesEncryptedAesKeyMessage { AesEncryptedAesKey = serviceAndEncryptedKey.AesEncryptedAesKey}, 
-                                    NetDeliveryMethod.ReliableOrdered,
-                                    0
-                                );
+                        case RequestXmlRsaPublicKeyMessage _:
+                            _skiServer.Send(
+                                _netConnection, 
+                                new XmlRsaPublicKeyMessage { XmlRsaPublicKey = _skiServer._serverCryptoService.XmlRsaPublicKey }, 
+                                NetDeliveryMethod.ReliableOrdered,
+                                0
+                            );
+                            break;
+                        case RsaEncryptedAesKeyMessage rsaEncryptedAesKeyMessage:
+                            _skiServer._serverCryptoService.ReceivedRsaEncryptedAesKey(
+                                rsaEncryptedAesKeyMessage.RsaEncryptedAesKey,
+                                serviceAndEncryptedKey =>
+                                {
+                                    _skiServer.Send(
+                                        incomingMessage.SenderConnection, 
+                                        new AesEncryptedAesKeyMessage { AesEncryptedAesKey = serviceAndEncryptedKey.AesEncryptedAesKey}, 
+                                        NetDeliveryMethod.ReliableOrdered,
+                                        0
+                                    );
 
-                                _aesService = serviceAndEncryptedKey.AesService;
+                                    _aesService = serviceAndEncryptedKey.AesService;
 
-                                HandshakeCompleted = true;
-                            },
-                            onFail: () =>
-                            {
-                                disconnect = true;
-                            }
-                        );
-                    }
-                    else
-                    {
-                        disconnect = true;
+                                    HandshakeCompleted = true;
+                                },
+                                onFail: () =>
+                                {
+                                    disconnect = true;
+                                }
+                            );
+                            break;
+                        default:
+                            disconnect = true;
+                            break;
                     }
                 }
 
