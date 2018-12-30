@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Lidgren.Network;
 using SkiEngine.Networking.Encryption;
 using SkiEngine.Networking.Messages;
@@ -8,16 +9,20 @@ namespace SkiEngine.Networking
 {
     public abstract class SkiClient : SkiPeer
     {
+        public Task<bool> HandshakeCompletedTask => _handshakeCompletedCompletionSource.Task;
+
         private NetClient LidgrenClient => (NetClient) LidgrenPeer;
 
         private bool _handshakeCompleted;
         private ClientCryptoService _clientCryptoService;
         private Type _nextExpectedMessageType = typeof(XmlRsaPublicKeyMessage);
+        private readonly TaskCompletionSource<bool> _handshakeCompletedCompletionSource = new TaskCompletionSource<bool>();
 
         protected SkiClient(NetPeerConfiguration config, SynchronizationContext receiveMessageContext = null) 
             : base(new NetClient(config), receiveMessageContext)
         {
             StatusConnected += OnConnected;
+            StatusDisconnected += OnDisconnected;
         }
         
         public void Connect(string host, int port)
@@ -26,10 +31,15 @@ namespace SkiEngine.Networking
             
             LidgrenClient.Connect(host, port);
         }
-
+        
         private void OnConnected(NetIncomingMessage im, string reason)
         {
             Send(new RequestXmlRsaPublicKeyMessage(), NetDeliveryMethod.ReliableOrdered, 0);
+        }
+
+        private void OnDisconnected(NetIncomingMessage im, string reason)
+        {
+            _handshakeCompletedCompletionSource.TrySetResult(false);
         }
 
         protected override bool CanDecrypt(NetIncomingMessage incomingMessage)
@@ -71,6 +81,7 @@ namespace SkiEngine.Networking
                             onSuccess: () =>
                             {
                                 _handshakeCompleted = true;
+                                _handshakeCompletedCompletionSource.TrySetResult(true);
                             },
                             onFail: () =>
                             {

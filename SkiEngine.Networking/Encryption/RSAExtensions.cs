@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Xml;
 
-namespace NETCore.Encrypt.Extensions.Internal
+namespace SkiEngine.Networking.Encryption
 {
     // https://github.com/dotnet/corefx/issues/23686
     internal static class RSAExtensions
