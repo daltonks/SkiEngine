@@ -9,7 +9,7 @@ namespace SkiEngine.Networking
         private static readonly object[] EmptyObjectArray = new object[0];
 
         public int Index { get; }
-        public event Action<object, NetConnection> Received;
+        public event Action<object, NetIncomingMessage> Received;
 
         private readonly ConstructorInfo _emptyConstructorInfo;
 
@@ -19,12 +19,16 @@ namespace SkiEngine.Networking
             _emptyConstructorInfo = messageType.GetConstructor(Type.EmptyTypes);
         }
 
-        public INetMessage Receive(NetIncomingMessage message)
+        public INetMessage ToNetMessage(NetIncomingMessage incomingMessage)
         {
             var netMessage = (INetMessage)_emptyConstructorInfo.Invoke(EmptyObjectArray);
-            netMessage.ReadFrom(message);
-            Received?.Invoke(netMessage, message.SenderConnection);
+            netMessage.ReadFrom(incomingMessage);
             return netMessage;
+        }
+
+        public void OnReceived(NetIncomingMessage incomingMessage, INetMessage netMessage)
+        {
+            Received?.Invoke(netMessage, incomingMessage);
         }
     }
 }

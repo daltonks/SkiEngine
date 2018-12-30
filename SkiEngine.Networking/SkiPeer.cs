@@ -40,7 +40,8 @@ namespace SkiEngine.Networking
             _receiveMessageContext = receiveMessageContext;
         }
 
-        protected abstract bool AllowConnection(INetMessage message);
+        protected abstract bool AllowConnection(NetIncomingMessage incomingMessage);
+        protected abstract bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage);
 
         public void RegisterMessageType<TMessage>() where TMessage : INetMessage
         {
@@ -49,16 +50,17 @@ namespace SkiEngine.Networking
             _typeToMessageMetadata[type] = _indexToMessageMetadata[index] = new NetMessageMetadata(typeof(TMessage), index);
         }
 
-        public void RegisterReceiveHandler<TMessage>(Action<TMessage, NetConnection> onReceivedAction) where TMessage : INetMessage
+        public void RegisterReceiveHandler<TMessage>(Action<TMessage, NetIncomingMessage> onReceivedAction) where TMessage : INetMessage
         {
             var messageMetadata = _typeToMessageMetadata[typeof(TMessage)];
-            messageMetadata.Received += (obj, connection) => onReceivedAction.Invoke((TMessage)obj, connection);
+            messageMetadata.Received += (obj, incomingMessage) => onReceivedAction.Invoke((TMessage)obj, incomingMessage);
         }
 
         protected void StartInternal()
         {
             if (_receiveMessageContext == null)
             {
+                // _receiveMessageContext is null, so receive messages on a different thread
                 LidgrenPeer.Start();
 
                 var thread = new Thread(() =>
@@ -75,6 +77,7 @@ namespace SkiEngine.Networking
             }
             else
             {
+                // _receiveMessageContext is not null, so process messages with it
                 LidgrenPeer.RegisterReceivedCallback(
                     _ => ProcessMessage(LidgrenPeer.ReadMessage()),
                     _receiveMessageContext
@@ -161,13 +164,20 @@ namespace SkiEngine.Networking
 
                 // Received data
                 case NetIncomingMessageType.Data:
-                    ReadMessage(im);
+                    var messageIndex = im.ReadVariableInt32();
+                    if (_indexToMessageMetadata.TryGetValue(messageIndex, out var metadata))
+                    {
+                        var netMessage = metadata.ToNetMessage(im);
+                        if (AllowHandling(im, netMessage))
+                        {
+                            metadata.OnReceived(im, netMessage);
+                        }
+                    }
                     break;
 
                 // Connection approval
                 case NetIncomingMessageType.ConnectionApproval:
-                    var message = ReadMessage(im);
-                    if (AllowConnection(message))
+                    if (AllowConnection(im))
                     {
                         im.SenderConnection.Approve();
                     }
@@ -191,14 +201,6 @@ namespace SkiEngine.Networking
             }
 
             LidgrenPeer.Recycle(im);
-
-            INetMessage ReadMessage(NetIncomingMessage incomingMessage)
-            {
-                var messageIndex = incomingMessage.ReadVariableInt32();
-                return _indexToMessageMetadata.TryGetValue(messageIndex, out var metadata) 
-                    ? metadata.Receive(incomingMessage) 
-                    : null;
-            }
         }
 
         public void Dispose()
