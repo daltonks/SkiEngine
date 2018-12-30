@@ -20,23 +20,11 @@ namespace SkiEngine.Networking
             
         }
 
-        public void Connect(string host, int port, INetMessage hailNetMessage = null)
+        public void Connect(string host, int port)
         {
             StartInternal();
-
-            NetOutgoingMessage hailMessage;
-
-            if (hailNetMessage == null)
-            {
-                hailMessage = LidgrenClient.CreateMessage();
-                hailMessage.WriteVariableInt32(-1);
-            }
-            else
-            {
-                hailMessage = CreateOutgoingMessage(hailNetMessage);
-            }
             
-            LidgrenClient.Connect(host, port, hailMessage);
+            LidgrenClient.Connect(host, port);
         }
 
         protected override bool CanDecrypt(NetIncomingMessage incomingMessage)
