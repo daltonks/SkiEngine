@@ -75,10 +75,12 @@ namespace SkiEngine.Networking
                 {
                     while (!_disposed)
                     {
-                        if (LidgrenPeer.MessageReceivedEvent.WaitOne())
+                        while (LidgrenPeer.ReadMessage(out var message))
                         {
-                            ProcessMessage(LidgrenPeer.ReadMessage());
+                            ProcessMessage(message);
                         }
+
+                        Thread.Sleep(1);
                     }
                 });
                 thread.Start();
@@ -139,6 +141,7 @@ namespace SkiEngine.Networking
                     var status = (NetConnectionStatus)im.ReadByte();
 
                     var reason = im.ReadString();
+
                     switch (status)
                     {
                         case NetConnectionStatus.None:
@@ -184,6 +187,7 @@ namespace SkiEngine.Networking
                     if (_indexToMessageMetadata.TryGetValue(messageIndex, out var metadata))
                     {
                         var netMessage = metadata.ToNetMessage(im);
+
                         if (AllowHandling(im, netMessage))
                         {
                             metadata.OnReceived(im, netMessage);
