@@ -9,8 +9,6 @@ namespace SkiEngine.Networking
 {
     public abstract class SkiClient : SkiPeer
     {
-        public Task<bool> HandshakeCompletedTask => _handshakeCompletedCompletionSource.Task;
-
         private NetClient LidgrenClient => (NetClient) LidgrenPeer;
 
         private bool _handshakeCompleted;
@@ -25,11 +23,13 @@ namespace SkiEngine.Networking
             StatusDisconnected += OnDisconnected;
         }
         
-        public void Connect(string host, int port)
+        public Task ConnectAsync(string host, int port)
         {
             StartInternal();
             
             LidgrenClient.Connect(host, port);
+
+            return _handshakeCompletedCompletionSource.Task;
         }
         
         private void OnConnected(NetIncomingMessage im, string reason)
