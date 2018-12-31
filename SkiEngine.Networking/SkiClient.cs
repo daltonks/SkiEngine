@@ -23,6 +23,46 @@ namespace SkiEngine.Networking
         {
             StatusConnected += OnConnected;
             StatusDisconnected += OnDisconnected;
+
+            RegisterReceiveHandler<XmlRsaPublicKeyMessage>(
+                (message, netMessage) =>
+                {
+                    _clientCryptoService = new ClientCryptoService(
+                        message.XmlRsaPublicKey,
+                        rsaEncryptedAesKey =>
+                        {
+                            Send(
+                                new RsaEncryptedAesKeyMessage { RsaEncryptedAesKey = rsaEncryptedAesKey }, 
+                                NetDeliveryMethod.ReliableOrdered, 
+                                0
+                            );
+                        }
+                    );
+
+                    _nextExpectedMessageType = typeof(AesEncryptedAesKeyMessage);
+                }
+            );
+
+            RegisterReceiveHandler<AesEncryptedAesKeyMessage>(
+                (message, netMessage) =>
+                {
+                    _clientCryptoService.ReceivedAesEncryptedAesKey(
+                        message.AesEncryptedAesKey,
+                        onSuccess: () =>
+                        {
+                            _handshakeCompleted = true;
+                            _handshakeCompletedCompletionSource.TrySetResult(true);
+                            HandshakeCompleted?.Invoke();
+                        },
+                        onFail: () =>
+                        {
+                            LidgrenClient.Disconnect($"Improper {nameof(AesEncryptedAesKeyMessage)}.");
+                        }
+                    );
+
+                    _nextExpectedMessageType = null;
+                }
+            );
         }
         
         public Task ConnectAsync(string host, int port)
@@ -57,45 +97,6 @@ namespace SkiEngine.Networking
         protected override bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage)
         {
             var disconnect = _nextExpectedMessageType != null && netMessage.GetType() != _nextExpectedMessageType;
-
-            if (!disconnect)
-            {
-                switch (netMessage)
-                {
-                    case XmlRsaPublicKeyMessage xmlRsaPublicKeyMessage:
-                        _clientCryptoService = new ClientCryptoService(
-                            xmlRsaPublicKeyMessage.XmlRsaPublicKey,
-                            rsaEncryptedAesKey =>
-                            {
-                                Send(
-                                    new RsaEncryptedAesKeyMessage { RsaEncryptedAesKey = rsaEncryptedAesKey }, 
-                                    NetDeliveryMethod.ReliableOrdered, 
-                                    0
-                                );
-                            }
-                        );
-
-                        _nextExpectedMessageType = typeof(AesEncryptedAesKeyMessage);
-                        break;
-                    case AesEncryptedAesKeyMessage aesEncryptedAesKeyMessage:
-                        _clientCryptoService.ReceivedAesEncryptedAesKey(
-                            aesEncryptedAesKeyMessage.AesEncryptedAesKey,
-                            onSuccess: () =>
-                            {
-                                _handshakeCompleted = true;
-                                _handshakeCompletedCompletionSource.TrySetResult(true);
-                                HandshakeCompleted?.Invoke();
-                            },
-                            onFail: () =>
-                            {
-                                disconnect = true;
-                            }
-                        );
-
-                        _nextExpectedMessageType = null;
-                        break;
-                }
-            }
             
             if (disconnect)
             {

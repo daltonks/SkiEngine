@@ -188,10 +188,9 @@ namespace SkiEngine.Networking
                         if (CanDecrypt(im))
                         {
                             var decryptedBytes = Decrypt(im);
-                            var decryptedMessage =
-                                LidgrenPeer.CreateIncomingMessage(NetIncomingMessageType.Data, decryptedBytes);
-                            LidgrenPeer.Recycle(im);
-                            im = decryptedMessage;
+                            LidgrenPeer.Recycle(im.Data);
+                            im.Data = decryptedBytes;
+                            im.LengthBytes = decryptedBytes.Length;
                         }
 
                         var messageIndex = im.ReadVariableInt32();
