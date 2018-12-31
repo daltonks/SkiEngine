@@ -9,7 +9,9 @@ namespace SkiEngine.Networking
 {
     public abstract class SkiClient : SkiPeer
     {
-        private NetClient LidgrenClient => (NetClient) LidgrenPeer;
+        public event Action HandshakeCompleted;
+
+        public NetClient LidgrenClient => (NetClient) LidgrenPeer;
 
         private bool _handshakeCompleted;
         private ClientCryptoService _clientCryptoService;
@@ -49,7 +51,7 @@ namespace SkiEngine.Networking
 
         protected override byte[] Decrypt(NetIncomingMessage incomingMessage)
         {
-            return _clientCryptoService.Decrypt(incomingMessage.Data);
+            return _clientCryptoService.Decrypt(incomingMessage.Data, incomingMessage.LengthBytes);
         }
 
         protected override bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage)
@@ -82,6 +84,7 @@ namespace SkiEngine.Networking
                             {
                                 _handshakeCompleted = true;
                                 _handshakeCompletedCompletionSource.TrySetResult(true);
+                                HandshakeCompleted?.Invoke();
                             },
                             onFail: () =>
                             {
@@ -108,8 +111,8 @@ namespace SkiEngine.Networking
 
             if (_handshakeCompleted)
             {
-                var encryptedBytes = _clientCryptoService.Encrypt(message.Data);
-                var encryptedMessage = LidgrenClient.CreateMessage(encryptedBytes.Length);
+                var encryptedBytes = _clientCryptoService.Encrypt(message.Data, message.LengthBytes);
+                var encryptedMessage = LidgrenClient.CreateMessage(encryptedBytes);
                 LidgrenClient.Recycle(message);
                 message = encryptedMessage;
             }

@@ -42,7 +42,7 @@ namespace SkiEngine.Networking.Encryption
             return true;
         }
 
-        public byte[] Encrypt(byte[] data)
+        public byte[] Encrypt(byte[] data, int length)
         {
             byte[] encrypted;
             byte[] initializationVector;
@@ -63,7 +63,7 @@ namespace SkiEngine.Networking.Encryption
                 {
                     using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
                     {
-                        cryptoStream.Write(data, 0, data.Length);
+                        cryptoStream.Write(data, 0, length);
                         cryptoStream.FlushFinalBlock();
                     }
                     encrypted = memoryStream.ToArray();
@@ -77,14 +77,14 @@ namespace SkiEngine.Networking.Encryption
             return combinedIvCt;
         }
 
-        public byte[] Decrypt(byte[] cipherTextCombined)
+        public byte[] Decrypt(byte[] cipherTextCombined, int length)
         {
             using (var aesAlg = Aes.Create())
             {
                 aesAlg.Key = AesKey;
 
                 var initializationVector = new byte[aesAlg.BlockSize / 8];
-                var cipherData = new byte[cipherTextCombined.Length - initializationVector.Length];
+                var cipherData = new byte[length - initializationVector.Length];
 
                 Array.Copy(cipherTextCombined, initializationVector, initializationVector.Length);
                 Array.Copy(cipherTextCombined, initializationVector.Length, cipherData, 0, cipherData.Length);

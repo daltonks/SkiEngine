@@ -26,6 +26,8 @@ namespace SkiEngine.Networking
         public event LogMessageDelegate VerboseDebugMessage;
         public event LogMessageDelegate ErrorMessage;
         public event LogMessageDelegate WarningMessage;
+
+        public event Action<Exception> ExceptionProcessingMessage;
         
         protected NetPeer LidgrenPeer { get; }
 
@@ -44,6 +46,11 @@ namespace SkiEngine.Networking
             RegisterMessageType<RequestXmlRsaPublicKeyMessage>();
             RegisterMessageType<RsaEncryptedAesKeyMessage>();
             RegisterMessageType<XmlRsaPublicKeyMessage>();
+
+            ExceptionProcessingMessage += exception =>
+            {
+                Debug.WriteLine(exception);
+            };
         }
 
         protected abstract bool AllowConnection(NetIncomingMessage incomingMessage);
@@ -118,109 +125,123 @@ namespace SkiEngine.Networking
             LidgrenPeer.FlushSendQueue();
         }
 
-        protected void ProcessMessage(NetIncomingMessage im)
+        private void ProcessMessage(NetIncomingMessage im)
         {
-            switch (im.MessageType)
+            try
             {
-                // Logs
-                case NetIncomingMessageType.DebugMessage:
-                    DebugMessage?.Invoke(im.ReadString());
-                    break;
-                case NetIncomingMessageType.ErrorMessage:
-                    ErrorMessage?.Invoke(im.ReadString());
-                    break;
-                case NetIncomingMessageType.WarningMessage:
-                    WarningMessage?.Invoke(im.ReadString());
-                    break;
-                case NetIncomingMessageType.VerboseDebugMessage:
-                    VerboseDebugMessage?.Invoke(im.ReadString());
-                    break;
-                        
-                // StatusChanged
-                case NetIncomingMessageType.StatusChanged:
-                    var status = (NetConnectionStatus)im.ReadByte();
+                switch (im.MessageType)
+                {
+                    // Logs
+                    case NetIncomingMessageType.DebugMessage:
+                        DebugMessage?.Invoke(im.ReadString());
+                        break;
+                    case NetIncomingMessageType.ErrorMessage:
+                        ErrorMessage?.Invoke(im.ReadString());
+                        break;
+                    case NetIncomingMessageType.WarningMessage:
+                        WarningMessage?.Invoke(im.ReadString());
+                        break;
+                    case NetIncomingMessageType.VerboseDebugMessage:
+                        VerboseDebugMessage?.Invoke(im.ReadString());
+                        break;
 
-                    var reason = im.ReadString();
+                    // StatusChanged
+                    case NetIncomingMessageType.StatusChanged:
+                        var status = (NetConnectionStatus) im.ReadByte();
 
-                    switch (status)
-                    {
-                        case NetConnectionStatus.None:
-                            StatusNone?.Invoke(im, reason);
-                            break;
-                        case NetConnectionStatus.InitiatedConnect:
-                            StatusInitiatedConnect?.Invoke(im, reason);
-                            break;
-                        case NetConnectionStatus.ReceivedInitiation:
-                            StatusReceivedInitiation?.Invoke(im, reason);
-                            break;
-                        case NetConnectionStatus.RespondedAwaitingApproval:
-                            StatusRespondedAwaitingApproval?.Invoke(im, reason);
-                            break;
-                        case NetConnectionStatus.RespondedConnect:
-                            StatusRespondedConnect?.Invoke(im, reason);
-                            break;
-                        case NetConnectionStatus.Connected:
-                            StatusConnected?.Invoke(im, reason);
-                            break;
-                        case NetConnectionStatus.Disconnecting:
-                            StatusDisconnecting?.Invoke(im, reason);
-                            break;
-                        case NetConnectionStatus.Disconnected:
-                            StatusDisconnected?.Invoke(im, reason);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                    break;
+                        var reason = im.ReadString();
 
-                // Received data
-                case NetIncomingMessageType.Data:
-                    if (CanDecrypt(im))
-                    {
-                        var decryptedBytes = Decrypt(im);
-                        var decryptedMessage = LidgrenPeer.CreateIncomingMessage(NetIncomingMessageType.Data, decryptedBytes);
-                        LidgrenPeer.Recycle(im);
-                        im = decryptedMessage;
-                    }
-                    
-                    var messageIndex = im.ReadVariableInt32();
-                    if (_indexToMessageMetadata.TryGetValue(messageIndex, out var metadata))
-                    {
-                        var netMessage = metadata.ToNetMessage(im);
-
-                        if (AllowHandling(im, netMessage))
+                        switch (status)
                         {
-                            metadata.OnReceived(im, netMessage);
+                            case NetConnectionStatus.None:
+                                StatusNone?.Invoke(im, reason);
+                                break;
+                            case NetConnectionStatus.InitiatedConnect:
+                                StatusInitiatedConnect?.Invoke(im, reason);
+                                break;
+                            case NetConnectionStatus.ReceivedInitiation:
+                                StatusReceivedInitiation?.Invoke(im, reason);
+                                break;
+                            case NetConnectionStatus.RespondedAwaitingApproval:
+                                StatusRespondedAwaitingApproval?.Invoke(im, reason);
+                                break;
+                            case NetConnectionStatus.RespondedConnect:
+                                StatusRespondedConnect?.Invoke(im, reason);
+                                break;
+                            case NetConnectionStatus.Connected:
+                                StatusConnected?.Invoke(im, reason);
+                                break;
+                            case NetConnectionStatus.Disconnecting:
+                                StatusDisconnecting?.Invoke(im, reason);
+                                break;
+                            case NetConnectionStatus.Disconnected:
+                                StatusDisconnected?.Invoke(im, reason);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
-                    }
-                    break;
 
-                // Connection approval
-                case NetIncomingMessageType.ConnectionApproval:
-                    if (AllowConnection(im))
-                    {
-                        im.SenderConnection.Approve();
-                    }
-                    else
-                    {
-                        im.SenderConnection.Deny();
-                    }
-                    break;
+                        break;
 
-                // Unhandled message types
-                case NetIncomingMessageType.Error:
-                case NetIncomingMessageType.UnconnectedData:
-                case NetIncomingMessageType.Receipt:
-                case NetIncomingMessageType.DiscoveryRequest:
-                case NetIncomingMessageType.DiscoveryResponse:
-                case NetIncomingMessageType.NatIntroductionSuccess:
-                case NetIncomingMessageType.ConnectionLatencyUpdated:
-                default:
-                    Debug.WriteLine("Unhandled net message type: " + im.MessageType + " " + im.LengthBytes + " bytes " + im.DeliveryMethod + "|" + im.SequenceChannel);
-                    break;
+                    // Received data
+                    case NetIncomingMessageType.Data:
+                        if (CanDecrypt(im))
+                        {
+                            var decryptedBytes = Decrypt(im);
+                            var decryptedMessage =
+                                LidgrenPeer.CreateIncomingMessage(NetIncomingMessageType.Data, decryptedBytes);
+                            LidgrenPeer.Recycle(im);
+                            im = decryptedMessage;
+                        }
+
+                        var messageIndex = im.ReadVariableInt32();
+                        if (_indexToMessageMetadata.TryGetValue(messageIndex, out var metadata))
+                        {
+                            var netMessage = metadata.ToNetMessage(im);
+
+                            if (AllowHandling(im, netMessage))
+                            {
+                                metadata.OnReceived(netMessage, im);
+                            }
+                        }
+
+                        break;
+
+                    // Connection approval
+                    case NetIncomingMessageType.ConnectionApproval:
+                        if (AllowConnection(im))
+                        {
+                            im.SenderConnection.Approve();
+                        }
+                        else
+                        {
+                            im.SenderConnection.Deny();
+                        }
+
+                        break;
+
+                    // Unhandled message types
+                    case NetIncomingMessageType.Error:
+                    case NetIncomingMessageType.UnconnectedData:
+                    case NetIncomingMessageType.Receipt:
+                    case NetIncomingMessageType.DiscoveryRequest:
+                    case NetIncomingMessageType.DiscoveryResponse:
+                    case NetIncomingMessageType.NatIntroductionSuccess:
+                    case NetIncomingMessageType.ConnectionLatencyUpdated:
+                    default:
+                        Debug.WriteLine("Unhandled net message type: " + im.MessageType + " " + im.LengthBytes +
+                                        " bytes " + im.DeliveryMethod + "|" + im.SequenceChannel);
+                        break;
+                }
             }
-
-            LidgrenPeer.Recycle(im);
+            catch (Exception ex)
+            {
+                ExceptionProcessingMessage?.Invoke(ex);
+            }
+            finally
+            {
+                LidgrenPeer.Recycle(im);
+            }
         }
 
         public void Dispose()

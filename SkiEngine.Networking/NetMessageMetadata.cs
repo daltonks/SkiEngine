@@ -26,7 +26,7 @@ namespace SkiEngine.Networking
             return netMessage;
         }
 
-        public void OnReceived(NetIncomingMessage incomingMessage, INetMessage netMessage)
+        public void OnReceived(INetMessage netMessage, NetIncomingMessage incomingMessage)
         {
             Received?.Invoke(netMessage, incomingMessage);
         }

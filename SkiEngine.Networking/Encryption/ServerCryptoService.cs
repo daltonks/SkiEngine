@@ -27,7 +27,7 @@ namespace SkiEngine.Networking.Encryption
                 var keyAndEncrypted = new AesServiceAndEncryptedKey
                 {
                     AesService = aesService,
-                    AesEncryptedAesKey = aesService.Encrypt(aesKey)
+                    AesEncryptedAesKey = aesService.Encrypt(aesKey, aesKey.Length)
                 };
                 sendAesEncryptedAesKeyToClient.Invoke(keyAndEncrypted);
             }

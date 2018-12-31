@@ -20,7 +20,7 @@ namespace SkiEngine.Networking.Encryption
         {
             try
             {
-                var receivedAesKey = Decrypt(aesEncryptedAesKey);
+                var receivedAesKey = Decrypt(aesEncryptedAesKey, aesEncryptedAesKey.Length);
                 if (CompareAesKey(receivedAesKey))
                 {
                     onSuccess?.Invoke();

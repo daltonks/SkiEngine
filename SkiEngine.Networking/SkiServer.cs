@@ -8,9 +8,9 @@ namespace SkiEngine.Networking
 {
     public abstract class SkiServer : SkiPeer
     {
-        private NetServer LidgrenServer => (NetServer) LidgrenPeer;
+        public NetServer LidgrenServer => (NetServer) LidgrenPeer;
 
-        private readonly Dictionary<NetConnection, SkiServerConnection> _connectionMap = new Dictionary<NetConnection,SkiServerConnection>();
+        protected readonly Dictionary<NetConnection, SkiServerConnection> _skiConnections = new Dictionary<NetConnection,SkiServerConnection>();
         private readonly ServerCryptoService _serverCryptoService = new ServerCryptoService();
 
         protected SkiServer(NetPeerConfiguration config, SynchronizationContext receiveMessageContext = null) 
@@ -20,6 +20,44 @@ namespace SkiEngine.Networking
 
             StatusConnected += OnConnected;
             StatusDisconnected += OnDisconnected;
+
+            RegisterReceiveHandler<RequestXmlRsaPublicKeyMessage>(
+                (message, netMessage) =>
+                {
+                    Send(
+                        netMessage.SenderConnection, 
+                        new XmlRsaPublicKeyMessage { XmlRsaPublicKey = _serverCryptoService.XmlRsaPublicKey }, 
+                        NetDeliveryMethod.ReliableOrdered,
+                        0
+                    );
+                }
+            );
+
+            RegisterReceiveHandler<RsaEncryptedAesKeyMessage>(
+                (message, netMessage) =>
+                {
+                    _serverCryptoService.ReceivedRsaEncryptedAesKey(
+                        message.RsaEncryptedAesKey,
+                        serviceAndEncryptedKey =>
+                        {
+                            Send(
+                                netMessage.SenderConnection, 
+                                new AesEncryptedAesKeyMessage { AesEncryptedAesKey = serviceAndEncryptedKey.AesEncryptedAesKey}, 
+                                NetDeliveryMethod.ReliableOrdered,
+                                0
+                            );
+
+                            var skiConnection = _skiConnections[netMessage.SenderConnection];
+                            skiConnection.AesService = serviceAndEncryptedKey.AesService;
+                            skiConnection.HandshakeCompleted = true;
+                        },
+                        onFail: () =>
+                        {
+                            netMessage.SenderConnection.Disconnect("Message not valid.");
+                        }
+                    );
+                }
+            );
         }
         
         public void Start()
@@ -29,38 +67,39 @@ namespace SkiEngine.Networking
 
         private void OnConnected(NetIncomingMessage im, string reason)
         {
-            _connectionMap[im.SenderConnection] = new SkiServerConnection(this, im.SenderConnection);
+            _skiConnections[im.SenderConnection] = new SkiServerConnection();
         }
 
         private void OnDisconnected(NetIncomingMessage im, string reason)
         {
-            _connectionMap.Remove(im.SenderConnection);
+            _skiConnections.Remove(im.SenderConnection);
         }
 
         protected override bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage)
         {
-            return _connectionMap[incomingMessage.SenderConnection].AllowHandling(incomingMessage, netMessage);
+            return _skiConnections[incomingMessage.SenderConnection].AllowHandling(incomingMessage, netMessage);
         }
 
         protected override bool CanDecrypt(NetIncomingMessage incomingMessage)
         {
-            return _connectionMap[incomingMessage.SenderConnection].HandshakeCompleted;
+            return _skiConnections[incomingMessage.SenderConnection].HandshakeCompleted;
         }
 
         protected override byte[] Decrypt(NetIncomingMessage incomingMessage)
         {
-            return _connectionMap[incomingMessage.SenderConnection].Decrypt(incomingMessage.Data);
+            return _skiConnections[incomingMessage.SenderConnection]
+                .Decrypt(incomingMessage.Data, incomingMessage.LengthBytes);
         }
 
         public void Send(NetConnection recipient, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            var connection = _connectionMap[recipient];
+            var connection = _skiConnections[recipient];
 
             var message = CreateOutgoingMessage(netMessage);
             if (connection.HandshakeCompleted)
             {
-                var encryptedBytes = connection.Encrypt(message.Data);
-                var encryptedMessage = LidgrenServer.CreateMessage(encryptedBytes.Length);
+                var encryptedBytes = connection.Encrypt(message.Data, message.LengthBytes);
+                var encryptedMessage = LidgrenServer.CreateMessage(encryptedBytes);
                 LidgrenServer.Recycle(message);
                 message = encryptedMessage;
             }
@@ -68,19 +107,10 @@ namespace SkiEngine.Networking
             LidgrenServer.SendMessage(message, recipient, deliveryMethod, sequenceChannel);
         }
 
-        private class SkiServerConnection
+        public class SkiServerConnection
         {
-            public bool HandshakeCompleted { get; private set; }
-
-            private readonly SkiServer _skiServer;
-            private readonly NetConnection _netConnection;
-            private AesService _aesService;
-            
-            public SkiServerConnection(SkiServer skiServer, NetConnection netConnection)
-            {
-                _skiServer = skiServer;
-                _netConnection = netConnection;
-            }
+            public bool HandshakeCompleted { get; set; }
+            public AesService AesService { get; set; }
 
             public bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage)
             {
@@ -88,42 +118,8 @@ namespace SkiEngine.Networking
 
                 if (!HandshakeCompleted)
                 {
-                    switch (netMessage)
-                    {
-                        case RequestXmlRsaPublicKeyMessage _:
-                            _skiServer.Send(
-                                _netConnection, 
-                                new XmlRsaPublicKeyMessage { XmlRsaPublicKey = _skiServer._serverCryptoService.XmlRsaPublicKey }, 
-                                NetDeliveryMethod.ReliableOrdered,
-                                0
-                            );
-                            break;
-                        case RsaEncryptedAesKeyMessage rsaEncryptedAesKeyMessage:
-                            _skiServer._serverCryptoService.ReceivedRsaEncryptedAesKey(
-                                rsaEncryptedAesKeyMessage.RsaEncryptedAesKey,
-                                serviceAndEncryptedKey =>
-                                {
-                                    _skiServer.Send(
-                                        incomingMessage.SenderConnection, 
-                                        new AesEncryptedAesKeyMessage { AesEncryptedAesKey = serviceAndEncryptedKey.AesEncryptedAesKey}, 
-                                        NetDeliveryMethod.ReliableOrdered,
-                                        0
-                                    );
-
-                                    _aesService = serviceAndEncryptedKey.AesService;
-
-                                    HandshakeCompleted = true;
-                                },
-                                onFail: () =>
-                                {
-                                    disconnect = true;
-                                }
-                            );
-                            break;
-                        default:
-                            disconnect = true;
-                            break;
-                    }
+                    disconnect = netMessage.GetType() != typeof(RequestXmlRsaPublicKeyMessage)
+                       && netMessage.GetType() != typeof(RsaEncryptedAesKeyMessage);
                 }
 
                 if (disconnect)
@@ -134,14 +130,14 @@ namespace SkiEngine.Networking
                 return !disconnect;
             }
 
-            public byte[] Encrypt(byte[] data)
+            public byte[] Encrypt(byte[] data, int length)
             {
-                return _aesService.Encrypt(data);
+                return AesService.Encrypt(data, length);
             }
 
-            public byte[] Decrypt(byte[] data)
+            public byte[] Decrypt(byte[] data, int length)
             {
-                return _aesService.Decrypt(data);
+                return AesService.Decrypt(data, length);
             }
         }
     }
