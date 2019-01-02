@@ -54,15 +54,31 @@ namespace SkiEngine.Networking
         }
 
         protected abstract bool AllowConnection(NetIncomingMessage incomingMessage);
-        protected abstract bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage);
+        protected abstract bool AllowHandling(NetIncomingMessage incomingMessage, object message);
         protected abstract bool CanDecrypt(NetIncomingMessage incomingMessage);
         protected abstract byte[] Decrypt(NetIncomingMessage incomingMessage);
 
         public void RegisterMessageType<TMessage>() where TMessage : INetMessage
         {
-            var type = typeof(TMessage);
+            var constructor = typeof(TMessage).GetConstructor(Type.EmptyTypes);
+            RegisterMessageType<TMessage>(
+                incomingMessage =>
+                {
+                    var message = (TMessage) constructor.Invoke(new object[0]);
+                    message.ReadFrom(incomingMessage);
+                    return message;
+                }
+            );
+        }
+
+        public void RegisterMessageType<TMessage>(Func<NetIncomingMessage, object> deserializeFunc)
+        {
             var index = _typeToMessageMetadata.Count;
-            _typeToMessageMetadata[type] = _indexToMessageMetadata[index] = new NetMessageMetadata(typeof(TMessage), index);
+
+            _typeToMessageMetadata[typeof(TMessage)] = _indexToMessageMetadata[index] = new NetMessageMetadata(
+                index,
+                deserializeFunc
+            );
         }
 
         public void RegisterReceiveHandler<TMessage>(Action<TMessage, NetIncomingMessage> onReceivedAction) where TMessage : INetMessage
@@ -196,11 +212,11 @@ namespace SkiEngine.Networking
                         var messageIndex = im.ReadVariableInt32();
                         if (_indexToMessageMetadata.TryGetValue(messageIndex, out var metadata))
                         {
-                            var netMessage = metadata.ToNetMessage(im);
+                            var message = metadata.Deserialize(im);
 
-                            if (AllowHandling(im, netMessage))
+                            if (AllowHandling(im, message))
                             {
-                                metadata.OnReceived(netMessage, im);
+                                metadata.OnReceived(message, im);
                             }
                         }
 

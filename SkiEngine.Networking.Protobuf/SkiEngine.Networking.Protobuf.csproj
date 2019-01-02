@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Lidgren\Lidgren.Network.MultiTarget\Lidgren.Network.MultiTarget.csproj" />
+    <ProjectReference Include="..\SkiEngine.Networking\SkiEngine.Networking.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,34 +1,28 @@
 ﻿using System;
-using System.Reflection;
 using Lidgren.Network;
 
 namespace SkiEngine.Networking
 {
     public class NetMessageMetadata
     {
-        private static readonly object[] EmptyObjectArray = new object[0];
-
-        public int Index { get; }
         public event Action<object, NetIncomingMessage> Received;
 
-        private readonly ConstructorInfo _emptyConstructorInfo;
+        public int Index { get; }
 
-        public NetMessageMetadata(Type messageType, int index)
+        private readonly Func<NetIncomingMessage, object> _deserializeFunc;
+
+        public NetMessageMetadata(int index, Func<NetIncomingMessage, object> deserializeFunc)
         {
             Index = index;
-            _emptyConstructorInfo = messageType.GetConstructor(Type.EmptyTypes);
+            _deserializeFunc = deserializeFunc;
         }
 
-        public INetMessage ToNetMessage(NetIncomingMessage incomingMessage)
-        {
-            var netMessage = (INetMessage)_emptyConstructorInfo.Invoke(EmptyObjectArray);
-            netMessage.ReadFrom(incomingMessage);
-            return netMessage;
-        }
+        public object Deserialize(NetIncomingMessage incomingMessage) 
+            => _deserializeFunc.Invoke(incomingMessage);
 
-        public void OnReceived(INetMessage netMessage, NetIncomingMessage incomingMessage)
+        public void OnReceived(object message, NetIncomingMessage incomingMessage)
         {
-            Received?.Invoke(netMessage, incomingMessage);
+            Received?.Invoke(message, incomingMessage);
         }
     }
 }

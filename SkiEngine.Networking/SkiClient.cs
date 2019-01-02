@@ -94,9 +94,9 @@ namespace SkiEngine.Networking
             return _clientCryptoService.Decrypt(incomingMessage.Data, incomingMessage.LengthBytes);
         }
 
-        protected override bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage)
+        protected override bool AllowHandling(NetIncomingMessage incomingMessage, object message)
         {
-            var disconnect = _nextExpectedMessageType != null && netMessage.GetType() != _nextExpectedMessageType;
+            var disconnect = _nextExpectedMessageType != null && message.GetType() != _nextExpectedMessageType;
             
             if (disconnect)
             {

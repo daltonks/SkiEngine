@@ -75,9 +75,9 @@ namespace SkiEngine.Networking
             _skiConnections.Remove(im.SenderConnection);
         }
 
-        protected override bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage)
+        protected override bool AllowHandling(NetIncomingMessage incomingMessage, object message)
         {
-            return _skiConnections[incomingMessage.SenderConnection].AllowHandling(incomingMessage, netMessage);
+            return _skiConnections[incomingMessage.SenderConnection].AllowHandling(incomingMessage, message);
         }
 
         protected override bool CanDecrypt(NetIncomingMessage incomingMessage)
@@ -112,7 +112,7 @@ namespace SkiEngine.Networking
             public bool HandshakeCompleted { get; set; }
             public AesService AesService { get; set; }
 
-            public bool AllowHandling(NetIncomingMessage incomingMessage, INetMessage netMessage)
+            public bool AllowHandling(NetIncomingMessage incomingMessage, object netMessage)
             {
                 var disconnect = false;
 
