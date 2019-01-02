@@ -62,7 +62,9 @@ namespace SkiEngine.Networking
         {
             var constructor = typeof(TMessage).GetConstructor(Type.EmptyTypes);
             RegisterMessageType<TMessage>(
-                incomingMessage =>
+                estimateSizeBytesFunc: message => ((TMessage) message).EstimateSizeBytes(),
+                serializeAction: (message, outgoingMessage) => ((TMessage) message).WriteTo(outgoingMessage),
+                deserializeFunc: incomingMessage =>
                 {
                     var message = (TMessage) constructor.Invoke(new object[0]);
                     message.ReadFrom(incomingMessage);
@@ -71,17 +73,23 @@ namespace SkiEngine.Networking
             );
         }
 
-        public void RegisterMessageType<TMessage>(Func<NetIncomingMessage, object> deserializeFunc)
+        public void RegisterMessageType<TMessage>(
+            Func<object, int?> estimateSizeBytesFunc,
+            Action<object, NetOutgoingMessage> serializeAction,
+            Func<NetIncomingMessage, object> deserializeFunc
+        )
         {
             var index = _typeToMessageMetadata.Count;
 
             _typeToMessageMetadata[typeof(TMessage)] = _indexToMessageMetadata[index] = new NetMessageMetadata(
                 index,
+                estimateSizeBytesFunc,
+                serializeAction,
                 deserializeFunc
             );
         }
 
-        public void RegisterReceiveHandler<TMessage>(Action<TMessage, NetIncomingMessage> onReceivedAction) where TMessage : INetMessage
+        public void RegisterReceiveHandler<TMessage>(Action<TMessage, NetIncomingMessage> onReceivedAction)
         {
             var messageMetadata = _typeToMessageMetadata[typeof(TMessage)];
             messageMetadata.Received += (obj, incomingMessage) => onReceivedAction.Invoke((TMessage)obj, incomingMessage);
@@ -120,20 +128,20 @@ namespace SkiEngine.Networking
             }
         }
 
-        protected NetOutgoingMessage CreateOutgoingMessage(INetMessage netMessage)
+        protected NetOutgoingMessage CreateOutgoingMessage(object message)
         {
-            if (_typeToMessageMetadata.TryGetValue(netMessage.GetType(), out var metadata))
+            if (_typeToMessageMetadata.TryGetValue(message.GetType(), out var metadata))
             {
-                var estimatedSizeBytes = netMessage.EstimateSizeBytes();
+                var estimatedSizeBytes = metadata.EstimateSizeBytes(message);
                 var outgoingMessage = estimatedSizeBytes == null 
                     ? LidgrenPeer.CreateMessage() 
                     : LidgrenPeer.CreateMessage(estimatedSizeBytes.Value + 4);
                 outgoingMessage.WriteVariableInt32(metadata.Index);
-                netMessage.WriteTo(outgoingMessage);
+                metadata.Serialize(message, outgoingMessage);
                 return outgoingMessage;
             }
 
-            throw new ArgumentException($"{netMessage.GetType()} not registered!");
+            throw new ArgumentException($"{message.GetType()} not registered!");
         }
 
         public void FlushSendQueue()

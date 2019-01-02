@@ -91,20 +91,20 @@ namespace SkiEngine.Networking
                 .Decrypt(incomingMessage.Data, incomingMessage.LengthBytes);
         }
 
-        public void Send(NetConnection recipient, INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
+        public void Send(NetConnection recipient, object message, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             var connection = _skiConnections[recipient];
 
-            var message = CreateOutgoingMessage(netMessage);
+            var outgoingMessage = CreateOutgoingMessage(message);
             if (connection.HandshakeCompleted)
             {
-                var encryptedBytes = connection.Encrypt(message.Data, message.LengthBytes);
+                var encryptedBytes = connection.Encrypt(outgoingMessage.Data, outgoingMessage.LengthBytes);
                 var encryptedMessage = LidgrenServer.CreateMessage(encryptedBytes);
-                LidgrenServer.Recycle(message);
-                message = encryptedMessage;
+                LidgrenServer.Recycle(outgoingMessage);
+                outgoingMessage = encryptedMessage;
             }
             
-            LidgrenServer.SendMessage(message, recipient, deliveryMethod, sequenceChannel);
+            LidgrenServer.SendMessage(outgoingMessage, recipient, deliveryMethod, sequenceChannel);
         }
 
         public class SkiServerConnection

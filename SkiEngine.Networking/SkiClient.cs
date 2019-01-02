@@ -106,19 +106,19 @@ namespace SkiEngine.Networking
             return !disconnect;
         }
 
-        public void Send(INetMessage netMessage, NetDeliveryMethod deliveryMethod, int sequenceChannel)
+        public void Send(object message, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
-            var message = CreateOutgoingMessage(netMessage);
+            var outgoingMessage = CreateOutgoingMessage(message);
 
             if (_handshakeCompleted)
             {
-                var encryptedBytes = _clientCryptoService.Encrypt(message.Data, message.LengthBytes);
+                var encryptedBytes = _clientCryptoService.Encrypt(outgoingMessage.Data, outgoingMessage.LengthBytes);
                 var encryptedMessage = LidgrenClient.CreateMessage(encryptedBytes);
-                LidgrenClient.Recycle(message);
-                message = encryptedMessage;
+                LidgrenClient.Recycle(outgoingMessage);
+                outgoingMessage = encryptedMessage;
             }
             
-            LidgrenClient.SendMessage(message, LidgrenClient.ServerConnection, deliveryMethod, sequenceChannel);
+            LidgrenClient.SendMessage(outgoingMessage, LidgrenClient.ServerConnection, deliveryMethod, sequenceChannel);
         }
 
         protected override bool AllowConnection(NetIncomingMessage incomingMessage)
