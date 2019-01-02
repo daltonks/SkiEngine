@@ -65,7 +65,7 @@ namespace SkiEngine.Networking
             );
         }
         
-        public Task ConnectAsync(string host, int port)
+        public virtual Task ConnectAsync(string host, int port)
         {
             StartInternal();
             
