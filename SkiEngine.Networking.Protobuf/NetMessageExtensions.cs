@@ -8,8 +8,6 @@ namespace SkiEngine.Networking.Protobuf
 {
     public static class NetMessageExtensions
     {
-        private static readonly ConcurrentDictionary<Type, MessageParser> _typeToParserMap = new ConcurrentDictionary<Type, MessageParser>();
-
         public static void WriteDelimited(this NetOutgoingMessage netMessage, IMessage protobufModel)
         {
             var bytes = protobufModel.ToByteArray();
@@ -35,13 +33,14 @@ namespace SkiEngine.Networking.Protobuf
             return GetParser<T>().ParseFrom(netMessage.Data, netMessage.PositionInBytes, netMessage.Data.Length - netMessage.PositionInBytes);
         }
 
+        private static readonly ConcurrentDictionary<Type, object> _typeToParserMap = new ConcurrentDictionary<Type, object>();
         private static MessageParser<T> GetParser<T>() where T : IMessage<T>
         {
             if(!_typeToParserMap.TryGetValue(typeof(T), out var parser))
             {
                 _typeToParserMap[typeof(T)] 
                     = parser 
-                    = (MessageParser) typeof(T).GetProperty("Parser", BindingFlags.Static | BindingFlags.Public).GetValue(null);
+                    = typeof(T).GetProperty("Parser", BindingFlags.Static | BindingFlags.Public).GetValue(null);
             }
 
             return (MessageParser<T>) parser;
