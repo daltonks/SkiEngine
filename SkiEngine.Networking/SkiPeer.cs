@@ -61,9 +61,9 @@ namespace SkiEngine.Networking
         public void RegisterMessageType<TMessage>() where TMessage : INetMessage
         {
             var constructor = typeof(TMessage).GetConstructor(Type.EmptyTypes);
-            RegisterMessageType<TMessage>(
-                estimateSizeBytesFunc: message => ((TMessage) message).EstimateSizeBytes(),
-                serializeAction: (message, outgoingMessage) => ((TMessage) message).WriteTo(outgoingMessage),
+            RegisterMessageType(
+                estimateSizeBytesFunc: message => message.EstimateSizeBytes(),
+                serializeAction: (message, outgoingMessage) => message.WriteTo(outgoingMessage),
                 deserializeFunc: incomingMessage =>
                 {
                     var message = (TMessage) constructor.Invoke(new object[0]);
@@ -74,19 +74,16 @@ namespace SkiEngine.Networking
         }
 
         public void RegisterMessageType<TMessage>(
-            Func<object, int?> estimateSizeBytesFunc,
-            Action<object, NetOutgoingMessage> serializeAction,
-            Func<NetIncomingMessage, object> deserializeFunc
+            Func<TMessage, int?> estimateSizeBytesFunc,
+            Action<TMessage, NetOutgoingMessage> serializeAction,
+            Func<NetIncomingMessage, TMessage> deserializeFunc
         )
         {
             var index = _typeToMessageMetadata.Count;
 
-            _typeToMessageMetadata[typeof(TMessage)] = _indexToMessageMetadata[index] = new NetMessageMetadata(
-                index,
-                estimateSizeBytesFunc,
-                serializeAction,
-                deserializeFunc
-            );
+            _typeToMessageMetadata[typeof(TMessage)] 
+                = _indexToMessageMetadata[index] 
+                = NetMessageMetadata.Create(index, estimateSizeBytesFunc, serializeAction, deserializeFunc);
         }
 
         public void RegisterReceiveHandler<TMessage>(Action<TMessage, NetIncomingMessage> onReceivedAction)
