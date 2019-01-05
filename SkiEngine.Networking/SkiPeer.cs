@@ -266,6 +266,11 @@ namespace SkiEngine.Networking
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             _disposed = true;
             LidgrenPeer.Shutdown("Disposed");
         }
