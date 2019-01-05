@@ -5,7 +5,7 @@ namespace SkiEngine.Networking.Protobuf
 {
     public static class SkiPeerExtensions
     {
-        public static void RegisterMessageType<TMessage>(this SkiPeer skiPeer) where TMessage : IMessage<TMessage>
+        public static void RegisterProtobufMessageType<TMessage>(this SkiPeer skiPeer) where TMessage : IMessage<TMessage>
         {
             skiPeer.RegisterMessageType(
                 estimateSizeBytesFunc: message => message.CalculateSize(),
