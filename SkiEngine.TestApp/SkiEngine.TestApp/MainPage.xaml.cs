@@ -43,41 +43,42 @@ namespace SkiEngine.TestApp
             _scene.Start();
 
             // Cameras
-            var camera1Node = _scene.RootNode.CreateChild();
-            _camera1 = new CameraComponent(0, 0);
-            camera1Node.AddComponent(_camera1);
+            _camera1 = _scene.RootNode
+                .CreateChild()
+                .AddComponent(new CameraComponent(0, 0));
 
-            var camera2Node = _scene.RootNode.CreateChild(new SKPoint(50, 200), 0, (float) Math.PI / 8, new SKPoint(3, 3));
-            _camera2 = new CameraComponent(0, 1);
-            camera2Node.AddComponent(_camera2);
+            _camera2 = _scene.RootNode
+                .CreateChild(new SKPoint(50, 200), 0, (float) Math.PI / 8, new SKPoint(3, 3))
+                .AddComponent(new CameraComponent(0, 1));
 
             // Scribble
-            var scribbleNode = _scene.RootNode.CreateChild();
-            var scribbleDrawingComponent = new DrawableComponent(
-                (canvas) =>
-                {
-                    var touchPathStroke = new SKPaint
-                    {
-                        IsAntialias = true,
-                        Style = SKPaintStyle.Stroke,
-                        Color = SKColors.Purple,
-                        StrokeWidth = 1
-                    };
+            _scene.RootNode
+                .CreateChild()
+                .AddComponent(
+                    new DrawableComponent(
+                        canvas =>
+                        {
+                            var touchPathStroke = new SKPaint
+                            {
+                                IsAntialias = true,
+                                Style = SKPaintStyle.Stroke,
+                                Color = SKColors.Purple,
+                                StrokeWidth = 1
+                            };
 
-                    foreach (var touchPath in _temporaryPaths)
-                    {
-                        canvas.DrawPath(touchPath.Value, touchPathStroke);
-                    }
-                    foreach (var touchPath in _paths)
-                    {
-                        canvas.DrawPath(touchPath, touchPathStroke);
-                    }
-                }
-            );
-            scribbleNode.AddComponent(scribbleDrawingComponent);
-
-            _camera1.AddDrawable(scribbleDrawingComponent);
-            _camera2.AddDrawable(scribbleDrawingComponent);
+                            foreach (var touchPath in _temporaryPaths)
+                            {
+                                canvas.DrawPath(touchPath.Value, touchPathStroke);
+                            }
+                            foreach (var touchPath in _paths)
+                            {
+                                canvas.DrawPath(touchPath, touchPathStroke);
+                            }
+                        }
+                    )
+                )
+                .AddToCamera(_camera1)
+                .AddToCamera(_camera2);
 
             //Sprites
             var zeroSprite = CreateTileSprite(_scene.RootNode, new InitialNodeTransform());
@@ -93,11 +94,13 @@ namespace SkiEngine.TestApp
 
         private SpriteComponent CreateTileSprite(Node parent, InitialNodeTransform transform)
         {
-            var node = parent.CreateChild(transform);
-            var sprite = new SpriteComponent(TilesetImage, new SpriteData(SKRectI.Create(0, 0, 8, 8)));
-            node.AddComponent(sprite);
-            _camera1.AddDrawable(sprite);
-            _camera2.AddDrawable(sprite);
+            var sprite = parent
+                .CreateChild(transform)
+                .AddComponent(
+                    new SpriteComponent(TilesetImage, new SpriteData(SKRectI.Create(0, 0, 8, 8)))
+                )
+                .AddToCamera(_camera1)
+                .AddToCamera(_camera2);
 
             return sprite;
         }

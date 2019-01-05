@@ -1,12 +1,23 @@
-﻿namespace SkiEngine.TestApp.UWP
+﻿using System;
+using System.Diagnostics;
+
+namespace SkiEngine.TestApp.UWP
 {
     public sealed partial class MainPage
     {
         public MainPage()
         {
-            this.InitializeComponent();
+            try
+            {
+                this.InitializeComponent();
 
-            LoadApplication(new TestApp.App());
+                LoadApplication(new TestApp.App());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                throw ex;
+            }
         }
     }
 }

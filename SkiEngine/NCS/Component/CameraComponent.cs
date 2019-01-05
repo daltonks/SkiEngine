@@ -137,4 +137,14 @@ namespace SkiEngine.NCS.Component
             }
         }
     }
+
+    public static class CameraDrawableComponentExtensions
+    {
+        public static TDrawable AddToCamera<TDrawable>(this TDrawable drawable, CameraComponent camera)
+            where TDrawable : IDrawableComponent
+        {
+            camera.AddDrawable(drawable);
+            return drawable;
+        }
+    }
 }

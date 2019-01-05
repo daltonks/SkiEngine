@@ -118,11 +118,11 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void AddComponent(Component.Base.Component component)
+        public TComponent AddComponent<TComponent>(TComponent component) where TComponent : Component.Base.Component
         {
             if (component.Node == this)
             {
-                return;
+                return component;
             }
 
             component.Node?.RemoveComponent(component);
@@ -148,6 +148,8 @@ namespace SkiEngine.NCS
                 Scene.OnComponentCreated(component);
                 component.CreationHandled = true;
             }
+
+            return component;
         }
 
         private void RemoveComponent(IComponent component)
