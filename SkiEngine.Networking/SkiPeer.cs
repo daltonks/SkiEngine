@@ -42,15 +42,10 @@ namespace SkiEngine.Networking
             LidgrenPeer = lidgrenPeer;
             _receiveMessageContext = receiveMessageContext;
 
-            RegisterMessageType<AesEncryptedAesKeyMessage>();
-            RegisterMessageType<RequestXmlRsaPublicKeyMessage>();
-            RegisterMessageType<RsaEncryptedAesKeyMessage>();
-            RegisterMessageType<XmlRsaPublicKeyMessage>();
-
-            ExceptionProcessingMessage += exception =>
-            {
-                Debug.WriteLine(exception);
-            };
+            RegisterNetMessageType<AesEncryptedAesKeyMessage>();
+            RegisterNetMessageType<RequestXmlRsaPublicKeyMessage>();
+            RegisterNetMessageType<RsaEncryptedAesKeyMessage>();
+            RegisterNetMessageType<XmlRsaPublicKeyMessage>();
         }
 
         protected abstract bool AllowConnection(NetIncomingMessage incomingMessage);
@@ -58,32 +53,39 @@ namespace SkiEngine.Networking
         protected abstract bool CanDecrypt(NetIncomingMessage incomingMessage);
         protected abstract byte[] Decrypt(NetIncomingMessage incomingMessage);
 
-        public void RegisterMessageType<TMessage>() where TMessage : INetMessage
+        public void RegisterNetMessageType<TMessage>() where TMessage : INetMessage
         {
-            var constructor = typeof(TMessage).GetConstructor(Type.EmptyTypes);
+            RegisterNetMessageType(typeof(TMessage));
+        }
+
+        public void RegisterNetMessageType(Type type)
+        {
+            var constructor = type.GetConstructor(Type.EmptyTypes);
             RegisterMessageType(
-                estimateSizeBytesFunc: message => message.EstimateSizeBytes(),
-                serializeAction: (message, outgoingMessage) => message.WriteTo(outgoingMessage),
+                type,
+                estimateSizeBytesFunc: message => ((INetMessage) message).EstimateSizeBytes(),
+                serializeAction: (message, outgoingMessage) => ((INetMessage) message).WriteTo(outgoingMessage),
                 deserializeFunc: incomingMessage =>
                 {
-                    var message = (TMessage) constructor.Invoke(new object[0]);
+                    var message = (INetMessage) constructor.Invoke(new object[0]);
                     message.ReadFrom(incomingMessage);
                     return message;
                 }
             );
         }
 
-        public void RegisterMessageType<TMessage>(
-            Func<TMessage, int?> estimateSizeBytesFunc,
-            Action<TMessage, NetOutgoingMessage> serializeAction,
-            Func<NetIncomingMessage, TMessage> deserializeFunc
+        public void RegisterMessageType(
+            Type type,
+            Func<object, int?> estimateSizeBytesFunc,
+            Action<object, NetOutgoingMessage> serializeAction,
+            Func<NetIncomingMessage, object> deserializeFunc
         )
         {
             var index = _typeToMessageMetadata.Count;
 
-            _typeToMessageMetadata[typeof(TMessage)] 
+            _typeToMessageMetadata[type] 
                 = _indexToMessageMetadata[index] 
-                = NetMessageMetadata.Create(index, estimateSizeBytesFunc, serializeAction, deserializeFunc);
+                = new NetMessageMetadata(index, estimateSizeBytesFunc, serializeAction, deserializeFunc);
         }
 
         public void RegisterReceiveHandler<TMessage>(Action<TMessage, NetIncomingMessage> onReceivedAction)
@@ -256,6 +258,7 @@ namespace SkiEngine.Networking
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex);
                 ExceptionProcessingMessage?.Invoke(ex);
             }
             finally

@@ -5,19 +5,6 @@ namespace SkiEngine.Networking
 {
     public class NetMessageMetadata
     {
-        public static NetMessageMetadata Create<TMessage>(
-            int index,
-            Func<TMessage, int?> estimateSizeBytesFunc,
-            Action<TMessage, NetOutgoingMessage> serializeAction,
-            Func<NetIncomingMessage, TMessage> deserializeFunc
-        ) 
-            => new NetMessageMetadata(
-                index,
-                message => estimateSizeBytesFunc.Invoke((TMessage) message),
-                (message, outgoingMessage) => serializeAction.Invoke((TMessage) message, outgoingMessage),
-                (incomingMessage) => deserializeFunc.Invoke(incomingMessage)
-            );
-
         public event Action<object, NetIncomingMessage> Received;
 
         public int Index { get; }
@@ -26,7 +13,7 @@ namespace SkiEngine.Networking
         private readonly Action<object, NetOutgoingMessage> _serializeAction;
         private readonly Func<NetIncomingMessage, object> _deserializeFunc;
         
-        private NetMessageMetadata(
+        public NetMessageMetadata(
             int index,
             Func<object, int?> estimateSizeBytesFunc,
             Action<object, NetOutgoingMessage> serializeAction,

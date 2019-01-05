@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Google.Protobuf;
+using Google.Protobuf.Reflection;
 
 namespace SkiEngine.Networking.Protobuf
 {
@@ -7,11 +9,25 @@ namespace SkiEngine.Networking.Protobuf
     {
         public static void RegisterProtobufMessageType<TMessage>(this SkiPeer skiPeer) where TMessage : IMessage<TMessage>
         {
+            skiPeer.RegisterProtobufMessageType(typeof(TMessage));
+        }
+
+        public static void RegisterProtobufMessageType(this SkiPeer skiPeer, Type type)
+        {
             skiPeer.RegisterMessageType(
-                estimateSizeBytesFunc: message => message.CalculateSize(),
-                serializeAction: (message, outgoingMessage) => outgoingMessage.Write(message),
-                deserializeFunc: incomingMessage => incomingMessage.Read<TMessage>()
+                type,
+                estimateSizeBytesFunc: message => ((IMessage) message).CalculateSize(),
+                serializeAction: (message, outgoingMessage) => outgoingMessage.Write((IMessage) message),
+                deserializeFunc: incomingMessage => incomingMessage.ReadProtobuf(type)
             );
+        }
+
+        public static void RegisterProtobufMessageTypes(this SkiPeer skiPeer, IEnumerable<MessageDescriptor> descriptors)
+        {
+            foreach (var descriptor in descriptors)
+            {
+                skiPeer.RegisterProtobufMessageType(descriptor.ClrType);
+            }
         }
     }
 }

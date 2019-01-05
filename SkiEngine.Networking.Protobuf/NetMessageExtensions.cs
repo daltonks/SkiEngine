@@ -20,30 +20,40 @@ namespace SkiEngine.Networking.Protobuf
             netMessage.Write(protobufModel.ToByteArray());
         }
 
-        public static T ReadDelimited<T>(this NetIncomingMessage netMessage) where T : IMessage<T>
+        public static T ReadProtobufDelimited<T>(this NetIncomingMessage netMessage) where T : IMessage<T>
+        {
+            return (T) netMessage.ReadProtobufDelimited(typeof(T));
+        }
+
+        public static object ReadProtobufDelimited(this NetIncomingMessage netMessage, Type type)
         {
             var sizeInBytes = netMessage.ReadVariableInt32();
-            var result = GetParser<T>().ParseFrom(netMessage.Data, netMessage.PositionInBytes, sizeInBytes);
+            var result = GetParser(type).ParseFrom(netMessage.Data, netMessage.PositionInBytes, sizeInBytes);
             netMessage.Position += sizeInBytes * 8;
             return result;
         }
         
-        public static T Read<T>(this NetIncomingMessage netMessage) where T : IMessage<T>
+        public static T ReadProtobuf<T>(this NetIncomingMessage netMessage) where T : IMessage<T>
         {
-            return GetParser<T>().ParseFrom(netMessage.Data, netMessage.PositionInBytes, netMessage.Data.Length - netMessage.PositionInBytes);
+            return (T) netMessage.ReadProtobuf(typeof(T));
+        }
+
+        public static object ReadProtobuf(this NetIncomingMessage netMessage, Type type)
+        {
+            return GetParser(type).ParseFrom(netMessage.Data, netMessage.PositionInBytes, netMessage.Data.Length - netMessage.PositionInBytes);
         }
 
         private static readonly ConcurrentDictionary<Type, object> _typeToParserMap = new ConcurrentDictionary<Type, object>();
-        private static MessageParser<T> GetParser<T>() where T : IMessage<T>
+        private static MessageParser GetParser(Type type)
         {
-            if(!_typeToParserMap.TryGetValue(typeof(T), out var parser))
+            if(!_typeToParserMap.TryGetValue(type, out var parser))
             {
-                _typeToParserMap[typeof(T)] 
+                _typeToParserMap[type] 
                     = parser 
-                    = typeof(T).GetProperty("Parser", BindingFlags.Static | BindingFlags.Public).GetValue(null);
+                    = type.GetProperty("Parser", BindingFlags.Static | BindingFlags.Public).GetValue(null);
             }
 
-            return (MessageParser<T>) parser;
+            return (MessageParser) parser;
         }
     }
 }
