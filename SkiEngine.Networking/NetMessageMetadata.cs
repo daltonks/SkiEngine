@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Lidgren.Network;
 
 namespace SkiEngine.Networking
 {
-    public class NetMessageMetadata
+    public class NetMessageMetadata : IDisposable
     {
         public event Action<object, NetIncomingMessage> Received;
 
@@ -12,6 +13,8 @@ namespace SkiEngine.Networking
         private readonly Func<object, int?> _estimateSizeBytesFunc;
         private readonly Action<object, NetOutgoingMessage> _serializeAction;
         private readonly Func<NetIncomingMessage, object> _deserializeFunc;
+
+        private TaskCompletionSource<object> _messageReceivedCompletionSource = new TaskCompletionSource<object>();
         
         public NetMessageMetadata(
             int index,
@@ -44,6 +47,18 @@ namespace SkiEngine.Networking
         public void OnReceived(object message, NetIncomingMessage incomingMessage)
         {
             Received?.Invoke(message, incomingMessage);
+            _messageReceivedCompletionSource.TrySetResult(message);
+            _messageReceivedCompletionSource = new TaskCompletionSource<object>();
+        }
+
+        public Task<object> WaitForMessageAsync()
+        {
+            return _messageReceivedCompletionSource.Task;
+        }
+
+        public void Dispose()
+        {
+            _messageReceivedCompletionSource.TrySetResult(null);
         }
     }
 }

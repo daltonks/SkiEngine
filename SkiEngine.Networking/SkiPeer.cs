@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Lidgren.Network;
 using SkiEngine.Networking.Messages;
 
@@ -143,6 +144,13 @@ namespace SkiEngine.Networking
             throw new ArgumentException($"{message.GetType()} not registered!");
         }
 
+        public Task<T> WaitForMessageAsync<T>()
+        {
+            return _typeToMessageMetadata[typeof(T)]
+                .WaitForMessageAsync()
+                .ContinueWith(thingy => (T) thingy.Result);
+        }
+
         public void FlushSendQueue()
         {
             LidgrenPeer.FlushSendQueue();
@@ -275,6 +283,12 @@ namespace SkiEngine.Networking
             }
 
             _disposed = true;
+
+            foreach (var messageMetadata in _typeToMessageMetadata.Values)
+            {
+                messageMetadata.Dispose();
+            }
+            
             LidgrenPeer.Shutdown("Disposed");
         }
     }
