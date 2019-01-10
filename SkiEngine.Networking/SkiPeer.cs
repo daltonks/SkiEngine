@@ -144,11 +144,11 @@ namespace SkiEngine.Networking
             throw new ArgumentException($"{message.GetType()} not registered!");
         }
 
-        public Task<T> WaitForMessageAsync<T>()
+        /// <returns>The message, or null if a disconnect occurred.</returns>
+        public async Task<T> WaitForMessageAsync<T>()
         {
-            return _typeToMessageMetadata[typeof(T)]
-                .WaitForMessageAsync()
-                .ContinueWith(thingy => (T) thingy.Result);
+            var result = await _typeToMessageMetadata[typeof(T)].WaitForMessageAsync();
+            return (T) result;
         }
 
         public void FlushSendQueue()
