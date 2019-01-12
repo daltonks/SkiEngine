@@ -106,7 +106,7 @@ namespace SkiEngine.Networking
             return !disconnect;
         }
 
-        public void Send(object message, NetDeliveryMethod deliveryMethod, int sequenceChannel)
+        protected void Send(object message, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             var outgoingMessage = CreateOutgoingMessage(message);
 
