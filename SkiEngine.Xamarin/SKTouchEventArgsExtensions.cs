@@ -1,4 +1,6 @@
-﻿using SkiaSharp.Views.Forms;
+﻿using System.Collections.Generic;
+using System.Linq;
+using SkiaSharp.Views.Forms;
 using SkiEngine.Touch;
 // ReSharper disable InconsistentNaming
 
@@ -8,7 +10,7 @@ namespace SkiEngine.Xamarin
     {
         public static SKTouch ToSKTouch(this SKTouchEventArgs eventArgs)
         {
-            return new SKTouch(
+            return SKTouch.Get(
                 eventArgs.Id,
                 (Touch.SKTouchAction) (int) eventArgs.ActionType,
                 (Touch.SKMouseButton) (int) eventArgs.MouseButton,
