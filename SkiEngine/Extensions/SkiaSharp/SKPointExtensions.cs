@@ -26,6 +26,13 @@ namespace SkiEngine.Extensions.SkiaSharp
             return new SKPoint((float) (point.X / length), (float) (point.Y / length));
         }
 
+        public static double DistanceSquared(this SKPoint p1, SKPoint p2)
+        {
+            var xDif = p1.X - p2.X;
+            var yDif = p1.Y - p2.Y;
+            return xDif * xDif + yDif * yDif;
+        }
+
         public static double Length(this SKPoint point)
         {
             return Math.Sqrt(point.X * point.X + point.Y * point.Y);
@@ -49,6 +56,16 @@ namespace SkiEngine.Extensions.SkiaSharp
         public static SKPoint VectorTo(this SKPoint p1, SKPoint p2)
         {
             return p2 - p1;
+        }
+
+        public static double Angle(this SKPoint a, SKPoint b, SKPoint c)
+        {
+            double v1X = b.X - c.X;
+            double v1Y = b.Y - c.Y;
+            double v2X = a.X - c.X;
+            double v2Y = a.Y - c.Y;
+
+            return Math.Atan2(v1X, v1Y) - Math.Atan2(v2X, v2Y);
         }
 
         public static SKPoint Rotate(this SKPoint point, double radians)
