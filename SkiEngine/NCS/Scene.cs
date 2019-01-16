@@ -107,7 +107,7 @@ namespace SkiEngine.NCS
             var stopwatchElapsed = _updateStopwatch.Elapsed;
             _updateTime.Delta = stopwatchElapsed - _previousStopwatchElapsed;
             _previousStopwatchElapsed = stopwatchElapsed;
-
+            
             _updateReaderWriterLock.EnterWriteLock();
             try
             {
