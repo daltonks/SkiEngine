@@ -99,9 +99,8 @@ namespace SkiEngine.Networking
             if (connection.HandshakeCompleted)
             {
                 var encryptedBytes = connection.Encrypt(outgoingMessage.Data, outgoingMessage.LengthBytes);
-                var encryptedMessage = LidgrenServer.CreateMessage(encryptedBytes);
-                LidgrenServer.Recycle(outgoingMessage);
-                outgoingMessage = encryptedMessage;
+                outgoingMessage = LidgrenServer.CreateMessage(encryptedBytes.Length);
+                outgoingMessage.Write(encryptedBytes);
             }
             
             LidgrenServer.SendMessage(outgoingMessage, recipient, deliveryMethod, sequenceChannel);

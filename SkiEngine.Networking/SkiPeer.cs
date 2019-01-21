@@ -219,7 +219,6 @@ namespace SkiEngine.Networking
                         if (CanDecrypt(im))
                         {
                             var decryptedBytes = Decrypt(im);
-                            LidgrenPeer.Recycle(im.Data);
                             im.Data = decryptedBytes;
                             im.LengthBytes = decryptedBytes.Length;
                         }
