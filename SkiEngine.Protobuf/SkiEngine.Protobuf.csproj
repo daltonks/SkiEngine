@@ -1,3 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
@@ -8,14 +9,14 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.6.1" />
-    <PackageReference Include="Grpc.Tools" Version="1.17.1">
+    <PackageReference Include="Grpc.Tools" PrivateAssets="All" Version="1.18.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="%UserProfile%\.nuget\packages\grpc.tools\1.17.1\tools\windows_x86\protoc.exe -I. --csharp_out . --grpc_out . ProtobufModels.proto --plugin=protoc-gen-grpc=%UserProfile%\.nuget\packages\grpc.tools\1.17.1\tools\windows_x86\grpc_csharp_plugin.exe" />
-  </Target>
+  <ItemGroup>
+    <Protobuf Include="**/*.proto" />
+  </ItemGroup>
 
 </Project>
