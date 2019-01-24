@@ -10,10 +10,13 @@ namespace SkiEngine.Networking
 {
     public abstract class SkiPeer : IDisposable
     {
+        public delegate void MessageReceivedDelegate(object message, NetIncomingMessage incomingMessage);
         public delegate void StatusDelegate(NetIncomingMessage im, string reason);
         public delegate void LogMessageDelegate(string message);
         public delegate void DataReceivedDelegate(NetIncomingMessage incomingMessage);
-        
+
+        public event MessageReceivedDelegate MessageReceived;
+
         public event StatusDelegate StatusRespondedAwaitingApproval;
         public event StatusDelegate StatusNone;
         public event StatusDelegate StatusInitiatedConnect;
@@ -231,6 +234,7 @@ namespace SkiEngine.Networking
                             if (AllowHandling(im, message))
                             {
                                 metadata.OnReceived(message, im);
+                                MessageReceived?.Invoke(message, im);
                             }
                         }
 
