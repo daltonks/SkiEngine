@@ -91,7 +91,7 @@ namespace SkiEngine.Networking
                 .Decrypt(incomingMessage.Data, incomingMessage.LengthBytes);
         }
 
-        public void Send(NetConnection recipient, object message, NetDeliveryMethod deliveryMethod, int sequenceChannel)
+        protected void Send(NetConnection recipient, object message, NetDeliveryMethod deliveryMethod, int sequenceChannel)
         {
             var connection = _skiConnections[recipient];
 
