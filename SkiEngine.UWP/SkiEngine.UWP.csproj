@@ -120,7 +120,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="SkiGlViewExtensions.cs" />
+    <Compile Include="UwpPageExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\SkiEngine.UWP.rd.xml" />
   </ItemGroup>

@@ -2,7 +2,6 @@
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiEngine.Input;
-using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 namespace SkiEngine.Xamarin
@@ -15,19 +14,22 @@ namespace SkiEngine.Xamarin
         public event Action<SkiTouch> SkiTouch;
         public event MouseWheelScrollDelegate MouseWheelScroll;
 
+        private InputService _inputService;
+
         public SkiGlView()
         {
             InitializeComponent();
         }
         
-        public void InitInput()
+        public void InitInput(InputService inputService)
         {
-            InputService.Current.MouseWheelScroll += OnMouseWheelScroll;
+            _inputService = inputService;
+            inputService.MouseWheelScroll += OnMouseWheelScroll;
         }
 
         public void DisposeInput()
         {
-            InputService.Current.MouseWheelScroll -= OnMouseWheelScroll;
+            _inputService.MouseWheelScroll -= OnMouseWheelScroll;
         }
 
         private SKPoint _previousTouchPoint;

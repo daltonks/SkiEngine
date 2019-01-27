@@ -3,15 +3,19 @@ using SkiEngine.Input;
 
 namespace SkiEngine.UWP
 {
-    public static class SkiGlViewExtensions
+    public static class UwpPageExtensions
     {
-        public static void InitializeSkiEngine(this Page page)
+        public static InputService CreateInputService(this Page page)
         {
+            var inputService = new InputService();
+
             page.PointerWheelChanged += (sender, args) =>
             {
                 var delta = args.GetCurrentPoint(page).Properties.MouseWheelDelta;
-                InputService.Current.OnMouseWheelScroll(delta);
+                inputService.OnMouseWheelScroll(delta);
             };
+
+            return inputService;
         }
     }
 }
