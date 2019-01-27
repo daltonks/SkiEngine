@@ -17,18 +17,15 @@ namespace SkiEngine.Xamarin
 
         public SkiGlView()
         {
-            Focused += OnFocused;
-            Unfocused += OnUnfocused;
-
             InitializeComponent();
         }
         
-        private void OnFocused(object sender, FocusEventArgs e)
+        public void InitInput()
         {
             InputService.Current.MouseWheelScroll += OnMouseWheelScroll;
         }
 
-        private void OnUnfocused(object sender, FocusEventArgs e)
+        public void DisposeInput()
         {
             InputService.Current.MouseWheelScroll -= OnMouseWheelScroll;
         }

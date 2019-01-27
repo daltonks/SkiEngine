@@ -4,6 +4,7 @@ using SkiaSharp;
 
 namespace SkiEngine.Extensions.SkiaSharp
 {
+    // ReSharper disable once InconsistentNaming
     public static class SKPointExtensions
     {
         public static SKPoint ToLength(this SKPoint point, double length)
@@ -36,6 +37,16 @@ namespace SkiEngine.Extensions.SkiaSharp
         public static double Length(this SKPoint point)
         {
             return Math.Sqrt(point.X * point.X + point.Y * point.Y);
+        }
+
+        public static SKPoint Add(this SKPoint point, double value)
+        {
+            return new SKPoint((float) (point.X + value), (float) (point.Y + value));
+        }
+
+        public static SKPoint Subtract(this SKPoint point, double value)
+        {
+            return new SKPoint((float) (point.X - value), (float) (point.Y - value));
         }
 
         public static SKPoint Multiply(this SKPoint point, double scalar)
