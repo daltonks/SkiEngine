@@ -1,20 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SkiaSharp.Views.Forms;
-using SkiEngine.Touch;
+using SkiEngine.Input;
+using SKMouseButton = SkiEngine.Input.SKMouseButton;
+using SKTouchAction = SkiEngine.Input.SKTouchAction;
+using SKTouchDeviceType = SkiEngine.Input.SKTouchDeviceType;
+
 // ReSharper disable InconsistentNaming
 
 namespace SkiEngine.Xamarin
 {
     public static class SKTouchEventArgsExtensions
     {
-        public static SKTouch ToSKTouch(this SKTouchEventArgs eventArgs)
+        public static SkiTouch ToSKTouch(this SKTouchEventArgs eventArgs)
         {
-            return SKTouch.Get(
+            return SkiTouch.Get(
                 eventArgs.Id,
-                (Touch.SKTouchAction) (int) eventArgs.ActionType,
-                (Touch.SKMouseButton) (int) eventArgs.MouseButton,
-                (Touch.SKTouchDeviceType) (int) eventArgs.DeviceType,
+                (SKTouchAction) (int) eventArgs.ActionType,
+                (SKMouseButton) (int) eventArgs.MouseButton,
+                (SKTouchDeviceType) (int) eventArgs.DeviceType,
                 eventArgs.Location,
                 eventArgs.InContact
             );
