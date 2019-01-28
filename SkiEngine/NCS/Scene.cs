@@ -121,6 +121,12 @@ namespace SkiEngine.NCS
                     system.Update(_updateTime);
                 }
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+
+                throw;
+            }
             finally
             {
                 _updateReaderWriterLock.ExitWriteLock();
