@@ -97,7 +97,7 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void RunNextUpdate(Action action)
+        public void RunDuringUpdate(Action action)
         {
             _runNextUpdateActions.Enqueue(action);
         }
