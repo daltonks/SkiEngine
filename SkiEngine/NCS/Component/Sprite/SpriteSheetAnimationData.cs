@@ -17,7 +17,7 @@ namespace SkiEngine.NCS.Component.Sprite
             States = states;
         }
 
-        public int NumLayers => this.States[0].Frames[0].Sprites.Length;
+        public int NumLayers => States[0].Frames[0].Sprites.Length;
 
         public void WriteTo(Stream stream)
         {
