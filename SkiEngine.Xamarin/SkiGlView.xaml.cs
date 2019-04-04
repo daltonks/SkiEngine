@@ -43,9 +43,9 @@ namespace SkiEngine.Xamarin
             _previousTouchPoint = args.Location;
         }
 
-        private void OnMouseWheelScroll(int delta)
+        private void OnMouseWheelScroll(int scrollDelta)
         {
-            MouseWheelScroll?.Invoke(delta, _previousTouchPoint);
+            MouseWheelScroll?.Invoke(scrollDelta, _previousTouchPoint);
         }
     }
 }
