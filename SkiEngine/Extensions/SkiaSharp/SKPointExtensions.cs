@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SkiaSharp;
 
 namespace SkiEngine.Extensions.SkiaSharp
@@ -32,6 +33,13 @@ namespace SkiEngine.Extensions.SkiaSharp
             var xDif = p1.X - p2.X;
             var yDif = p1.Y - p2.Y;
             return xDif * xDif + yDif * yDif;
+        }
+
+        public static double Distance(this SKPoint p1, SKPoint p2)
+        {
+            var xDif = p1.X - p2.X;
+            var yDif = p1.Y - p2.Y;
+            return Math.Sqrt(xDif * xDif + yDif * yDif);
         }
 
         public static double Length(this SKPoint point)
@@ -88,6 +96,23 @@ namespace SkiEngine.Extensions.SkiaSharp
                 (float) (point.X * cos - point.Y * sin),
                 (float) (point.X * sin + point.Y * cos)
             );
+        }
+
+        public static SKPoint Average(this IEnumerable<SKPoint> points)
+        {
+            var numberOfPoints = 0;
+            var xSums = 0.0;
+            var ySums = 0.0;
+
+            foreach (var point in points)
+            {
+                xSums += point.X;
+                ySums += point.Y;
+
+                numberOfPoints++;
+            }
+
+            return new SKPoint((float) xSums / numberOfPoints, (float) ySums / numberOfPoints);
         }
 
         public static SKRect BoundingBox(this IEnumerable<SKPoint> points)
