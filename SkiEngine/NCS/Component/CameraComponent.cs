@@ -107,6 +107,20 @@ namespace SkiEngine.NCS.Component
             );
         }
 
+        public void ZoomWithFocus(double zoomDelta, SKPoint worldPoint, float minZoom, float maxZoom)
+        {
+            var resultScale = Node.RelativeScale.X * (1 + zoomDelta);
+            if (resultScale < minZoom)
+            {
+                zoomDelta = (minZoom - Node.RelativeScale.X) / Node.RelativeScale.X;
+            }
+            else if (resultScale > maxZoom)
+            {
+                zoomDelta = (maxZoom - Node.RelativeScale.X) / Node.RelativeScale.X;
+            }
+            ZoomWithFocus(zoomDelta, worldPoint);
+        }
+
         public void ZoomWithFocus(double zoomDelta, SKPoint worldPoint)
         {
             Node.WorldPoint += worldPoint.VectorTo(Node.WorldPoint).Multiply(zoomDelta);
