@@ -107,6 +107,12 @@ namespace SkiEngine.NCS.Component
             );
         }
 
+        public void ZoomWithFocus(double zoomDelta, SKPoint worldPoint)
+        {
+            Node.WorldPoint += worldPoint.VectorTo(Node.WorldPoint).Multiply(zoomDelta);
+            Node.RelativeScale = Node.RelativeScale.Multiply(1 + zoomDelta);
+        }
+
         private SKRectI _previousDeviceClipBounds;
         private SKMatrix _deviceClipBoundsTranslationMatrix;
         public void Draw(SKCanvas canvas)
