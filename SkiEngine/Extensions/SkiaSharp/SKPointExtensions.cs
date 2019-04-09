@@ -71,6 +71,11 @@ namespace SkiEngine.Extensions.SkiaSharp
         {
             return new SKPoint(p1.X / p2.X, p1.Y / p2.Y);
         }
+
+        public static SKPoint Divide(this SKPoint point, double divisor)
+        {
+            return new SKPoint((float) (point.X / divisor), (float) (point.Y / divisor));
+        }
         
         public static SKPoint VectorTo(this SKPoint p1, SKPoint p2)
         {
