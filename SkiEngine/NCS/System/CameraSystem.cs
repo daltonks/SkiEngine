@@ -53,13 +53,13 @@ namespace SkiEngine.NCS.System
             _layeredCameraComponents.Update(cameraComponent, previousDrawOrder);
         }
 
-        public void Draw(SKCanvas canvas, int viewTarget)
+        public void Draw(SKCanvas canvas, int viewTarget, double widthXamarinUnits, double heightXamarinUnits)
         {
             foreach (var cameraComponent in _layeredCameraComponents)
             {
                 if (cameraComponent.ViewTarget == viewTarget)
                 {
-                    cameraComponent.Draw(canvas);
+                    cameraComponent.Draw(canvas, widthXamarinUnits, heightXamarinUnits);
                 }
             }
         }

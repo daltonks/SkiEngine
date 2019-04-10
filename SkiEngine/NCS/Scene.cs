@@ -139,14 +139,14 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void Draw(SKCanvas canvas, int viewTarget)
+        public void Draw(SKCanvas canvas, int viewTarget, double widthXamarinUnits, double heightXamarinUnits)
         {
             _updateReaderWriterLock.EnterReadLock();
             try
             {
                 foreach (var system in _drawableSystems)
                 {
-                    system.Draw(canvas, viewTarget);
+                    system.Draw(canvas, viewTarget, widthXamarinUnits, heightXamarinUnits);
                 }
             }
             finally

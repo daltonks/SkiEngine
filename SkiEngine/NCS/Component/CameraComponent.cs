@@ -16,9 +16,6 @@ namespace SkiEngine.NCS.Component
         private readonly LayeredSets<int, IDrawableComponent> _componentLayeredSets;
         private readonly Dictionary<IDrawableComponent, int> _componentToZMap;
 
-        private SKMatrix _worldToPixelMatrix;
-        private SKMatrix _pixelToWorldMatrix;
-
         public CameraComponent(int drawOrder, int viewTarget)
         {
             _drawOrder = drawOrder;
@@ -30,9 +27,16 @@ namespace SkiEngine.NCS.Component
 
         public int ViewTarget { get; set; }
 
+        private SKMatrix _xamarinToPixelMatrix;
+        public ref SKMatrix XamarinToPixelMatrix => ref _xamarinToPixelMatrix;
+
+        private SKMatrix _worldToPixelMatrix;
         public ref SKMatrix WorldToPixelMatrix => ref _worldToPixelMatrix;
+
+        private SKMatrix _pixelToWorldMatrix;
         public ref SKMatrix PixelToWorldMatrix => ref _pixelToWorldMatrix;
 
+        public SKRectI PixelViewport { get; private set; }
         public SKRect WorldViewport { get; private set; }
 
         public int DrawOrder
@@ -97,8 +101,8 @@ namespace SkiEngine.NCS.Component
         {
             var localBoundingBox = worldPoints.Select(Node.WorldToLocalMatrix.MapPoint).BoundingBox();
             Node.WorldPoint = Node.LocalToWorldMatrix.MapPoint(localBoundingBox.Mid());
-            var widthProportion = localBoundingBox.Width / _previousDeviceClipBounds.Width;
-            var heightProportion = localBoundingBox.Height / _previousDeviceClipBounds.Height;
+            var widthProportion = localBoundingBox.Width / _previousPixelViewport.Width;
+            var heightProportion = localBoundingBox.Height / _previousPixelViewport.Height;
 
             Node.RelativeScale = Node.RelativeScale.Multiply(
                 widthProportion > heightProportion 
@@ -127,24 +131,29 @@ namespace SkiEngine.NCS.Component
             Node.RelativeScale = Node.RelativeScale.Multiply(1 + zoomDelta);
         }
 
-        private SKRectI _previousDeviceClipBounds;
-        private SKMatrix _deviceClipBoundsTranslationMatrix;
-        public void Draw(SKCanvas canvas)
+        private SKRectI _previousPixelViewport;
+        private SKMatrix _halfPixelViewportTranslationMatrix;
+        public void Draw(SKCanvas canvas, double widthXamarinUnits, double heightXamarinUnits)
         {
-            var deviceClipBounds = canvas.DeviceClipBounds;
-            if (deviceClipBounds != _previousDeviceClipBounds)
+            PixelViewport = canvas.DeviceClipBounds;
+            if (PixelViewport != _previousPixelViewport)
             {
-                _deviceClipBoundsTranslationMatrix = SKMatrix.MakeTranslation(deviceClipBounds.Width / 2f, deviceClipBounds.Height / 2f);
-                _previousDeviceClipBounds = deviceClipBounds;
+                _xamarinToPixelMatrix = SKMatrix.MakeScale(
+                    (float) (PixelViewport.Width / widthXamarinUnits),
+                    (float) (PixelViewport.Height / heightXamarinUnits)
+                );
+
+                _halfPixelViewportTranslationMatrix = SKMatrix.MakeTranslation(PixelViewport.Width / 2f, PixelViewport.Height / 2f);
+                _previousPixelViewport = PixelViewport;
             }
 
             _worldToPixelMatrix = Node.WorldToLocalMatrix;
 
-            SKMatrix.PostConcat(ref _worldToPixelMatrix, ref _deviceClipBoundsTranslationMatrix);
+            SKMatrix.PostConcat(ref _worldToPixelMatrix, ref _halfPixelViewportTranslationMatrix);
 
             _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
 
-            WorldViewport = _pixelToWorldMatrix.MapRect(deviceClipBounds);
+            WorldViewport = _pixelToWorldMatrix.MapRect(PixelViewport);
 
             foreach (var component in _componentLayeredSets)
             {
