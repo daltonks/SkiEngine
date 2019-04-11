@@ -30,6 +30,9 @@ namespace SkiEngine.NCS.Component
         private SKMatrix _xamarinToPixelMatrix;
         public ref SKMatrix XamarinToPixelMatrix => ref _xamarinToPixelMatrix;
 
+        private SKMatrix _pixelToXamarinMatrix;
+        public ref SKMatrix PixelToXamarinMatrix => ref _pixelToXamarinMatrix;
+
         private SKMatrix _worldToPixelMatrix;
         public ref SKMatrix WorldToPixelMatrix => ref _worldToPixelMatrix;
 
@@ -141,6 +144,11 @@ namespace SkiEngine.NCS.Component
                 _xamarinToPixelMatrix = SKMatrix.MakeScale(
                     (float) (PixelViewport.Width / widthXamarinUnits),
                     (float) (PixelViewport.Height / heightXamarinUnits)
+                );
+
+                _pixelToXamarinMatrix = SKMatrix.MakeScale(
+                    (float) (widthXamarinUnits / PixelViewport.Width),
+                    (float) (heightXamarinUnits / PixelViewport.Height)
                 );
 
                 _halfPixelViewportTranslationMatrix = SKMatrix.MakeTranslation(PixelViewport.Width / 2f, PixelViewport.Height / 2f);
