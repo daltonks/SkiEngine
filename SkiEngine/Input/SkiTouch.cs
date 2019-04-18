@@ -32,12 +32,12 @@ namespace SkiEngine.Input
             return result;
         }
 
-        public long Id { get; private set; }
-        public SKTouchAction ActionType { get; private set; }
-        public SKTouchDeviceType DeviceType { get; private set; }
-        public SKMouseButton MouseButton { get; private set; }
-        public SKPoint Location { get; private set; }
-        public bool InContact { get; private set; }
+        public long Id { get; set; }
+        public SKTouchAction ActionType { get; set; }
+        public SKTouchDeviceType DeviceType { get; set; }
+        public SKMouseButton MouseButton { get; set; }
+        public SKPoint Location { get; set; }
+        public bool InContact { get; set; }
 
         public void Recycle()
         {
