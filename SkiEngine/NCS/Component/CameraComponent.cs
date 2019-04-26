@@ -27,6 +27,8 @@ namespace SkiEngine.NCS.Component
 
         public int ViewTarget { get; set; }
 
+        public IReadOnlyList<int> OrderedLayers => _componentLayeredSets.OrderedLayers;
+
         private SKMatrix _xamarinToPixelMatrix;
         public ref SKMatrix XamarinToPixelMatrix => ref _xamarinToPixelMatrix;
 
