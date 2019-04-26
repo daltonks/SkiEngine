@@ -36,19 +36,22 @@ namespace SkiEngine.Util
         public bool Add(TItem item)
         {
             var layer = _getLayerFunc.Invoke(item);
-            if (!_layers.TryGetValue(layer, out var layerSet))
+            if (_layers.TryGetValue(layer, out var layerSet))
             {
-                layerSet = _layers[layer] = new HashSet<TItem>(_itemEqualityComparer);
-
-                var layerSetOrderIndex = _orderedLayers.BinarySearch(layer, _layerComparer);
-                if (layerSetOrderIndex < 0)
-                {
-                    layerSetOrderIndex = ~layerSetOrderIndex;
-                }
-                _orderedLayers.Insert(layerSetOrderIndex, layer);
+                return layerSet.Add(item);
             }
 
-            return layerSet.Add(item);
+            // Initialize with an enumerable to ensure the HashSet starts with a capacity of 1
+            _layers[layer] = new HashSet<TItem>(new[] { item }, _itemEqualityComparer);
+
+            var layerSetOrderIndex = _orderedLayers.BinarySearch(layer, _layerComparer);
+            if (layerSetOrderIndex < 0)
+            {
+                layerSetOrderIndex = ~layerSetOrderIndex;
+            }
+            _orderedLayers.Insert(layerSetOrderIndex, layer);
+
+            return true;
         }
 
         public void Update(TItem item, TLayer previousLayer)
