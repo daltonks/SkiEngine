@@ -23,6 +23,8 @@ namespace SkiEngine.Util
             Init(getLayerFunc, layerComparer, itemEqualityComparer);
         }
 
+        public IReadOnlyList<TLayer> OrderedLayers => _orderedLayers;
+
         private void Init(Func<TItem, TLayer> getLayerFunc, IComparer<TLayer> layerComparer, IEqualityComparer<TItem> itemEqualityComparer)
         {
             _getLayerFunc = getLayerFunc;
