@@ -89,6 +89,11 @@ namespace SkiEngine.NCS.Component
             }
         }
 
+        public IReadOnlyCollection<IDrawableComponent> GetDrawablesWithZ(int z)
+        {
+            return _componentLayeredSets.GetItems(z);
+        }
+
         public void RemoveDrawable(IDrawableComponent component)
         {
             RemoveDrawable((IComponent) component);

@@ -35,6 +35,13 @@ namespace SkiEngine.Util
             _orderedLayers = new List<TLayer>();
         }
 
+        public IReadOnlyCollection<TItem> GetItems(TLayer layer)
+        {
+            return _layers.TryGetValue(layer, out var items)
+                ? items
+                : (IReadOnlyCollection<TItem>) new List<TItem>(0);
+        }
+
         public bool Add(TItem item)
         {
             var layer = _getLayerFunc.Invoke(item);
