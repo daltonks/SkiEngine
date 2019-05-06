@@ -21,7 +21,7 @@ namespace SkiEngine.NCS
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
         private readonly ConcurrentQueue<Action> _runNextUpdateActions = new ConcurrentQueue<Action>();
-        private readonly ReaderWriterLockSlim _updateReaderWriterLock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim _updateReaderWriterLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         
         public Scene()
         {
