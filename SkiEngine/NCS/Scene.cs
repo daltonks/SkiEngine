@@ -20,7 +20,7 @@ namespace SkiEngine.NCS
         private readonly UpdateTime _updateTime = new UpdateTime();
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
-        private readonly ConcurrentQueue<Action> _runNextUpdateActions = new ConcurrentQueue<Action>();
+        private readonly ConcurrentQueue<Action> _runDuringUpdateActions = new ConcurrentQueue<Action>();
         private readonly ReaderWriterLockSlim _updateReaderWriterLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         
         public Scene()
@@ -99,7 +99,7 @@ namespace SkiEngine.NCS
 
         public void RunDuringUpdate(Action action)
         {
-            _runNextUpdateActions.Enqueue(action);
+            _runDuringUpdateActions.Enqueue(action);
         }
 
         public void Update()
@@ -111,7 +111,7 @@ namespace SkiEngine.NCS
             _updateReaderWriterLock.EnterWriteLock();
             try
             {
-                while (_runNextUpdateActions.TryDequeue(out var action))
+                while (_runDuringUpdateActions.TryDequeue(out var action))
                 {
                     action.Invoke();
                 }
@@ -119,6 +119,11 @@ namespace SkiEngine.NCS
                 foreach (var system in _updateableSystems)
                 {
                     system.Update(_updateTime);
+                }
+
+                while (_runDuringUpdateActions.TryDequeue(out var action))
+                {
+                    action.Invoke();
                 }
             }
             catch (Exception ex)
