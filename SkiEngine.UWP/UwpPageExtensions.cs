@@ -15,6 +15,20 @@ namespace SkiEngine.UWP
                 inputService.OnMouseWheelScroll(delta);
             };
 
+            page.KeyDown += (sender, args) =>
+            {
+                var intKey = (int) args.Key;
+                var skiVirtualKey = (SkiVirtualKey) intKey;
+                inputService.OnKeyDown(skiVirtualKey);
+            };
+
+            page.KeyUp += (sender, args) =>
+            {
+                var intKey = (int) args.Key;
+                var skiVirtualKey = (SkiVirtualKey) intKey;
+                inputService.OnKeyUp(skiVirtualKey);
+            };
+
             return inputService;
         }
     }
