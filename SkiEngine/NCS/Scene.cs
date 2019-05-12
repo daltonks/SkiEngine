@@ -169,11 +169,11 @@ namespace SkiEngine.NCS
 
             IsDestroyed = true;
 
-            _updateReaderWriterLock.Dispose();
-
             RootNode.Destroy();
 
             Destroyed?.Invoke(this);
+
+            _updateReaderWriterLock.Dispose();
         }
     }
 }
