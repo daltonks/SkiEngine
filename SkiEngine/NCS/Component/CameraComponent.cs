@@ -14,15 +14,13 @@ namespace SkiEngine.NCS.Component
 
         private int _drawOrder;
         private readonly LayeredSets<int, IDrawableComponent> _componentLayeredSets;
-        private readonly Dictionary<IDrawableComponent, int> _componentToZMap;
 
         public CameraComponent(int drawOrder, int viewTarget)
         {
             _drawOrder = drawOrder;
             ViewTarget = viewTarget;
             
-            _componentLayeredSets = new LayeredSets<int, IDrawableComponent>(component => _componentToZMap[component]);
-            _componentToZMap = new Dictionary<IDrawableComponent, int>(ReferenceEqualityComparer<IDrawableComponent>.Default);
+            _componentLayeredSets = new LayeredSets<int, IDrawableComponent>(component => component.Node.WorldZ);
         }
 
         public int ViewTarget { get; set; }
@@ -75,16 +73,9 @@ namespace SkiEngine.NCS.Component
                 return;
             }
 
-            if (_componentToZMap.ContainsKey(component))
-            {
-                var previousZ = _componentToZMap[component];
-                _componentToZMap[component] = component.Node.WorldZ;
-                _componentLayeredSets.Update(component, previousZ);
-            }
-            else
+            if (_componentLayeredSets.Add(component))
             {
                 component.Destroyed += RemoveDrawable;
-                _componentToZMap[component] = component.Node.WorldZ;
                 _componentLayeredSets.Add(component);
             }
         }
@@ -103,7 +94,6 @@ namespace SkiEngine.NCS.Component
         {
             var drawableComponent = (IDrawableComponent) component;
             _componentLayeredSets.Remove(drawableComponent);
-            _componentToZMap.Remove(drawableComponent);
             component.Destroyed -= RemoveDrawable;
         }
 

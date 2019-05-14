@@ -116,7 +116,7 @@ namespace SkiEngine.NCS
                 var previousZ = _worldZ;
                 _worldZ = value;
 
-                var difference = value - _worldZ;
+                var difference = value - previousZ;
                 foreach (var child in _children)
                 {
                     child.WorldZ += difference;
