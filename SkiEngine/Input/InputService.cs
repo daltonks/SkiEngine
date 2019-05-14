@@ -8,6 +8,8 @@ namespace SkiEngine.Input
         public event Action<SkiVirtualKey> KeyDown;
         public event Action<SkiVirtualKey> KeyUp;
 
+        public int NumPointersOnWindow { get; set; }
+
         public void OnMouseWheelScroll(int delta)
         {
             MouseWheelScroll?.Invoke(delta);
