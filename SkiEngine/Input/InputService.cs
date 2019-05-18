@@ -4,11 +4,16 @@ namespace SkiEngine.Input
 {
     public class InputService
     {
+        public Func<int> CalculateNumberOfMousePointersFunc { private get; set; } = () => 0;
+
         public event Action<int> MouseWheelScroll;
         public event Action<SkiVirtualKey> KeyDown;
         public event Action<SkiVirtualKey> KeyUp;
 
-        public int NumPointersOnWindow { get; set; }
+        public int CalculateNumberOfMousePointers()
+        {
+            return CalculateNumberOfMousePointersFunc.Invoke();
+        }
 
         public void OnMouseWheelScroll(int delta)
         {
