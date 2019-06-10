@@ -21,6 +21,7 @@ namespace SkiEngine.NCS
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
         private readonly ConcurrentQueue<Action> _runDuringUpdateActions = new ConcurrentQueue<Action>();
+        private readonly ConcurrentQueue<Action> _runAfterDrawActions = new ConcurrentQueue<Action>();
         private readonly ReaderWriterLockSlim _updateReaderWriterLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         
         public Scene()
@@ -102,6 +103,11 @@ namespace SkiEngine.NCS
             _runDuringUpdateActions.Enqueue(action);
         }
 
+        public void RunAfterDraw(Action action)
+        {
+            _runAfterDrawActions.Enqueue(action);
+        }
+
         public void Update()
         {
             var stopwatchElapsed = _updateStopwatch.Elapsed;
@@ -152,6 +158,11 @@ namespace SkiEngine.NCS
                 foreach (var system in _drawableSystems)
                 {
                     system.Draw(canvas, viewTarget, widthXamarinUnits, heightXamarinUnits);
+                }
+
+                while (_runAfterDrawActions.TryDequeue(out var action))
+                {
+                    action.Invoke();
                 }
             }
             finally
