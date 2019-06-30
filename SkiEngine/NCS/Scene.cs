@@ -21,7 +21,7 @@ namespace SkiEngine.NCS
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
         private readonly ConcurrentQueue<Action> _runDuringUpdateActions = new ConcurrentQueue<Action>();
-        private readonly ConcurrentQueue<Action> _runAfterDrawActions = new ConcurrentQueue<Action>();
+        private readonly ConcurrentQueue<Action<SKSurface>> _runAfterDrawActions = new ConcurrentQueue<Action<SKSurface>>();
         private readonly ReaderWriterLockSlim _updateReaderWriterLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         
         public Scene()
@@ -103,7 +103,7 @@ namespace SkiEngine.NCS
             _runDuringUpdateActions.Enqueue(action);
         }
 
-        public void RunAfterDraw(Action action)
+        public void RunAfterDraw(Action<SKSurface> action)
         {
             _runAfterDrawActions.Enqueue(action);
         }
@@ -150,19 +150,20 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void Draw(SKCanvas canvas, int viewTarget, double widthXamarinUnits, double heightXamarinUnits)
+        public void Draw(SKSurface surface, int viewTarget, double widthXamarinUnits, double heightXamarinUnits)
         {
             _updateReaderWriterLock.EnterReadLock();
             try
             {
+                var canvas = surface.Canvas;
                 foreach (var system in _drawableSystems)
                 {
                     system.Draw(canvas, viewTarget, widthXamarinUnits, heightXamarinUnits);
                 }
-
+                
                 while (_runAfterDrawActions.TryDequeue(out var action))
                 {
-                    action.Invoke();
+                    action.Invoke(surface);
                 }
             }
             finally

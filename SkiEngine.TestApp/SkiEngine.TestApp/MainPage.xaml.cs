@@ -110,9 +110,9 @@ namespace SkiEngine.TestApp
             _scene.Update();
 
             var canvas = args.Surface.Canvas;
-
+            
             canvas.Clear(SKColors.Black);
-            _scene.Draw(canvas, 0);
+            _scene.Draw(args.Surface, 0, SkGlView1.Width, SkGlView1.Height);
             canvas.Flush();
         }
 
@@ -121,7 +121,7 @@ namespace SkiEngine.TestApp
             var canvas = args.Surface.Canvas;
 
             canvas.Clear(SKColors.Black);
-            _scene.Draw(canvas, 1);
+            _scene.Draw(args.Surface, 1, SkGlView2.Width, SkGlView2.Height);
             canvas.Flush();
         }
 
@@ -142,7 +142,7 @@ namespace SkiEngine.TestApp
             var argsId = args.Id;
             var argsInContact = args.InContact;
 
-            _scene.RunNextUpdate(
+            _scene.RunDuringUpdate(
                 () =>
                 {
                     var worldPoint = camera.PixelToWorldMatrix.MapPoint(argsLocation);
