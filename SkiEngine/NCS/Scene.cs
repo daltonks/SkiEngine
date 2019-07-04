@@ -102,6 +102,19 @@ namespace SkiEngine.NCS
             _runDuringUpdateActions.Enqueue(action);
         }
 
+        public void InvokeSafely(Action action)
+        {
+            _updateReaderWriterLock.EnterWriteLock();
+            try
+            {
+                action.Invoke();
+            }
+            finally
+            {
+                _updateReaderWriterLock.ExitWriteLock();
+            }
+        }
+
         public void Update()
         {
             var stopwatchElapsed = _updateStopwatch.Elapsed;
