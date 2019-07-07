@@ -2,7 +2,7 @@
 <forms:SKCanvasView xmlns="http://xamarin.com/schemas/2014/forms" 
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:forms="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
-             x:Class="SkiEngine.Xamarin.SkiGlView"
+             x:Class="SkiEngine.Xamarin.SkiCanvasView"
              EnableTouchEvents="True"
              Touch="OnTouch">
 </forms:SKCanvasView>

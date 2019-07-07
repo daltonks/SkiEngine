@@ -7,7 +7,7 @@ using Xamarin.Forms.Xaml;
 namespace SkiEngine.Xamarin
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class SkiGlView : SKCanvasView
+    public partial class SkiCanvasView : SKCanvasView
     {
         public delegate void MouseWheelScrollDelegate(int delta, SKPoint point);
 
@@ -16,7 +16,7 @@ namespace SkiEngine.Xamarin
 
         private InputService _inputService;
 
-        public SkiGlView()
+        public SkiCanvasView()
         {
             InitializeComponent();
         }

@@ -16,7 +16,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="SkiGlView.xaml">
+    <Compile Update="SkiCanvasView.xaml.cs">
+      <DependentUpon>SkiCanvasView.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="ColorPicker\ColorPickerView.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="SkiCanvasView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using SkiaSharp.Views.Forms;
+﻿using SkiaSharp.Views.Forms;
 using SkiEngine.Input;
 using SKMouseButton = SkiEngine.Input.SKMouseButton;
 using SKTouchAction = SkiEngine.Input.SKTouchAction;
