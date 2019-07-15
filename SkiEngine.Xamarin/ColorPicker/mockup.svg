@@ -49,7 +49,7 @@
          offset="0"
          id="stop4522" />
       <stop
-         style="stop-color:#ffffff;stop-opacity:0"
+         style="stop-color:#000000;stop-opacity:0"
          offset="1"
          id="stop4524" />
     </linearGradient>
@@ -81,16 +81,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9983453"
-     inkscape:cx="435.25423"
-     inkscape:cy="421.93025"
+     inkscape:zoom="2.8237469"
+     inkscape:cx="496.8637"
+     inkscape:cy="457.50214"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1555"
      inkscape:window-height="1258"
-     inkscape:window-x="1323"
-     inkscape:window-y="598"
+     inkscape:window-x="1236"
+     inkscape:window-y="666"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata5">
@@ -100,7 +100,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -112,7 +112,10 @@
     <g
        id="g4566"
        transform="matrix(0.37652146,0,0,0.37745569,144.42745,-4.4175922)"
-       style="stroke-width:2.6526022">
+       style="stroke-width:2.6526022"
+       inkscape:export-filename="C:\Users\Dalton\Downloads\g4566.png"
+       inkscape:export-xdpi="67.292664"
+       inkscape:export-ydpi="67.292664">
       <rect
          style="fill:url(#linearGradient4532);fill-opacity:1;stroke:none;stroke-width:0.00265259;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          id="rect4530"
@@ -133,16 +136,7 @@
        y="44.124592"
        x="151.54326"
        id="image4550"
-       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALgAAAAXCAYAAAC4eYX8AAAABHNCSVQICAgIfAhkiAAAAY1JREFU
-eJzt2y9Pw0AcxvFvlyYDTN0UimAnZyZIXwOYJngcuLIqmFjIyBy8ib6KcQpEAwSDwpNMDcVQRRyQ
-8S/ZoOPC5fmY6/3SS56mv5xoekGe5yUingoBkiRxnUOkcmVZEvT7/U87+PbWJqsHO3BjYBmoY8dl
-YGnqero+631f1CcBPAJP2PERmExdz1L/yXobZo6g7+ofxznWPwV/+6Av9aXyV6/px6/Zhpn3QSff
-jLOtfxjfE0URYZZlTOvup6xmO3BlXtOJ/Fu1Xq/3NunupxzeFnBunAUSqVLYbrdJ05QV4PC6gMJo
-5xZvhKPRiKIoOAO4MGpu8UoIYIyxs7rDJCILUHMdQGSR1ODiNTW4eE0NLl5Tg4vX1ODiNTW4eE0N
-Ll4LAeI4trML4y6JyALUGo0GrVaLrNmEjdh1HpFKhcPhkMFgYGd7u/TrwKVxmUmkMu9+lz0+OSVb
-a0I7dpdIpEJhp9P5VLzrnrB+tGdP9Ij8Y0Ge52WSJIzHY9dZRCoVRZH9ilKWOlgvfnoGqo+larqw
-/LEAAAAASUVORK5CYII=
-"
+       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALgAAAAXCAYAAAC4eYX8AAAABHNCSVQICAgIfAhkiAAAAY1JREFU eJzt2y9Pw0AcxvFvlyYDTN0UimAnZyZIXwOYJngcuLIqmFjIyBy8ib6KcQpEAwSDwpNMDcVQRRyQ 8S/ZoOPC5fmY6/3SS56mv5xoekGe5yUingoBkiRxnUOkcmVZEvT7/U87+PbWJqsHO3BjYBmoY8dl YGnqero+631f1CcBPAJP2PERmExdz1L/yXobZo6g7+ofxznWPwV/+6Av9aXyV6/px6/Zhpn3QSff jLOtfxjfE0URYZZlTOvup6xmO3BlXtOJ/Fu1Xq/3NunupxzeFnBunAUSqVLYbrdJ05QV4PC6gMJo 5xZvhKPRiKIoOAO4MGpu8UoIYIyxs7rDJCILUHMdQGSR1ODiNTW4eE0NLl5Tg4vX1ODiNTW4eE0N Ll4LAeI4trML4y6JyALUGo0GrVaLrNmEjdh1HpFKhcPhkMFgYGd7u/TrwKVxmUmkMu9+lz0+OSVb a0I7dpdIpEJhp9P5VLzrnrB+tGdP9Ij8Y0Ge52WSJIzHY9dZRCoVRZH9ilKWOlgvfnoGqo+larqw /LEAAAAASUVORK5CYII= "
        style="stroke-width:0.97366661;image-rendering:optimizeSpeed"
        preserveAspectRatio="none"
        height="6.25"
@@ -186,7 +180,7 @@ a0I7dpdIpEJhp9P5VLzrnrB+tGdP9Ij8Y0Ge52WSJIzHY9dZRCoVRZH9ilKWOlgvfnoGqo+larqw
          y="-112.85841" />
     </g>
     <rect
-       style="fill:#fdb2b2;fill-opacity:1;stroke:none;stroke-width:0.301;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.96666715"
+       style="fill:#da9191;fill-opacity:1;stroke:none;stroke-width:0.301;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.96666715"
        id="rect4597"
        width="9.0606527"
        height="37.745567"
