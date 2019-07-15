@@ -3,10 +3,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:xamarin="clr-namespace:SkiEngine.Xamarin;assembly=SkiEngine.Xamarin"
+             xmlns:skiaSharp="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
              mc:Ignorable="d"
              x:Class="SkiEngine.Xamarin.ColorPicker.ColorPickerView">
-    <xamarin:SkiCanvasView WidthRequest="489" HeightRequest="176"
-                           PaintSurface="OnPaintSurface"
-                           SkiTouch="OnTouch" />
+    <StackLayout>
+        <StackLayout Orientation="Horizontal" 
+                     HeightRequest="200">
+            <!-- Saturation and value box -->
+            <skiaSharp:SKCanvasView HorizontalOptions="FillAndExpand"
+                                    PaintSurface="OnSaturationValuePaintSurface"
+                                    Touch="OnSaturationValueTouch" />
+
+            <!-- Color box -->
+            <BoxView WidthRequest="40"
+                     Color="Black" />
+        </StackLayout>
+
+        <!-- Hue box -->
+        <skiaSharp:SKCanvasView HorizontalOptions="FillAndExpand"
+                                PaintSurface="OnHuePaintSurface"
+                                Touch="OnHueTouch" />
+    </StackLayout>
 </ContentView>

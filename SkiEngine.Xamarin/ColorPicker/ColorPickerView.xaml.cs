@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+using System;
+using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiEngine.Input;
 using Xamarin.Forms;
@@ -14,7 +15,7 @@ namespace SkiEngine.Xamarin.ColorPicker
             InitializeComponent();
         }
 
-        private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        private void OnSaturationValuePaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
             var info = e.Info;
             var surface = e.Surface;
@@ -30,7 +31,7 @@ namespace SkiEngine.Xamarin.ColorPicker
                         new SKPoint(0, 0),
                         new SKPoint(info.Width, 0),
                         new[] {SKColors.White, SKColors.Transparent},
-                        new float[] {0, 1},
+                        null,
                         SKShaderTileMode.Clamp
                     )
                 )
@@ -39,14 +40,14 @@ namespace SkiEngine.Xamarin.ColorPicker
                 }
             }
             
-            using (var valuePaint = new SKPaint { BlendMode = SKBlendMode.SrcOver })
+            using (var valuePaint = new SKPaint())
             {
                 using (
                     valuePaint.Shader = SKShader.CreateLinearGradient(
                         new SKPoint(0, 0),
                         new SKPoint(0, info.Height),
                         new[] {SKColors.Empty, SKColors.Black},
-                        new float[] {0, 1},
+                        null,
                         SKShaderTileMode.Clamp
                     )
                 )
@@ -54,11 +55,53 @@ namespace SkiEngine.Xamarin.ColorPicker
                     canvas.DrawRect(0, 0, info.Width, info.Height, valuePaint);
                 }
             }
+            
+            canvas.Flush();
         }
 
-        private void OnTouch(SkiTouch obj)
+        private void OnSaturationValueTouch(object sender, SKTouchEventArgs e)
         {
-            
+
+
+            e.Handled = true;
+        }
+
+        private void OnHuePaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        {
+            var info = e.Info;
+            var surface = e.Surface;
+            var canvas = surface.Canvas;
+
+            canvas.Clear();
+
+            using (var paint = new SKPaint { Style = SKPaintStyle.Fill })
+            {
+                // Define an array of rainbow colors
+                var colors = new SKColor[7];
+
+                for (var i = 0; i < colors.Length; i++)
+                {
+                    colors[i] = SKColor.FromHsl(i * 360f / (colors.Length - 1), 100, 50);
+                }
+
+                paint.Shader = SKShader.CreateLinearGradient(
+                    new SKPoint(0, 0),
+                    new SKPoint(info.Width, 0),
+                    colors,
+                    null, 
+                    SKShaderTileMode.Clamp
+                );
+
+                canvas.DrawRect(0, 0, info.Width, info.Height, paint);
+            }
+
+            canvas.Flush();
+        }
+
+        private void OnHueTouch(object sender, SKTouchEventArgs e)
+        {
+
+            e.Handled = true;
         }
     }
 }
