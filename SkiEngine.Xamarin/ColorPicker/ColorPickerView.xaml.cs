@@ -1,7 +1,7 @@
 using System;
+using System.ComponentModel;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
-using SkiEngine.Input;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -13,6 +13,31 @@ namespace SkiEngine.Xamarin.ColorPicker
         public ColorPickerView()
         {
             InitializeComponent();
+            BindingContextChanged += OnBindingContextChanged;
+        }
+
+        public ColorPickerViewModel ViewModel
+        {
+            get => BindingContext as ColorPickerViewModel;
+            set => BindingContext = value;
+        }
+
+        private void OnBindingContextChanged(object sender, EventArgs e)
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+            }
+        }
+
+        private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            
+        }
+
+        private void OnHexUnfocused(object sender, FocusEventArgs e)
+        {
+            ViewModel.Hex = ViewModel.Color.ToArgbHex();
         }
 
         private void OnSaturationValuePaintSurface(object sender, SKPaintSurfaceEventArgs e)
@@ -21,8 +46,7 @@ namespace SkiEngine.Xamarin.ColorPicker
             var surface = e.Surface;
             var canvas = surface.Canvas;
 
-            // Hue
-            canvas.Clear(SKColors.Red);
+            canvas.Clear(SKColors.Transparent);
 
             using (var saturationPaint = new SKPaint())
             {

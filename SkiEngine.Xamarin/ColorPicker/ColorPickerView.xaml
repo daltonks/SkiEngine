@@ -10,18 +10,52 @@
         <StackLayout Orientation="Horizontal" 
                      HeightRequest="200">
             <!-- Saturation and value box -->
-            <skiaSharp:SKCanvasView HorizontalOptions="FillAndExpand"
-                                    PaintSurface="OnSaturationValuePaintSurface"
-                                    Touch="OnSaturationValueTouch" />
+            <AbsoluteLayout HorizontalOptions="FillAndExpand">
+                <BoxView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
+                         Color="{Binding HueColor}"/>
 
+                <skiaSharp:SKCanvasView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
+                                        x:Name="SaturationValueCanvasView"
+                                        PaintSurface="OnSaturationValuePaintSurface"
+                                        Touch="OnSaturationValueTouch"
+                                        BackgroundColor="Transparent" />
+            </AbsoluteLayout>
+            
             <!-- Color box -->
             <BoxView WidthRequest="40"
-                     Color="Black" />
+                     Color="{Binding Color}" />
         </StackLayout>
 
         <!-- Hue box -->
-        <skiaSharp:SKCanvasView HorizontalOptions="FillAndExpand"
+        <skiaSharp:SKCanvasView x:Name="HueCanvasView"
+                                HorizontalOptions="FillAndExpand"
                                 PaintSurface="OnHuePaintSurface"
                                 Touch="OnHueTouch" />
+
+        <!-- Alpha -->
+        <StackLayout Orientation="Horizontal">
+            <Label Text="A"
+                   VerticalOptions="Center"
+                   VerticalTextAlignment="Center" />
+
+            <Slider HorizontalOptions="FillAndExpand"
+                    Minimum="0" Maximum="255"
+                    Value="{Binding A}"
+                    MaximumTrackColor="LightGray"
+                    MinimumTrackColor="Gray"
+                    ThumbColor="#333333" />
+        </StackLayout>
+
+        <!-- Hex -->
+        <StackLayout Orientation="Horizontal">
+            <Label VerticalOptions="Center"
+                   VerticalTextAlignment="Center"
+                   Text="#" />
+
+            <Entry HorizontalOptions="FillAndExpand"
+                   Text="{Binding Hex}"
+                   Keyboard="Plain"
+                   Unfocused="OnHexUnfocused" />
+        </StackLayout>
     </StackLayout>
 </ContentView>
