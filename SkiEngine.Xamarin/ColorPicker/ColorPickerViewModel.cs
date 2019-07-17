@@ -15,7 +15,16 @@ namespace SkiEngine.Xamarin.ColorPicker
         public Color Color
         {
             get => SKColorUtil.FromHsv(H, S, V, A).ToFormsColor();
-            set => Hex = value.ToArgbHex();
+            set
+            {
+                var skColor = value.ToSKColor();
+                skColor.ToHsv(out var h, out var s, out var v);
+
+                A = skColor.Alpha;
+                H = h;
+                S = s;
+                V = v;
+            }
         }
 
         public Color HueColor => SKColorUtil.FromHsv(H, 100, 100).ToFormsColor();
@@ -47,34 +56,22 @@ namespace SkiEngine.Xamarin.ColorPicker
 
                     var skColor = color.ToSKColor();
 
-                    if (_a != skColor.Alpha)
-                    {
-                        _a = skColor.Alpha;
-                        RaisePropertyChanged(nameof(A));
-                    }
-
                     skColor.ToHsv(out var h, out var s, out var v);
 
-                    if (_h != h)
+                    var alphaChanged = SetProperty(ref _a, skColor.Alpha, nameof(A));
+                    var hChanged = SetProperty(ref _h, h, nameof(H));
+                    var sChanged = SetProperty(ref _s, s, nameof(S));
+                    var vChanged = SetProperty(ref _v, v, nameof(V));
+
+                    if (alphaChanged || hChanged || sChanged || vChanged)
                     {
-                        _h = h;
-                        RaisePropertyChanged(nameof(H));
+                        RaisePropertyChanged(nameof(Color));
+                    }
+
+                    if (hChanged)
+                    {
                         RaisePropertyChanged(nameof(HueColor));
                     }
-
-                    if (_s != s)
-                    {
-                        _s = s;
-                        RaisePropertyChanged(nameof(S));
-                    }
-
-                    if (_v != v)
-                    {
-                        _v = v;
-                        RaisePropertyChanged(nameof(V));
-                    }
-                    
-                    RaisePropertyChanged(nameof(Color));
                 }
             }
         }
@@ -85,10 +82,10 @@ namespace SkiEngine.Xamarin.ColorPicker
             get => _a;
             set
             {
-                if (_a != value)
+                if (SetProperty(ref _a, value))
                 {
-                    _a = value;
-                    Hex = Color.ToArgbHex();
+                    SetProperty(ref _hex, Color.ToArgbHex(), nameof(Hex));
+                    RaisePropertyChanged(nameof(Color));
                 }
             }
         }
@@ -99,11 +96,10 @@ namespace SkiEngine.Xamarin.ColorPicker
             get => _h;
             set
             {
-                if (_h != value)
+                if (SetProperty(ref _h, value))
                 {
-                    _h = value;
-                    Hex = Color.ToArgbHex();
-
+                    SetProperty(ref _hex, Color.ToArgbHex(), nameof(Hex));
+                    RaisePropertyChanged(nameof(Color));
                     RaisePropertyChanged(nameof(HueColor));
                 }
             }
@@ -115,10 +111,10 @@ namespace SkiEngine.Xamarin.ColorPicker
             get => _s;
             set
             {
-                if (_s != value)
+                if (SetProperty(ref _s, value))
                 {
-                    _s = value;
-                    Hex = Color.ToArgbHex();
+                    SetProperty(ref _hex, Color.ToArgbHex(), nameof(Hex));
+                    RaisePropertyChanged(nameof(Color));
                 }
             }
         }
@@ -129,10 +125,10 @@ namespace SkiEngine.Xamarin.ColorPicker
             get => _v;
             set
             {
-                if (_v != value)
+                if (SetProperty(ref _v, value))
                 {
-                    _v = value;
-                    Hex = Color.ToArgbHex();
+                    SetProperty(ref _hex, Color.ToArgbHex(), nameof(Hex));
+                    RaisePropertyChanged(nameof(Color));
                 }
             }
         }

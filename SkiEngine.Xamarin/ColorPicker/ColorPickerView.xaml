@@ -12,13 +12,23 @@
             <!-- Saturation and value box -->
             <AbsoluteLayout HorizontalOptions="FillAndExpand">
                 <BoxView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
-                         Color="{Binding HueColor}"/>
+                         InputTransparent="True"
+                         Color="{Binding HueColor}" />
 
+                <!-- Gradients -->
                 <skiaSharp:SKCanvasView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
-                                        x:Name="SaturationValueCanvasView"
-                                        PaintSurface="OnSaturationValuePaintSurface"
-                                        Touch="OnSaturationValueTouch"
+                                        InputTransparent="True"
+                                        EnableTouchEvents="False"
+                                        PaintSurface="OnSaturationValueGradientsPaintSurface"
                                         BackgroundColor="Transparent" />
+                
+                <!-- Selected circle -->
+                <skiaSharp:SKCanvasView x:Name="SelectedSaturationValueCanvasView"
+                                        AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
+                                        PaintSurface="OnSelectedSaturationValuePaintSurface"
+                                        BackgroundColor="Transparent"
+                                        EnableTouchEvents="True"
+                                        Touch="OnSelectedSaturationValueTouch"/>
             </AbsoluteLayout>
             
             <!-- Color box -->
@@ -27,10 +37,9 @@
         </StackLayout>
 
         <!-- Hue box -->
-        <skiaSharp:SKCanvasView x:Name="HueCanvasView"
-                                HorizontalOptions="FillAndExpand"
-                                PaintSurface="OnHuePaintSurface"
-                                Touch="OnHueTouch" />
+        <skiaSharp:SKCanvasView HorizontalOptions="FillAndExpand"
+                                HeightRequest="25"
+                                PaintSurface="OnHueRainbowPaintSurface" />
 
         <!-- Alpha -->
         <StackLayout Orientation="Horizontal">

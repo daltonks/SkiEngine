@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Drawing;
 using SkiaSharp;
+using Color = Xamarin.Forms.Color;
 
 namespace SkiEngine.Xamarin.ColorPicker
 {
     // ReSharper disable once InconsistentNaming
-    internal class SKColorUtil
+    internal static class SKColorUtil
     {
         /// <summary>
         /// SKColor.FromHsv(...) does not properly invert SKColor.ToHsv(...),
@@ -79,6 +81,16 @@ namespace SkiEngine.Xamarin.ColorPicker
             b = b * 255f;
 
             return new SKColor ((byte)Math.Round(r), (byte)Math.Round(g), (byte)Math.Round(b), a);
+        }
+
+        public static SKColor ToSKColor(this Color color)
+        {
+            return new SKColor(
+                (byte) Math.Round(color.R * byte.MaxValue), 
+                (byte) Math.Round(color.G * byte.MaxValue), 
+                (byte) Math.Round(color.B * byte.MaxValue), 
+                (byte) Math.Round(color.A * byte.MaxValue)
+            );
         }
     }
 }
