@@ -38,6 +38,11 @@ namespace SkiEngine.Xamarin.ColorPicker
             {
                 SelectedSaturationValueCanvasView.InvalidateSurface();
             }
+
+            if (e.PropertyName == nameof(ColorPickerViewModel.H))
+            {
+                SelectedHueRainbowCanvasView.InvalidateSurface();
+            }
         }
 
         private void OnHexUnfocused(object sender, FocusEventArgs e)
@@ -104,24 +109,23 @@ namespace SkiEngine.Xamarin.ColorPicker
                 info.Height - ViewModel.V / 100 * info.Height
             );
 
-            var xamarinUnitsPerPixel = SelectedSaturationValueCanvasView.Width / info.Width;
-            var halfSize = (float) (xamarinUnitsPerPixel * 10);
+            var pixelsPerXamarinUnit = info.Width / SelectedSaturationValueCanvasView.Width;
 
-            var rect = SKRect.Create(center.X, center.Y, 0, 0);
-            rect.Inflate(halfSize, halfSize);
+            var innerRadius = (float) (10 * pixelsPerXamarinUnit);
+            var strokeWidth = (float) (1.5f * pixelsPerXamarinUnit);
 
-            using (var paint = new SKPaint { IsAntialias = true, StrokeWidth = 1.5f })
+            using (var paint = new SKPaint { IsAntialias = true, StrokeWidth = strokeWidth })
             {
                 paint.Style = SKPaintStyle.Fill;
                 paint.Color = SKColorUtil.FromHsv(ViewModel.H, ViewModel.S, ViewModel.V);
-                canvas.DrawCircle(center, halfSize, paint);
+                canvas.DrawCircle(center, innerRadius, paint);
 
                 paint.Style = SKPaintStyle.Stroke;
                 paint.Color = SKColors.White;
-                canvas.DrawCircle(center, halfSize, paint);
+                canvas.DrawCircle(center, innerRadius, paint);
 
                 paint.Color = SKColors.Black;
-                canvas.DrawCircle(center, halfSize + 1.5f, paint);
+                canvas.DrawCircle(center, innerRadius + strokeWidth, paint);
             }
 
             canvas.Flush();
@@ -193,6 +197,67 @@ namespace SkiEngine.Xamarin.ColorPicker
             }
 
             canvas.Flush();
+        }
+
+        private SKSizeI _selectedHueRainbowPixelSize;
+        private void OnSelectedHueRainbowPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        {
+            var info = e.Info;
+            var surface = e.Surface;
+            var canvas = surface.Canvas;
+
+            _selectedHueRainbowPixelSize = info.Size;
+
+            canvas.Clear(SKColors.Transparent);
+
+            var center = new SKPoint(
+                ViewModel.H / 360 * info.Width, 
+                info.Height / 2f
+            );
+
+            var pixelsPerXamarinUnit = info.Width / SelectedHueRainbowCanvasView.Width;
+
+            var strokeWidth = (float) (1.5 * pixelsPerXamarinUnit);
+            var innerRadius = info.Height / 2f - 2 * strokeWidth;
+
+            using (var paint = new SKPaint { IsAntialias = true, StrokeWidth = strokeWidth })
+            {
+                paint.Style = SKPaintStyle.Fill;
+                paint.Color = SKColorUtil.FromHsv(ViewModel.H, 100, 100);
+                canvas.DrawCircle(center, innerRadius, paint);
+
+                paint.Style = SKPaintStyle.Stroke;
+                paint.Color = SKColors.White;
+                canvas.DrawCircle(center, innerRadius, paint);
+
+                paint.Color = SKColors.Black;
+                canvas.DrawCircle(center, innerRadius + strokeWidth, paint);
+            }
+
+            canvas.Flush();
+        }
+
+        private void OnSelectedHueRainbowTouch(object sender, SKTouchEventArgs e)
+        {
+            e.Handled = true;
+
+            if (!e.InContact)
+            {
+                return;
+            }
+
+            var x = e.Location.X;
+            var width = _selectedHueRainbowPixelSize.Width;
+            if (x < 0)
+            {
+                x = 0;
+            }
+            else if (x > width)
+            {
+                x = width;
+            }
+
+            ViewModel.H = x / width * 360;
         }
     }
 }

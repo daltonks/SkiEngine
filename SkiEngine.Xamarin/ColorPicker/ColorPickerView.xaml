@@ -12,13 +12,10 @@
             <!-- Saturation and value box -->
             <AbsoluteLayout HorizontalOptions="FillAndExpand">
                 <BoxView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
-                         InputTransparent="True"
                          Color="{Binding HueColor}" />
 
                 <!-- Gradients -->
                 <skiaSharp:SKCanvasView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
-                                        InputTransparent="True"
-                                        EnableTouchEvents="False"
                                         PaintSurface="OnSaturationValueGradientsPaintSurface"
                                         BackgroundColor="Transparent" />
                 
@@ -36,10 +33,20 @@
                      Color="{Binding Color}" />
         </StackLayout>
 
-        <!-- Hue box -->
-        <skiaSharp:SKCanvasView HorizontalOptions="FillAndExpand"
-                                HeightRequest="25"
-                                PaintSurface="OnHueRainbowPaintSurface" />
+        <!-- Hue rainbow -->
+        <AbsoluteLayout HorizontalOptions="FillAndExpand"
+                        HeightRequest="25">
+            <skiaSharp:SKCanvasView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
+                                    PaintSurface="OnHueRainbowPaintSurface" />
+
+            <skiaSharp:SKCanvasView x:Name="SelectedHueRainbowCanvasView"
+                                    AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
+                                    PaintSurface="OnSelectedHueRainbowPaintSurface"
+                                    EnableTouchEvents="True"
+                                    Touch="OnSelectedHueRainbowTouch"
+                                    BackgroundColor="Transparent" />
+        </AbsoluteLayout>
+        
 
         <!-- Alpha -->
         <StackLayout Orientation="Horizontal">
