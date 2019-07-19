@@ -49,20 +49,13 @@
                                     BackgroundColor="Transparent" />
         </AbsoluteLayout>
         
-
         <!-- Alpha -->
-        <StackLayout Orientation="Horizontal">
-            <Label Text="A"
-                   VerticalOptions="Center"
-                   VerticalTextAlignment="Center" />
-
-            <Slider HorizontalOptions="FillAndExpand"
-                    Minimum="0" Maximum="255"
-                    Value="{Binding A}"
-                    MaximumTrackColor="LightGray"
-                    MinimumTrackColor="Gray"
-                    ThumbColor="#333333" />
-        </StackLayout>
+        <skiaSharp:SKCanvasView x:Name="AlphaCanvasView"
+                                HorizontalOptions="FillAndExpand"
+                                HeightRequest="25"
+                                PaintSurface="OnAlphaPaintSurface"
+                                EnableTouchEvents="True"
+                                Touch="OnAlphaTouch" />
 
         <!-- Hex -->
         <StackLayout Orientation="Horizontal">
@@ -70,7 +63,8 @@
                    VerticalTextAlignment="Center"
                    Text="#" />
 
-            <Entry HorizontalOptions="FillAndExpand"
+            <Entry x:Name="HexEntry"
+                   HorizontalOptions="FillAndExpand"
                    Text="{Binding Hex}"
                    Keyboard="Plain"
                    Unfocused="OnHexUnfocused" />
