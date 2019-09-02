@@ -34,12 +34,12 @@ namespace SkiEngine.Xamarin
             _invalidateSurfaceAction = invalidateSurfaceAction;
         }
 
-        public SKImage GetSnapshotImageAndPreventDispose()
+        public (SKImage Image, SKSizeI Size) GetSnapshotImageAndPreventDispose()
         {
             lock (_snapshotImageLock)
             {
                 _allowSnapshotDispose = false;
-                return _snapshotImage;
+                return (_snapshotImage, new SKSizeI(_widthPixels, _heightPixels));
             }
         }
 
