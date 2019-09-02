@@ -2,10 +2,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using SkiaSharp;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.NCS.System;
+using SkiEngine.Util;
 
 namespace SkiEngine.NCS
 {
@@ -102,17 +104,33 @@ namespace SkiEngine.NCS
             _runDuringUpdateActions.Enqueue(action);
         }
 
-        public void InvokeSafely(Action action)
+        private readonly TaskQueue _outsideOfUpdateTaskQueue = new TaskQueue();
+        private readonly ConcurrentQueue<Action> _outsideOfUpdateActionQueue = new ConcurrentQueue<Action>();
+        public void QueueOutsideOfUpdate(Action action)
         {
-            _updateReaderWriterLock.EnterWriteLock();
-            try
-            {
-                action.Invoke();
-            }
-            finally
-            {
-                _updateReaderWriterLock.ExitWriteLock();
-            }
+            _outsideOfUpdateActionQueue.Enqueue(action);
+
+            _outsideOfUpdateTaskQueue.QueueAsync(() => {
+                if (!_outsideOfUpdateActionQueue.TryDequeue(out var a))
+                {
+                    return;
+                }
+
+                _updateReaderWriterLock.EnterWriteLock();
+                try
+                {
+                    a.Invoke();
+
+                    while (_outsideOfUpdateActionQueue.TryDequeue(out a))
+                    {
+                        a.Invoke();
+                    }
+                }
+                finally
+                {
+                    _updateReaderWriterLock.ExitWriteLock();
+                }
+            });
         }
 
         public void Update()
