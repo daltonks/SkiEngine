@@ -58,15 +58,13 @@ namespace SkiEngine.Util
             lock (_locker)
             {
                 _lastTask = _lastTask.ContinueWith(
-                    _ =>
+                    async _ =>
                     {
                         ThrowIfShutdown();
-                        var result = asyncAction();
+                        await asyncAction();
 
                         Interlocked.Decrement(ref _numTasksQueued);
                         OnPropertyChanged(nameof(NumTasksQueued));
-
-                        return result;
                     }, 
                     TaskContinuationOptions.RunContinuationsAsynchronously
                 ).Unwrap();
@@ -82,11 +80,11 @@ namespace SkiEngine.Util
             lock (_locker)
             {
                 var resultTask = _lastTask.ContinueWith(
-                    _ =>
+                    async _ =>
                     {
                         ThrowIfShutdown();
 
-                        var result = asyncFunction();
+                        var result = await asyncFunction();
 
                         Interlocked.Decrement(ref _numTasksQueued);
                         OnPropertyChanged(nameof(NumTasksQueued));
