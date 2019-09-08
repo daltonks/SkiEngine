@@ -6,8 +6,8 @@ namespace SkiEngine.Util
     public class TaskQueue
     {
         private readonly object _locker = new object();
-        private Task _lastTask = Task.CompletedTask;
-        private bool _isShutdown;
+        private volatile Task _lastTask = Task.CompletedTask;
+        private volatile bool _isShutdown;
 
         public Task QueueAsync(Action action)
         {
@@ -22,7 +22,11 @@ namespace SkiEngine.Util
             lock (_locker)
             {
                 var resultTask = _lastTask.ContinueWith(
-                    _ => _isShutdown ? default : function(), 
+                    _ =>
+                    {
+                        ThrowIfShutdown();
+                        return function();
+                    }, 
                     TaskContinuationOptions.RunContinuationsAsynchronously
                 );
                 _lastTask = resultTask;
@@ -35,12 +39,10 @@ namespace SkiEngine.Util
             lock (_locker)
             {
                 _lastTask = _lastTask.ContinueWith(
-                    async _ =>
+                    _ =>
                     {
-                        if (!_isShutdown)
-                        {
-                            await asyncAction();
-                        }
+                        ThrowIfShutdown();
+                        return asyncAction();
                     }, 
                     TaskContinuationOptions.RunContinuationsAsynchronously
                 ).Unwrap();
@@ -53,12 +55,24 @@ namespace SkiEngine.Util
             lock (_locker)
             {
                 var resultTask = _lastTask.ContinueWith(
-                    _ => _isShutdown ? Task.FromResult(default(T)) : asyncFunction(), 
+                    _ =>
+                    {
+                        ThrowIfShutdown();
+                        return asyncFunction();
+                    }, 
                     TaskContinuationOptions.RunContinuationsAsynchronously
                 ).Unwrap();
 
                 _lastTask = resultTask;
                 return resultTask;
+            }
+        }
+
+        private void ThrowIfShutdown()
+        {
+            if (_isShutdown)
+            {
+                throw new ObjectDisposedException(nameof(TaskQueue));
             }
         }
 
