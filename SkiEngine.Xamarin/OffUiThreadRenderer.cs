@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
@@ -40,6 +39,14 @@ namespace SkiEngine.Xamarin
             {
                 _allowSnapshotDispose = false;
                 return (_snapshotImage, new SKSizeI(_widthPixels, _heightPixels));
+            }
+        }
+
+        public SKColor GetPixelColor(int pixelX, int pixelY)
+        {
+            lock (_snapshotImageLock)
+            {
+                return _snapshotImage?.PeekPixels().GetPixelColor(pixelX, pixelY) ?? SKColors.Black;
             }
         }
 
