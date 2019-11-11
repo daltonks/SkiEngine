@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
@@ -42,11 +43,25 @@ namespace SkiEngine.Xamarin
             }
         }
 
-        public SKColor GetPixelColor(int pixelX, int pixelY)
+        public SKColor? GetPixelColor(int pixelX, int pixelY)
         {
             lock (_snapshotImageLock)
             {
-                return _snapshotImage?.PeekPixels().GetPixelColor(pixelX, pixelY) ?? SKColors.Black;
+                if (pixelX < 0 || pixelX >= _widthPixels || pixelY < 0 || pixelY >= _heightPixels)
+                {
+                    return null;
+                }
+
+                try
+                {
+                    return _snapshotImage?.PeekPixels().GetPixelColor(pixelX, pixelY);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+
+                    return null;
+                }
             }
         }
 
