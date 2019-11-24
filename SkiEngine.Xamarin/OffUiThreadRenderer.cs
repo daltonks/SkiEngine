@@ -80,7 +80,7 @@ namespace SkiEngine.Xamarin
 
             if (actuallyDraw)
             {
-                _taskQueue.QueueAsync(ExpensiveDraw);
+                _taskQueue.QueueAsync(DrawToSnapshotAndInvalidateSurface);
             }
         }
 
@@ -127,11 +127,11 @@ namespace SkiEngine.Xamarin
                 );
 
                 // Redraw
-                ExpensiveDraw();
+                DrawToSnapshotAndInvalidateSurface();
             });
         }
 
-        private void ExpensiveDraw()
+        private void DrawToSnapshotAndInvalidateSurface()
         {
             if (_offUiThreadSurface == null)
             {
