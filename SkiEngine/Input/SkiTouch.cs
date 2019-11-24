@@ -14,7 +14,8 @@ namespace SkiEngine.Input
             SKMouseButton mouseButton,
             SKTouchDeviceType deviceType,
             SKPoint location,
-            bool inContact
+            bool inContact,
+            int wheelDelta
         )
         {
             if (!_cachedTouches.TryDequeue(out var result))
@@ -28,6 +29,7 @@ namespace SkiEngine.Input
             result.DeviceType = deviceType;
             result.Location = location;
             result.InContact = inContact;
+            result.WheelDelta = wheelDelta;
 
             return result;
         }
@@ -38,6 +40,7 @@ namespace SkiEngine.Input
         public SKMouseButton MouseButton { get; set; }
         public SKPoint Location { get; set; }
         public bool InContact { get; set; }
+        public int WheelDelta { get; set; }
 
         public void Recycle()
         {
@@ -53,6 +56,7 @@ namespace SkiEngine.Input
         Released,
         Cancelled,
         Exited,
+        WheelChanged
     }
 
     public enum SKTouchDeviceType

@@ -12,7 +12,6 @@ namespace SkiEngine.Xamarin
         public delegate void MouseWheelScrollDelegate(int delta, SKPoint point);
 
         public event Action<SkiTouch> SkiTouch;
-        public event MouseWheelScrollDelegate MouseWheelScroll;
 
         private InputService _inputService;
 
@@ -24,28 +23,14 @@ namespace SkiEngine.Xamarin
         public void InitInput(InputService inputService)
         {
             _inputService = inputService;
-            inputService.MouseWheelScroll += OnMouseWheelScroll;
         }
 
-        public void DisposeInput()
-        {
-            _inputService.MouseWheelScroll -= OnMouseWheelScroll;
-        }
-
-        private SKPoint _previousTouchPoint;
         private void OnTouch(object sender, SKTouchEventArgs args)
         {
             var skiTouch = args.ToSKTouch();
             SkiTouch?.Invoke(skiTouch);
 
             args.Handled = true;
-
-            _previousTouchPoint = args.Location;
-        }
-
-        private void OnMouseWheelScroll(int scrollDelta)
-        {
-            MouseWheelScroll?.Invoke(scrollDelta, _previousTouchPoint);
         }
     }
 }

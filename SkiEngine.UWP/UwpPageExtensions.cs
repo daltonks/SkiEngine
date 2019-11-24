@@ -18,12 +18,6 @@ namespace SkiEngine.UWP
                     .Count(pointer => pointer.PointerDeviceType == PointerDeviceType.Mouse)
             };
 
-            page.PointerWheelChanged += (sender, args) =>
-            {
-                var delta = args.GetCurrentPoint(page).Properties.MouseWheelDelta;
-                inputService.OnMouseWheelScroll(delta);
-            };
-
             page.KeyDown += (sender, args) =>
             {
                 var intKey = (int) args.Key;

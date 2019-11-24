@@ -18,7 +18,8 @@ namespace SkiEngine.Xamarin
                 (SKMouseButton) (int) eventArgs.MouseButton,
                 (SKTouchDeviceType) (int) eventArgs.DeviceType,
                 eventArgs.Location,
-                eventArgs.InContact
+                eventArgs.InContact,
+                eventArgs.WheelDelta
             );
         }
     }
