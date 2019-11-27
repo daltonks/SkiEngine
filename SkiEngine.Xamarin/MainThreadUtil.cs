@@ -6,6 +6,14 @@ namespace SkiEngine.Xamarin
 {
     public static class MainThreadUtil
     {
+        public static Task InvokeOnMainThreadAsync(Action action)
+        {
+            return InvokeOnMainThreadAsync(() => {
+                action.Invoke();
+                return Task.CompletedTask;
+            });
+        }
+
         public static Task InvokeOnMainThreadAsync(Func<Task> asyncFunc)
         {
             var tcs = new TaskCompletionSource<bool>();
