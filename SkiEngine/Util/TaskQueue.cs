@@ -21,8 +21,32 @@ namespace SkiEngine.Util
         {
             return QueueAsync(() => {
                 action();
-                return true;
+                return Task.CompletedTask;
             });
+        }
+
+        public Task QueueAsync(Func<Task> asyncAction)
+        {
+            Interlocked.Increment(ref _numTasksQueued);
+            OnPropertyChanged(nameof(NumTasksQueued));
+
+            lock (_locker)
+            {
+                _lastTask = _lastTask.ContinueWith(
+                    async _ =>
+                    {
+                        if (!_isShutdown)
+                        {
+                            await asyncAction();
+                        }
+
+                        Interlocked.Decrement(ref _numTasksQueued);
+                        OnPropertyChanged(nameof(NumTasksQueued));
+                    }, 
+                    TaskContinuationOptions.RunContinuationsAsynchronously
+                ).Unwrap();
+                return _lastTask;
+            }
         }
 
         public Task<T> QueueAsync<T>(Func<T> function)
@@ -47,28 +71,6 @@ namespace SkiEngine.Util
                 );
                 _lastTask = resultTask;
                 return resultTask;
-            }
-        }
-
-        public Task QueueAsync(Func<Task> asyncAction)
-        {
-            Interlocked.Increment(ref _numTasksQueued);
-            OnPropertyChanged(nameof(NumTasksQueued));
-
-            lock (_locker)
-            {
-                _lastTask = _lastTask.ContinueWith(
-                    async _ =>
-                    {
-                        ThrowIfShutdown();
-                        await asyncAction();
-
-                        Interlocked.Decrement(ref _numTasksQueued);
-                        OnPropertyChanged(nameof(NumTasksQueued));
-                    }, 
-                    TaskContinuationOptions.RunContinuationsAsynchronously
-                ).Unwrap();
-                return _lastTask;
             }
         }
 
@@ -114,7 +116,7 @@ namespace SkiEngine.Util
             });
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
