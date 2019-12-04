@@ -35,10 +35,9 @@ namespace SkiEngine.Util
                 _lastTask = _lastTask.ContinueWith(
                     async _ =>
                     {
-                        if (!_isShutdown)
-                        {
-                            await asyncAction();
-                        }
+                        ThrowIfShutdown();
+
+                        await asyncAction();
 
                         Interlocked.Decrement(ref _numTasksQueued);
                         OnPropertyChanged(nameof(NumTasksQueued));
