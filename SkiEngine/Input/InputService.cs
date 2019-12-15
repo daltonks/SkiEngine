@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SkiEngine.Input
 {
@@ -9,6 +10,8 @@ namespace SkiEngine.Input
         public event Action<SkiVirtualKey> KeyDown;
         public event Action<SkiVirtualKey> KeyUp;
 
+        private readonly HashSet<SkiVirtualKey> _keysDown = new HashSet<SkiVirtualKey>();
+
         public int CalculateNumberOfMousePointers()
         {
             return CalculateNumberOfMousePointersFunc.Invoke();
@@ -16,12 +19,20 @@ namespace SkiEngine.Input
 
         public void OnKeyDown(SkiVirtualKey key)
         {
+            _keysDown.Add(key);
             KeyDown?.Invoke(key);
         }
 
         public void OnKeyUp(SkiVirtualKey key)
         {
+            _keysDown.Remove(key);
             KeyUp?.Invoke(key);
+        }
+
+        public bool IsKeyDown(SkiVirtualKey key)
+        {
+            return _keysDown.Contains(key);
         }
     }
 }
+ 

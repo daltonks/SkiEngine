@@ -1,7 +1,5 @@
-﻿using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using Windows.Devices.Input;
-using Windows.UI.Xaml;
 using SkiEngine.Input;
 using Page = Windows.UI.Xaml.Controls.Page;
 
@@ -17,7 +15,7 @@ namespace SkiEngine.UWP
                     .GetPointerDevices()
                     .Count(pointer => pointer.PointerDeviceType == PointerDeviceType.Mouse)
             };
-
+            
             page.KeyDown += (sender, args) =>
             {
                 var intKey = (int) args.Key;
