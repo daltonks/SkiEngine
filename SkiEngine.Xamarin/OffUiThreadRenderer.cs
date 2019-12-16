@@ -15,14 +15,13 @@ namespace SkiEngine.Xamarin
         private readonly DrawDelegate _drawAction;
         private readonly Action _invalidateSurfaceAction;
 
-        private readonly object _snapshotImageLock = new object();
         private readonly object _pendingDrawLock = new object();
         private volatile bool _pendingDraw;
         private SKSurface _offUiThreadSurface;
-        private bool _allowSnapshotDispose = true;
-        
-        private SKImage _snapshotImage;
 
+        private readonly object _snapshotLock = new object();
+        private volatile SnapshotImage _snapshotImage;
+       
         private int _widthPixels;
         private int _heightPixels;
         private double _widthXamarinUnits;
@@ -32,36 +31,20 @@ namespace SkiEngine.Xamarin
         {
             _drawAction = drawAction;
             _invalidateSurfaceAction = invalidateSurfaceAction;
+            
+            _snapshotImage = new SnapshotImage(
+                SKImage.Create(new SKImageInfo(1, 1)), 
+                new SKSizeI(0, 0)
+            );
+            _snapshotImage.AddUser();
         }
 
-        public (SKImage Image, SKSizeI Size) GetSnapshotImageAndPreventDispose()
+        public SnapshotImage AddSnapshotImageUser()
         {
-            lock (_snapshotImageLock)
+            lock (_snapshotLock)
             {
-                _allowSnapshotDispose = false;
-                return (_snapshotImage, new SKSizeI(_widthPixels, _heightPixels));
-            }
-        }
-
-        public SKColor? GetPixelColor(int pixelX, int pixelY)
-        {
-            lock (_snapshotImageLock)
-            {
-                if (pixelX < 0 || pixelX >= _widthPixels || pixelY < 0 || pixelY >= _heightPixels)
-                {
-                    return null;
-                }
-
-                try
-                {
-                    return _snapshotImage?.PeekPixels().GetPixelColor(pixelX, pixelY);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex);
-
-                    return null;
-                }
+                _snapshotImage.AddUser();
+                return _snapshotImage;
             }
         }
 
@@ -87,12 +70,9 @@ namespace SkiEngine.Xamarin
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         public void OnPaintSurface(SKPaintSurfaceEventArgs e, double widthXamarinUnits, double heightXamarinUnits)
         {
-            lock (_snapshotImageLock)
+            lock (_snapshotLock)
             {
-                if (_snapshotImage != null)
-                {
-                    e.Surface.Canvas.DrawImage(_snapshotImage, 0, 0);
-                }
+                e.Surface.Canvas.DrawImage(_snapshotImage.SkImage, 0, 0);
             }
 
             var imageInfo = e.Info;
@@ -144,20 +124,13 @@ namespace SkiEngine.Xamarin
             _drawAction.Invoke(_offUiThreadSurface, _widthXamarinUnits, _heightXamarinUnits);
 
             // Create snapshot
-            lock (_snapshotImageLock)
+            lock (_snapshotLock)
             {
-                if (_allowSnapshotDispose)
-                {
-                    _snapshotImage?.Dispose();
-                }
-                else
-                {
-                    _allowSnapshotDispose = true;
-                }
-                
-                _snapshotImage = _offUiThreadSurface.Snapshot();
+                _snapshotImage.RemoveUser();
+                _snapshotImage = new SnapshotImage(_offUiThreadSurface.Snapshot(), new SKSizeI(_widthPixels, _heightPixels));
+                _snapshotImage.AddUser();
             }
-
+            
             // Invalidate surface to redraw snapshot
             _invalidateSurfaceAction.Invoke();
         }
@@ -168,13 +141,7 @@ namespace SkiEngine.Xamarin
 
             _offUiThreadSurface?.Dispose();
 
-            lock (_snapshotImageLock)
-            {
-                if (_allowSnapshotDispose)
-                {
-                    _snapshotImage?.Dispose();
-                }
-            }
+            _snapshotImage.RemoveUser();
         }
     }
 }
