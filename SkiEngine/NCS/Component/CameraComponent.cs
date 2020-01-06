@@ -152,13 +152,7 @@ namespace SkiEngine.NCS.Component
                 _previousPixelViewport = PixelViewport;
             }
 
-            _worldToPixelMatrix = Node.WorldToLocalMatrix;
-
-            SKMatrix.PostConcat(ref _worldToPixelMatrix, ref _halfPixelViewportTranslationMatrix);
-
-            _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
-
-            WorldViewport = _pixelToWorldMatrix.MapRect(PixelViewport);
+            RecalculatePixelMatrices();
 
             foreach (var component in _componentLayeredSets)
             {
@@ -169,6 +163,15 @@ namespace SkiEngine.NCS.Component
 
                 component.Draw(canvas);
             }
+        }
+
+        public void RecalculatePixelMatrices()
+        {
+            _worldToPixelMatrix = Node.WorldToLocalMatrix;
+            SKMatrix.PostConcat(ref _worldToPixelMatrix, ref _halfPixelViewportTranslationMatrix);
+            _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
+
+            WorldViewport = _pixelToWorldMatrix.MapRect(PixelViewport);
         }
     }
 
