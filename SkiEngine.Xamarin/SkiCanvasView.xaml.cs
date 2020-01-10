@@ -13,14 +13,14 @@ namespace SkiEngine.Xamarin
 
         public event Action<SkiTouch> SkiTouch;
 
-        private InputService _inputService;
+        private SkiInputService _inputService;
 
         public SkiCanvasView()
         {
             InitializeComponent();
         }
         
-        public void InitInput(InputService inputService)
+        public void InitInput(SkiInputService inputService)
         {
             _inputService = inputService;
         }
