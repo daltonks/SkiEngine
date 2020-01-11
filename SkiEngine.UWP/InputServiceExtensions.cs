@@ -24,7 +24,7 @@ namespace SkiEngine.UWP
 
                 IsKeyDownFunc = key => window.GetKeyState((VirtualKey) (int) key).HasFlag(CoreVirtualKeyStates.Down),
                 IsKeyLockedFunc = key => window.GetKeyState((VirtualKey) (int) key).HasFlag(CoreVirtualKeyStates.Locked),
-                IsAnyEntryFocusedFunc = () => FocusManager.GetFocusedElement() is TextBox
+                IsInputViewFocusedFunc = () => FocusManager.GetFocusedElement() is TextBox
             };
             
             window.KeyDown += (sender, args) =>
