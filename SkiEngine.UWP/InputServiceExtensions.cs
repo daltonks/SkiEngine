@@ -21,9 +21,6 @@ namespace SkiEngine.UWP
                     PointerDevice
                         .GetPointerDevices()
                         .Count(pointer => pointer.PointerDeviceType == PointerDeviceType.Mouse),
-
-                IsKeyDownFunc = key => window.GetKeyState((VirtualKey) (int) key).HasFlag(CoreVirtualKeyStates.Down),
-                IsKeyLockedFunc = key => window.GetKeyState((VirtualKey) (int) key).HasFlag(CoreVirtualKeyStates.Locked),
                 IsInputViewFocusedFunc = () => FocusManager.GetFocusedElement() is TextBox
             };
             

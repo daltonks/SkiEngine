@@ -9,11 +9,11 @@ namespace SkiEngine.Input
         public event Action<SkiVirtualKey> KeyDown = key => { };
         public event Action<SkiVirtualKey> KeyUp = key => { };
 
+        private readonly HashSet<SkiVirtualKey> _downKeys = new HashSet<SkiVirtualKey>();
+
         private readonly Dictionary<SkiVirtualKey, List<SkiKeyBinding>> _keyBindingsMap = new Dictionary<SkiVirtualKey, List<SkiKeyBinding>>();
 
         public Func<int> CalculateNumberOfMousePointersFunc { private get; set; } = () => 0;
-        public Func<SkiVirtualKey, bool> IsKeyDownFunc { private get; set; } = key => false;
-        public Func<SkiVirtualKey, bool> IsKeyLockedFunc { private get; set; } = key => false;
         public Func<bool> IsInputViewFocusedFunc { private get; set; } = () => false;
 
         public bool IsInputViewFocused => IsInputViewFocusedFunc.Invoke();
@@ -25,6 +25,11 @@ namespace SkiEngine.Input
 
         public void OnKeyDown(SkiVirtualKey key)
         {
+            lock (_downKeys)
+            {
+                _downKeys.Add(key);
+            }
+
             lock (_keyBindingsMap)
             {
                 if (_keyBindingsMap.TryGetValue(key, out var keyBindings))
@@ -50,6 +55,11 @@ namespace SkiEngine.Input
 
         public void OnKeyUp(SkiVirtualKey key)
         {
+            lock (_downKeys)
+            {
+                _downKeys.Remove(key);
+            }
+
             KeyUp.Invoke(key);
         }
 
@@ -60,12 +70,10 @@ namespace SkiEngine.Input
 
         public bool IsKeyDown(SkiVirtualKey key)
         {
-            return IsKeyDownFunc.Invoke(key);
-        }
-
-        public bool IsKeyLocked(SkiVirtualKey key)
-        {
-            return IsKeyLockedFunc.Invoke(key);
+            lock (_downKeys)
+            {
+                return _downKeys.Contains(key);
+            }
         }
 
         public void AddKeyBinding(SkiKeyBinding keyBinding)
