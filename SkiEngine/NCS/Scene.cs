@@ -2,9 +2,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using SkiaSharp;
+using SkiEngine.NCS.Component;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.NCS.System;
 using SkiEngine.Util;
@@ -17,7 +17,6 @@ namespace SkiEngine.NCS
 
         private readonly List<ISystem> _systems = new List<ISystem>();
         private readonly List<IUpdateableSystem> _updateableSystems = new List<IUpdateableSystem>();
-        private readonly List<IDrawableSystem> _drawableSystems = new List<IDrawableSystem>();
 
         private readonly UpdateTime _updateTime = new UpdateTime();
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
@@ -29,9 +28,8 @@ namespace SkiEngine.NCS
         {
             RootNode = new Node(this, new InitialNodeTransform());
 
-            AddSystem(new InputSystem());
             AddSystem(new UpdateSystem());
-            AddSystem(new CameraSystem());
+            AddSystem(new CanvasSystem());
         }
 
         public Node RootNode { get; }
@@ -53,11 +51,6 @@ namespace SkiEngine.NCS
             {
                 _updateableSystems.Add(updateableSystem);
             }
-
-            if (system is IDrawableSystem drawableSystem)
-            {
-                _drawableSystems.Add(drawableSystem);
-            }
         }
 
         public void RemoveSystem(ISystem system)
@@ -67,11 +60,6 @@ namespace SkiEngine.NCS
             if (system is IUpdateableSystem updateableSystem)
             {
                 _updateableSystems.Remove(updateableSystem);
-            }
-
-            if (system is IDrawableSystem drawableSystem)
-            {
-                _drawableSystems.Remove(drawableSystem);
             }
         }
 
@@ -85,6 +73,13 @@ namespace SkiEngine.NCS
 
         internal void OnComponentCreated(IComponent component)
         {
+            if (component.CreationHandled)
+            {
+                return;
+            }
+
+            component.CreationHandled = true;
+
             foreach (var system in _systems)
             {
                 system.OnComponentCreated(component);
@@ -175,16 +170,13 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void Draw(SKSurface surface, int viewTarget, double widthXamarinUnits, double heightXamarinUnits)
+        public void Draw(SKSurface surface, CanvasComponent canvasComponent, double widthXamarinUnits, double heightXamarinUnits)
         {
             _updateReaderWriterLock.EnterReadLock();
             try
             {
                 var canvas = surface.Canvas;
-                foreach (var system in _drawableSystems)
-                {
-                    system.Draw(canvas, viewTarget, widthXamarinUnits, heightXamarinUnits);
-                }
+                canvasComponent.Draw(canvas, widthXamarinUnits, heightXamarinUnits);
             }
             finally
             {

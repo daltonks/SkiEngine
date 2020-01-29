@@ -13,7 +13,6 @@ namespace SkiEngine.NCS
 
         private readonly List<Node> _children = new List<Node>();
         private readonly HashSet<IComponent> _components = new HashSet<IComponent>(ReferenceEqualityComparer<IComponent>.Default);
-        private HashSet<IDrawableComponent> _drawableComponents;
         
         internal Node(Scene scene, InitialNodeTransform initialTransform)
         {
@@ -28,7 +27,6 @@ namespace SkiEngine.NCS
         public Scene Scene { get; private set; }
         public IReadOnlyList<Node> Children => _children;
         public IReadOnlyCollection<IComponent> Components => _components;
-        public IReadOnlyCollection<IDrawableComponent> DrawableComponents => _drawableComponents;
         
         public bool IsDestroyed { get; private set; }
 
@@ -97,11 +95,7 @@ namespace SkiEngine.NCS
 
             foreach (var childComponent in node._components)
             {
-                if (!childComponent.CreationHandled)
-                {
-                    Scene.OnComponentCreated(childComponent);
-                    childComponent.CreationHandled = true;
-                }
+                Scene.OnComponentCreated(childComponent);
             }
 
             foreach (var childNode in node._children)
@@ -133,21 +127,7 @@ namespace SkiEngine.NCS
 
             component.Destroyed += OnComponentDestroyed;
 
-            if (component is IDrawableComponent drawableComponent)
-            {
-                if (_drawableComponents == null)
-                {
-                    _drawableComponents = new HashSet<IDrawableComponent>(ReferenceEqualityComparer<IComponent>.Default);
-                }
-
-                _drawableComponents.Add(drawableComponent);
-            }
-
-            if(!component.CreationHandled)
-            {
-                Scene.OnComponentCreated(component);
-                component.CreationHandled = true;
-            }
+            Scene.OnComponentCreated(component);
 
             return component;
         }
@@ -157,11 +137,6 @@ namespace SkiEngine.NCS
             if (!_components.Remove(component))
             {
                 return;
-            }
-
-            if (component is IDrawableComponent drawableComponent)
-            {
-                _drawableComponents.Remove(drawableComponent);
             }
 
             component.Destroyed -= OnComponentDestroyed;

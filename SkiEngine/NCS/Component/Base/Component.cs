@@ -20,6 +20,8 @@ namespace SkiEngine.NCS.Component.Base
             IsDestroyed = true;
 
             Destroyed?.Invoke(this);
+
+            Destroyed = null;
         }
     }
 }

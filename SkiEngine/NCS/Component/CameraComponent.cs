@@ -10,28 +10,27 @@ namespace SkiEngine.NCS.Component
     public class CameraComponent : Base.Component
     {
         public delegate void DrawOrderChangedDelegate(CameraComponent component, int previousDrawOrder);
+        public delegate void RenderChangedDelegate(CameraComponent component);
+
         public event DrawOrderChangedDelegate DrawOrderChanged;
+        public event RenderChangedDelegate EnabledChanged;
 
-        private int _drawOrder;
-        private readonly LayeredSets<int, IDrawableComponent> _componentLayeredSets;
+        private readonly LayeredSets<int, IDrawableComponent> _drawableComponents;
 
-        public CameraComponent(int drawOrder, int viewTarget)
+        public CameraComponent(CanvasComponent canvasComponent, int drawOrder)
         {
             _drawOrder = drawOrder;
-            ViewTarget = viewTarget;
-            
-            _componentLayeredSets = new LayeredSets<int, IDrawableComponent>(component => component.Node.WorldZ);
+            _drawableComponents = new LayeredSets<int, IDrawableComponent>(component => component.Node.WorldZ);
+
+            canvasComponent?.AddCamera(this);
         }
 
-        public int ViewTarget { get; set; }
+        public CanvasComponent CanvasComponent { get; internal set; }
 
-        public IReadOnlyList<int> OrderedLayers => _componentLayeredSets.OrderedLayers;
+        public IReadOnlyList<int> OrderedLayers => _drawableComponents.OrderedLayers;
 
-        private SKMatrix _xamarinToPixelMatrix;
-        public ref SKMatrix XamarinToPixelMatrix => ref _xamarinToPixelMatrix;
-
-        private SKMatrix _pixelToXamarinMatrix;
-        public ref SKMatrix PixelToXamarinMatrix => ref _pixelToXamarinMatrix;
+        public ref SKMatrix XamarinToPixelMatrix => ref CanvasComponent.XamarinToPixelMatrix;
+        public ref SKMatrix PixelToXamarinMatrix => ref CanvasComponent.PixelToXamarinMatrix;
 
         private SKMatrix _worldToPixelMatrix;
         public ref SKMatrix WorldToPixelMatrix => ref _worldToPixelMatrix;
@@ -42,6 +41,23 @@ namespace SkiEngine.NCS.Component
         public SKRectI PixelViewport { get; private set; }
         public SKRect WorldViewport { get; private set; }
 
+        private bool _enabled = true;
+        public bool Enabled
+        {
+            get => _enabled;
+            set
+            {
+                if (_enabled == value)
+                {
+                    return;
+                }
+
+                _enabled = value;
+                EnabledChanged?.Invoke(this);
+            }
+        }
+
+        private int _drawOrder;
         public int DrawOrder
         {
             get => _drawOrder;
@@ -60,9 +76,9 @@ namespace SkiEngine.NCS.Component
 
         internal void OnZChanged(IDrawableComponent drawableComponent, int previousZ)
         {
-            if (_componentLayeredSets.Remove(drawableComponent, previousZ))
+            if (_drawableComponents.Remove(drawableComponent, previousZ))
             {
-                _componentLayeredSets.Add(drawableComponent);
+                _drawableComponents.Add(drawableComponent);
             }
         }
 
@@ -73,16 +89,16 @@ namespace SkiEngine.NCS.Component
                 return;
             }
 
-            if (_componentLayeredSets.Add(component))
+            if (_drawableComponents.Add(component))
             {
                 component.Destroyed += RemoveDrawable;
-                _componentLayeredSets.Add(component);
+                _drawableComponents.Add(component);
             }
         }
 
         public IReadOnlyCollection<IDrawableComponent> GetDrawablesWithZ(int z)
         {
-            return _componentLayeredSets.GetItems(z);
+            return _drawableComponents.GetItems(z);
         }
 
         public void RemoveDrawable(IDrawableComponent component)
@@ -93,7 +109,7 @@ namespace SkiEngine.NCS.Component
         private void RemoveDrawable(IComponent component)
         {
             var drawableComponent = (IDrawableComponent) component;
-            _componentLayeredSets.Remove(drawableComponent);
+            _drawableComponents.Remove(drawableComponent);
             component.Destroyed -= RemoveDrawable;
         }
 
@@ -101,8 +117,8 @@ namespace SkiEngine.NCS.Component
         {
             var localBoundingBox = worldPoints.Select(Node.WorldToLocalMatrix.MapPoint).BoundingBox();
             Node.WorldPoint = Node.LocalToWorldMatrix.MapPoint(localBoundingBox.Mid());
-            var widthProportion = localBoundingBox.Width / _previousPixelViewport.Width;
-            var heightProportion = localBoundingBox.Height / _previousPixelViewport.Height;
+            var widthProportion = localBoundingBox.Width / CanvasComponent.PixelViewport.Width;
+            var heightProportion = localBoundingBox.Height / CanvasComponent.PixelViewport.Height;
 
             Node.RelativeScale = Node.RelativeScale.Multiply(
                 widthProportion > heightProportion 
@@ -131,30 +147,11 @@ namespace SkiEngine.NCS.Component
             Node.RelativeScale = Node.RelativeScale.Multiply(1 + zoomDelta);
         }
 
-        private SKRectI _previousPixelViewport;
-        private SKMatrix _halfPixelViewportTranslationMatrix;
-        public void Draw(SKCanvas canvas, double widthXamarinUnits, double heightXamarinUnits)
+        public void Draw(SKCanvas canvas)
         {
-            PixelViewport = canvas.DeviceClipBounds;
-            if (PixelViewport != _previousPixelViewport)
-            {
-                _xamarinToPixelMatrix = SKMatrix.MakeScale(
-                    (float) (PixelViewport.Width / widthXamarinUnits),
-                    (float) (PixelViewport.Height / heightXamarinUnits)
-                );
-
-                _pixelToXamarinMatrix = SKMatrix.MakeScale(
-                    (float) (widthXamarinUnits / PixelViewport.Width),
-                    (float) (heightXamarinUnits / PixelViewport.Height)
-                );
-
-                _halfPixelViewportTranslationMatrix = SKMatrix.MakeTranslation(PixelViewport.Width / 2f, PixelViewport.Height / 2f);
-                _previousPixelViewport = PixelViewport;
-            }
-
             RecalculatePixelMatrices();
 
-            foreach (var component in _componentLayeredSets)
+            foreach (var component in _drawableComponents)
             {
                 var drawMatrix = component.Node.LocalToWorldMatrix;
                 SKMatrix.PostConcat(ref drawMatrix, ref _worldToPixelMatrix);
@@ -168,7 +165,7 @@ namespace SkiEngine.NCS.Component
         public void RecalculatePixelMatrices()
         {
             _worldToPixelMatrix = Node.WorldToLocalMatrix;
-            SKMatrix.PostConcat(ref _worldToPixelMatrix, ref _halfPixelViewportTranslationMatrix);
+            SKMatrix.PostConcat(ref _worldToPixelMatrix, ref CanvasComponent.HalfPixelViewportTranslationMatrix);
             _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
 
             WorldViewport = _pixelToWorldMatrix.MapRect(PixelViewport);

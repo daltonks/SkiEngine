@@ -31,6 +31,8 @@ namespace SkiEngine.TestApp
         }
 
         private readonly Scene _scene = new Scene();
+        private readonly CanvasComponent _canvasComponent1;
+        private readonly CanvasComponent _canvasComponent2;
         private readonly Dictionary<long, SKPath> _temporaryPaths = new Dictionary<long, SKPath>();
         private readonly List<SKPath> _paths = new List<SKPath>();
         private readonly CameraComponent _camera1;
@@ -42,14 +44,18 @@ namespace SkiEngine.TestApp
 
             _scene.Start();
 
+            // Canvas components
+            _canvasComponent1 = new CanvasComponent();
+            _canvasComponent2 = new CanvasComponent();
+
             // Cameras
             _camera1 = _scene.RootNode
                 .CreateChild()
-                .AddComponent(new CameraComponent(0, 0));
+                .AddComponent(new CameraComponent(_canvasComponent1, 0));
 
             _camera2 = _scene.RootNode
                 .CreateChild(new SKPoint(50, 200), 0, (float) Math.PI / 8, new SKPoint(3, 3))
-                .AddComponent(new CameraComponent(0, 1));
+                .AddComponent(new CameraComponent(_canvasComponent2, 0));
 
             // Scribble
             _scene.RootNode
@@ -112,7 +118,7 @@ namespace SkiEngine.TestApp
             var canvas = args.Surface.Canvas;
             
             canvas.Clear(SKColors.Black);
-            _scene.Draw(args.Surface, 0, SkGlView1.Width, SkGlView1.Height);
+            _scene.Draw(args.Surface, _canvasComponent1, SkGlView1.Width, SkGlView1.Height);
             canvas.Flush();
         }
 
@@ -121,7 +127,7 @@ namespace SkiEngine.TestApp
             var canvas = args.Surface.Canvas;
 
             canvas.Clear(SKColors.Black);
-            _scene.Draw(args.Surface, 1, SkGlView2.Width, SkGlView2.Height);
+            _scene.Draw(args.Surface, _canvasComponent2, SkGlView2.Width, SkGlView2.Height);
             canvas.Flush();
         }
 
