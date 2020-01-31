@@ -17,10 +17,11 @@ namespace SkiEngine.NCS.Component
 
         private readonly LayeredSets<int, IDrawableComponent> _drawableComponents;
 
-        public CameraComponent(CanvasComponent canvasComponent, int drawOrder)
+        public CameraComponent(CanvasComponent canvasComponent, int drawOrder, bool enabled = true)
         {
             _drawOrder = drawOrder;
             _drawableComponents = new LayeredSets<int, IDrawableComponent>(component => component.Node.WorldZ);
+            _enabled = enabled;
 
             canvasComponent?.AddCamera(this);
         }
