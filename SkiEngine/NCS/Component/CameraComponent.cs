@@ -110,8 +110,10 @@ namespace SkiEngine.NCS.Component
         private void RemoveDrawable(IComponent component)
         {
             var drawableComponent = (IDrawableComponent) component;
-            _drawableComponents.Remove(drawableComponent);
-            component.Destroyed -= RemoveDrawable;
+            if (_drawableComponents.Remove(drawableComponent))
+            {
+                component.Destroyed -= RemoveDrawable;
+            }
         }
 
         public void ZoomTo(IEnumerable<SKPoint> worldPoints)
