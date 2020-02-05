@@ -167,6 +167,11 @@ namespace SkiEngine.NCS.Component
 
         public void RecalculatePixelMatrices()
         {
+            if (CanvasComponent == null)
+            {
+                return;
+            }
+
             _worldToPixelMatrix = Node.WorldToLocalMatrix;
             SKMatrix.PostConcat(ref _worldToPixelMatrix, ref CanvasComponent.HalfPixelViewportTranslationMatrix);
             _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
