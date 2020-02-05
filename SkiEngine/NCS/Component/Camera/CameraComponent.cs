@@ -3,30 +3,32 @@ using System.Linq;
 using SkiaSharp;
 using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
+using SkiEngine.NCS.Component.Camera;
 using SkiEngine.Util;
 
 namespace SkiEngine.NCS.Component
 {
     public class CameraComponent : Base.Component
     {
+        public delegate void EnabledChangedDelegate(CameraComponent component);
         public delegate void DrawOrderChangedDelegate(CameraComponent component, int previousDrawOrder);
-        public delegate void RenderChangedDelegate(CameraComponent component);
 
+        public event EnabledChangedDelegate EnabledChanged;
         public event DrawOrderChangedDelegate DrawOrderChanged;
-        public event RenderChangedDelegate EnabledChanged;
 
         private readonly LayeredSets<int, IDrawableComponent> _drawableComponents;
 
-        public CameraComponent(CanvasComponent canvasComponent, int drawOrder, bool enabled = true)
+        public CameraComponent(CameraGroup cameraGroup, int drawOrder, bool enabled = true)
         {
             _drawOrder = drawOrder;
             _drawableComponents = new LayeredSets<int, IDrawableComponent>(component => component.Node.WorldZ);
             _enabled = enabled;
 
-            canvasComponent?.AddCamera(this);
+            cameraGroup?.Add(this);
         }
 
-        public CanvasComponent CanvasComponent { get; internal set; }
+        public CameraGroup Group { get; internal set; }
+        public CanvasComponent CanvasComponent => Group.CanvasComponent;
 
         public IReadOnlyList<int> OrderedLayers => _drawableComponents.OrderedLayers;
 

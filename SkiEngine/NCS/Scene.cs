@@ -170,13 +170,12 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void Draw(SKSurface surface, CanvasComponent canvasComponent, double widthXamarinUnits, double heightXamarinUnits)
+        public void Draw(Action drawAction)
         {
             _updateReaderWriterLock.EnterReadLock();
             try
             {
-                var canvas = surface.Canvas;
-                canvasComponent.Draw(canvas, widthXamarinUnits, heightXamarinUnits);
+                drawAction();
             }
             finally
             {
