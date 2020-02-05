@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SkiaSharp;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
@@ -93,7 +94,7 @@ namespace SkiEngine.NCS.Component.Camera
 
         public void OnDestroyed()
         {
-            foreach (var camera in _cameras)
+            foreach (var camera in _cameras.ToList())
             {
                 Remove(camera);
             }
