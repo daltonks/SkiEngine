@@ -2,10 +2,8 @@
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.NCS.Component.Base;
-using SkiEngine.NCS.Component.Camera;
-using SkiEngine.Util;
 
-namespace SkiEngine.NCS.Component
+namespace SkiEngine.NCS.Component.Camera
 {
     public class CanvasComponent : Base.Component
     {

@@ -40,7 +40,10 @@ namespace SkiEngine.Xamarin
 
             try
             {
-                return SkImage.PeekPixels().GetPixelColor(pixelX, pixelY);
+                using (var pixels = SkImage.PeekPixels())
+                {
+                    return pixels.GetPixelColor(pixelX, pixelY);
+                }
             }
             catch (Exception ex)
             {

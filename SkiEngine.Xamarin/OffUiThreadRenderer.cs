@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
@@ -6,7 +7,7 @@ using SkiEngine.Util;
 
 namespace SkiEngine.Xamarin
 {
-    public delegate void DrawDelegate(SKSurface surface, double widthXamarinUnits, double heightXamarinUnits);
+    public delegate void DrawDelegate(SKSurface surface, OffUiThreadRenderer.SnapshotHandler snapshotHandler, double widthXamarinUnits, double heightXamarinUnits);
 
     public class OffUiThreadRenderer : IDisposable
     {
@@ -19,7 +20,7 @@ namespace SkiEngine.Xamarin
         private SKSurface _offUiThreadSurface;
 
         private readonly object _snapshotLock = new object();
-        private volatile SnapshotImage _snapshotImage;
+        private readonly List<SnapshotImage> _snapshotImages = new List<SnapshotImage>();
        
         private int _widthPixels;
         private int _heightPixels;
@@ -30,20 +31,21 @@ namespace SkiEngine.Xamarin
         {
             _drawAction = drawAction;
             _invalidateSurfaceAction = invalidateSurfaceAction;
-            
-            _snapshotImage = new SnapshotImage(
-                SKImage.Create(new SKImageInfo(1, 1)), 
-                new SKSizeI(0, 0)
-            );
-            _snapshotImage.AddUser();
         }
 
-        public SnapshotImage AddSnapshotImageUser()
+        public SnapshotImage AddSnapshotImageUser(int index)
         {
             lock (_snapshotLock)
             {
-                _snapshotImage.AddUser();
-                return _snapshotImage;
+                var snapshotImage = index < _snapshotImages.Count
+                    ? _snapshotImages[index]
+                    : new SnapshotImage(
+                        SKImage.Create(new SKImageInfo(1, 1)),
+                        new SKSizeI(0, 0)
+                    );
+
+                snapshotImage.AddUser();
+                return snapshotImage;
             }
         }
 
@@ -71,7 +73,10 @@ namespace SkiEngine.Xamarin
         {
             lock (_snapshotLock)
             {
-                e.Surface.Canvas.DrawImage(_snapshotImage.SkImage, 0, 0);
+                foreach (var snapshotImage in _snapshotImages)
+                {
+                    e.Surface.Canvas.DrawImage(snapshotImage.SkImage, 0, 0);
+                }
             }
 
             var imageInfo = e.Info;
@@ -119,18 +124,11 @@ namespace SkiEngine.Xamarin
 
             _pendingDraw = false;
 
-            // Draw scene
-            _drawAction.Invoke(_offUiThreadSurface, _widthXamarinUnits, _heightXamarinUnits);
-
-            // Create snapshot
-            lock (_snapshotLock)
+            using (var snapshotHandler = new SnapshotHandler(this))
             {
-                _snapshotImage.RemoveUser();
-                _snapshotImage = new SnapshotImage(_offUiThreadSurface.Snapshot(), new SKSizeI(_widthPixels, _heightPixels));
-                _snapshotImage.AddUser();
+                _drawAction(_offUiThreadSurface, snapshotHandler, _widthXamarinUnits, _heightXamarinUnits);
             }
             
-            // Invalidate surface to redraw snapshot
             _invalidateSurfaceAction.Invoke();
         }
 
@@ -140,7 +138,60 @@ namespace SkiEngine.Xamarin
 
             _offUiThreadSurface?.Dispose();
 
-            _snapshotImage.RemoveUser();
+            foreach (var snapshotImage in _snapshotImages)
+            {
+                snapshotImage.RemoveUser();
+            }
+        }
+
+        public class SnapshotHandler : IDisposable
+        {
+            private int _index;
+
+            private readonly OffUiThreadRenderer _renderer;
+
+            public SnapshotHandler(OffUiThreadRenderer renderer)
+            {
+                _renderer = renderer;
+            }
+
+            public void Snapshot()
+            {
+                lock (_renderer._snapshotLock)
+                {
+                    var snapshotImage = new SnapshotImage(
+                        _renderer._offUiThreadSurface.Snapshot(), 
+                        new SKSizeI(_renderer._widthPixels, _renderer._heightPixels)
+                    );
+
+                    if (_index < _renderer._snapshotImages.Count)
+                    {
+                        _renderer._snapshotImages[_index].RemoveUser();
+                        _renderer._snapshotImages[_index] = snapshotImage;
+                    }
+                    else
+                    {
+                        _renderer._snapshotImages.Add(snapshotImage);
+                    }
+                    
+                    snapshotImage.AddUser();
+                }
+
+                _index++;
+            }
+
+            public void Dispose()
+            {
+                lock (_renderer._snapshotLock)
+                {
+                    for (var i = _index; i < _renderer._snapshotImages.Count;)
+                    {
+                        var snapshot = _renderer._snapshotImages[i];
+                        snapshot.RemoveUser();
+                        _renderer._snapshotImages.RemoveAt(i);
+                    }
+                }
+            }
         }
     }
 }

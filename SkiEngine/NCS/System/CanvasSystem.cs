@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using SkiEngine.NCS.Component;
 using SkiEngine.NCS.Component.Base;
+using SkiEngine.NCS.Component.Camera;
 
 namespace SkiEngine.NCS.System
 {
