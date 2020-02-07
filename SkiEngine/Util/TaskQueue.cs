@@ -13,9 +13,15 @@ namespace SkiEngine.Util
         private readonly object _locker = new object();
         private volatile Task _lastTask = Task.CompletedTask;
         private volatile bool _isShutdown;
+        private readonly bool _enablePropertyChanged;
 
         private volatile int _numTasksQueued;
         public int NumTasksQueued => _numTasksQueued;
+
+        public TaskQueue(bool enablePropertyChanged = false)
+        {
+            _enablePropertyChanged = enablePropertyChanged;
+        }
 
         public Task QueueAsync(Action action)
         {
@@ -117,7 +123,10 @@ namespace SkiEngine.Util
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (_enablePropertyChanged)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
     }
 }

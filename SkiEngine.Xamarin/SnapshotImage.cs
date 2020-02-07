@@ -7,7 +7,7 @@ namespace SkiEngine.Xamarin
 {
     public class SnapshotImage
     {
-        private volatile int _activeUsers;
+        private volatile int _activeUsers = 1;
 
         public SnapshotImage(SKImage skImage, SKSizeI size)
         {
