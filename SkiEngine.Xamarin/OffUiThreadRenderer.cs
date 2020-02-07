@@ -7,12 +7,14 @@ using SkiEngine.Util;
 
 namespace SkiEngine.Xamarin
 {
-    public delegate void DrawDelegate(SKSurface surface, OffUiThreadRenderer.SnapshotHandler snapshotHandler, double widthXamarinUnits, double heightXamarinUnits);
+    public delegate void OffUiThreadDrawDelegate(SKSurface surface, OffUiThreadRenderer.SnapshotHandler snapshotHandler, double widthXamarinUnits, double heightXamarinUnits);
+    public delegate void OnUiThreadDrawDelegate(SKSurface surface, IReadOnlyList<SnapshotImage> snapshots);
 
     public class OffUiThreadRenderer : IDisposable
     {
         private readonly TaskQueue _taskQueue = new TaskQueue();
-        private readonly DrawDelegate _drawAction;
+        private readonly OffUiThreadDrawDelegate _offUiThreadDrawAction;
+        private readonly OnUiThreadDrawDelegate _onUiThreadDrawDelegate;
         private readonly Action _invalidateSurfaceAction;
 
         private readonly object _pendingDrawLock = new object();
@@ -27,9 +29,14 @@ namespace SkiEngine.Xamarin
         private double _widthXamarinUnits;
         private double _heightXamarinUnits;
 
-        public OffUiThreadRenderer(DrawDelegate drawAction, Action invalidateSurfaceAction)
+        public OffUiThreadRenderer(
+            OffUiThreadDrawDelegate offUiThreadDrawAction, 
+            OnUiThreadDrawDelegate onUiThreadDrawDelegate,
+            Action invalidateSurfaceAction
+        )
         {
-            _drawAction = drawAction;
+            _offUiThreadDrawAction = offUiThreadDrawAction;
+            _onUiThreadDrawDelegate = onUiThreadDrawDelegate;
             _invalidateSurfaceAction = invalidateSurfaceAction;
         }
 
@@ -73,10 +80,7 @@ namespace SkiEngine.Xamarin
         {
             lock (_snapshotLock)
             {
-                foreach (var snapshotImage in _snapshotImages)
-                {
-                    e.Surface.Canvas.DrawImage(snapshotImage.SkImage, 0, 0);
-                }
+                _onUiThreadDrawDelegate(e.Surface, _snapshotImages);
             }
 
             var imageInfo = e.Info;
@@ -126,7 +130,7 @@ namespace SkiEngine.Xamarin
 
             using (var snapshotHandler = new SnapshotHandler(this))
             {
-                _drawAction(_offUiThreadSurface, snapshotHandler, _widthXamarinUnits, _heightXamarinUnits);
+                _offUiThreadDrawAction(_offUiThreadSurface, snapshotHandler, _widthXamarinUnits, _heightXamarinUnits);
             }
             
             _invalidateSurfaceAction.Invoke();
