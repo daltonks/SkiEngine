@@ -47,34 +47,39 @@ namespace SkiEngine.Xamarin
         {
             lock (_snapshotLock)
             {
-                var snapshotImage = index < _snapshotImages.Count
-                    ? _snapshotImages[index]
-                    : _snapshotImages[index] = new SnapshotImage(
-                        SKImage.Create(new SKImageInfo(1, 1)),
-                        new SKSizeI(0, 0)
-                    );
+                if (index < _snapshotImages.Count)
+                {
+                    var snapshotImage = _snapshotImages[index];
+                    snapshotImage.AddUser();
+                    return snapshotImage;
+                }
 
-                return snapshotImage;
+                return new SnapshotImage(
+                    SKImage.Create(new SKImageInfo(1, 1)),
+                    new SKSizeI(0, 0)
+                );
             }
         }
 
-        public void TryQueueConcurrentDraw()
+        public bool TryQueueDraw()
         {
-            var actuallyDraw = false;
+            var shouldDraw = false;
 
             lock (_pendingDrawLock)
             {
                 if (!_pendingDraw)
                 {
                     _pendingDraw = true;
-                    actuallyDraw = true;
+                    shouldDraw = true;
                 }
             }
 
-            if (actuallyDraw)
+            if (shouldDraw)
             {
                 _taskQueue.QueueAsync(ConcurrentDrawAndInvalidateSurface);
             }
+
+            return shouldDraw;
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
@@ -130,6 +135,7 @@ namespace SkiEngine.Xamarin
 
             _pendingDraw = false;
 
+            _snapshotHandler.Reset();
             _offUiThreadDrawAction(_offUiThreadSurface, _snapshotHandler, _widthXamarinUnits, _heightXamarinUnits);
             _snapshotHandler.DisposeExtraSnapshots();
 
