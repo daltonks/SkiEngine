@@ -5,7 +5,6 @@ using SkiaSharp;
 using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
-using NotImplementedException = System.NotImplementedException;
 
 namespace SkiEngine.NCS.Component.Camera
 {
@@ -32,6 +31,7 @@ namespace SkiEngine.NCS.Component.Camera
         public CanvasComponent CanvasComponent => Group.CanvasComponent;
 
         public IReadOnlyList<int> OrderedLayers => _drawableComponents.OrderedLayers;
+        public IEnumerable<IDrawableComponent> ReversedComponents => _drawableComponents.ReversedItems;
 
         public ref SKMatrix XamarinToPixelMatrix => ref CanvasComponent.XamarinToPixelMatrix;
         public ref SKMatrix PixelToXamarinMatrix => ref CanvasComponent.PixelToXamarinMatrix;

@@ -25,6 +25,21 @@ namespace SkiEngine.Util
 
         public IReadOnlyList<TLayer> OrderedLayers => _orderedLayers;
 
+        public IEnumerable<TItem> ReversedItems
+        {
+            get
+            {
+                for (var i = _orderedLayers.Count - 1; i >= 0; i--)
+                {
+                    var layer = _orderedLayers[i];
+                    foreach (var item in _layers[layer])
+                    {
+                        yield return item;
+                    }
+                }
+            }
+        }
+
         private void Init(Func<TItem, TLayer> getLayerFunc, IComparer<TLayer> layerComparer, IEqualityComparer<TItem> itemEqualityComparer)
         {
             _getLayerFunc = getLayerFunc;
