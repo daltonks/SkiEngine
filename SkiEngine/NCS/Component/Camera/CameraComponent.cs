@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
+using NotImplementedException = System.NotImplementedException;
 
 namespace SkiEngine.NCS.Component.Camera
 {
-    public class CameraComponent : Base.Component
+    public class CameraComponent : Base.Component, IEnumerable<IDrawableComponent>
     {
         public delegate void EnabledChangedDelegate(CameraComponent component);
         public delegate void DrawOrderChangedDelegate(CameraComponent component, int previousDrawOrder);
@@ -178,6 +180,16 @@ namespace SkiEngine.NCS.Component.Camera
             _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
 
             WorldViewport = _pixelToWorldMatrix.MapRect(PixelViewport);
+        }
+
+        public IEnumerator<IDrawableComponent> GetEnumerator()
+        {
+            return _drawableComponents.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 
