@@ -14,7 +14,6 @@ namespace SkiEngine.Xamarin
     {
         private readonly TaskQueue _taskQueue = new TaskQueue();
         private readonly OffUiThreadDrawDelegate _offUiThreadDrawAction;
-        private readonly int _delayBetweenRendersMillis;
 
         private volatile bool _pendingDraw;
         private SKSurface _offUiThreadSurface;
@@ -28,13 +27,9 @@ namespace SkiEngine.Xamarin
         private double _widthXamarinUnits;
         private double _heightXamarinUnits;
 
-        public ConcurrentRenderer(
-            OffUiThreadDrawDelegate offUiThreadDrawAction, 
-            int delayBetweenRendersMillis = 0
-        )
+        public ConcurrentRenderer(OffUiThreadDrawDelegate offUiThreadDrawAction)
         {
             _offUiThreadDrawAction = offUiThreadDrawAction;
-            _delayBetweenRendersMillis = delayBetweenRendersMillis;
 
             _snapshotHandler = new SnapshotHandler(this);
         }
@@ -73,7 +68,7 @@ namespace SkiEngine.Xamarin
 
             if (shouldDraw)
             {
-                _taskQueue.QueueAsync(ConcurrentDrawAndInvalidateSurfaceAsync);
+                _taskQueue.QueueAsync(ConcurrentDrawAndInvalidateSurface);
             }
 
             return shouldDraw;
@@ -119,18 +114,16 @@ namespace SkiEngine.Xamarin
                 );
 
                 // Redraw
-                return ConcurrentDrawAndInvalidateSurfaceAsync();
+                ConcurrentDrawAndInvalidateSurface();
             });
         }
 
-        private async Task ConcurrentDrawAndInvalidateSurfaceAsync()
+        private void ConcurrentDrawAndInvalidateSurface()
         {
             if (_offUiThreadSurface == null)
             {
                 return;
             }
-
-            await Task.Delay(_delayBetweenRendersMillis);
 
             _pendingDraw = false;
 
