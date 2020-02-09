@@ -23,7 +23,7 @@ namespace SkiEngine.Xamarin
 
         private readonly object _snapshotLock = new object();
         private readonly SnapshotHandler _snapshotHandler;
-        private readonly List<SnapshotImage> _snapshotImages = new List<SnapshotImage>();
+        private readonly List<SnapshotImage> _snapshotImages = new List<SnapshotImage>(1);
        
         private int _widthPixels;
         private int _heightPixels;
