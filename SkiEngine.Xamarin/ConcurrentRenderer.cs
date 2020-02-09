@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiEngine.Util;
@@ -16,6 +17,7 @@ namespace SkiEngine.Xamarin
         private readonly OffUiThreadDrawDelegate _offUiThreadDrawAction;
         private readonly OnUiThreadDrawDelegate _onUiThreadDrawDelegate;
         private readonly Action _invalidateSurfaceAction;
+        private readonly int _delayBetweenRendersMillis;
 
         private readonly object _pendingDrawLock = new object();
         private volatile bool _pendingDraw;
@@ -33,12 +35,14 @@ namespace SkiEngine.Xamarin
         public ConcurrentRenderer(
             OffUiThreadDrawDelegate offUiThreadDrawAction, 
             OnUiThreadDrawDelegate onUiThreadDrawDelegate,
-            Action invalidateSurfaceAction
+            Action invalidateSurfaceAction,
+            int delayBetweenRendersMillis = 0
         )
         {
             _offUiThreadDrawAction = offUiThreadDrawAction;
             _onUiThreadDrawDelegate = onUiThreadDrawDelegate;
             _invalidateSurfaceAction = invalidateSurfaceAction;
+            _delayBetweenRendersMillis = delayBetweenRendersMillis;
 
             _snapshotHandler = new SnapshotHandler(this);
         }
@@ -76,7 +80,7 @@ namespace SkiEngine.Xamarin
 
             if (shouldDraw)
             {
-                _taskQueue.QueueAsync(ConcurrentDrawAndInvalidateSurface);
+                _taskQueue.QueueAsync(ConcurrentDrawAndInvalidateSurfaceAsync);
             }
 
             return shouldDraw;
@@ -122,16 +126,18 @@ namespace SkiEngine.Xamarin
                 );
 
                 // Redraw
-                ConcurrentDrawAndInvalidateSurface();
+                return ConcurrentDrawAndInvalidateSurfaceAsync();
             });
         }
 
-        private void ConcurrentDrawAndInvalidateSurface()
+        private async Task ConcurrentDrawAndInvalidateSurfaceAsync()
         {
             if (_offUiThreadSurface == null)
             {
                 return;
             }
+
+            await Task.Delay(_delayBetweenRendersMillis);
 
             _pendingDraw = false;
 

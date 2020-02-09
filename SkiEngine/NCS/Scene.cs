@@ -114,6 +114,11 @@ namespace SkiEngine.NCS
                 _updateReaderWriterLock.EnterWriteLock();
                 try
                 {
+                    if (IsDestroyed)
+                    {
+                        return;
+                    }
+
                     a.Invoke();
 
                     while (_outsideOfUpdateActionQueue.TryDequeue(out a))
