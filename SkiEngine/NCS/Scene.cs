@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using SkiaSharp;
 using SkiEngine.NCS.Component;
 using SkiEngine.NCS.Component.Base;
@@ -101,11 +102,11 @@ namespace SkiEngine.NCS
 
         private readonly TaskQueue _outsideOfUpdateTaskQueue = new TaskQueue();
         private readonly ConcurrentQueue<Action> _outsideOfUpdateActionQueue = new ConcurrentQueue<Action>();
-        public void QueueOutsideOfUpdate(Action action)
+        public Task QueueOutsideOfUpdateAsync(Action action)
         {
             _outsideOfUpdateActionQueue.Enqueue(action);
 
-            _outsideOfUpdateTaskQueue.QueueAsync(() => {
+            return _outsideOfUpdateTaskQueue.QueueAsync(() => {
                 if (!_outsideOfUpdateActionQueue.TryDequeue(out var a))
                 {
                     return;
