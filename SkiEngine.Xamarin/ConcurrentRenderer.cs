@@ -19,7 +19,6 @@ namespace SkiEngine.Xamarin
         private readonly Action _invalidateSurfaceAction;
         private readonly int _delayBetweenRendersMillis;
 
-        private readonly object _pendingDrawLock = new object();
         private volatile bool _pendingDraw;
         private SKSurface _offUiThreadSurface;
 
@@ -65,6 +64,7 @@ namespace SkiEngine.Xamarin
             }
         }
 
+        private readonly object _pendingDrawLock = new object();
         public bool TryQueueDraw()
         {
             var shouldDraw = false;
