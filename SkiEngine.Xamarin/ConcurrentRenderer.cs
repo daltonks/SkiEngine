@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -9,14 +9,11 @@ using SkiEngine.Util;
 namespace SkiEngine.Xamarin
 {
     public delegate void OffUiThreadDrawDelegate(SKSurface surface, ConcurrentRenderer.SnapshotHandler snapshotHandler, double widthXamarinUnits, double heightXamarinUnits);
-    public delegate void OnUiThreadDrawDelegate(SKSurface surface, IReadOnlyList<SnapshotImage> snapshots);
 
     public class ConcurrentRenderer : IDisposable
     {
         private readonly TaskQueue _taskQueue = new TaskQueue();
         private readonly OffUiThreadDrawDelegate _offUiThreadDrawAction;
-        private readonly OnUiThreadDrawDelegate _onUiThreadDrawDelegate;
-        private readonly Action _invalidateSurfaceAction;
         private readonly int _delayBetweenRendersMillis;
 
         private volatile bool _pendingDraw;
@@ -33,14 +30,10 @@ namespace SkiEngine.Xamarin
 
         public ConcurrentRenderer(
             OffUiThreadDrawDelegate offUiThreadDrawAction, 
-            OnUiThreadDrawDelegate onUiThreadDrawDelegate,
-            Action invalidateSurfaceAction,
             int delayBetweenRendersMillis = 0
         )
         {
             _offUiThreadDrawAction = offUiThreadDrawAction;
-            _onUiThreadDrawDelegate = onUiThreadDrawDelegate;
-            _invalidateSurfaceAction = invalidateSurfaceAction;
             _delayBetweenRendersMillis = delayBetweenRendersMillis;
 
             _snapshotHandler = new SnapshotHandler(this);
@@ -87,11 +80,11 @@ namespace SkiEngine.Xamarin
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-        public void OnPaintSurface(SKPaintSurfaceEventArgs e, double widthXamarinUnits, double heightXamarinUnits)
+        public void OnPaintSurface(SKPaintSurfaceEventArgs e, double widthXamarinUnits, double heightXamarinUnits, Action<IReadOnlyList<SnapshotImage>> drawAction)
         {
             lock (_snapshotLock)
             {
-                _onUiThreadDrawDelegate(e.Surface, _snapshotImages);
+                drawAction(_snapshotImages);
             }
 
             var imageInfo = e.Info;
@@ -144,8 +137,6 @@ namespace SkiEngine.Xamarin
             _snapshotHandler.Reset();
             _offUiThreadDrawAction(_offUiThreadSurface, _snapshotHandler, _widthXamarinUnits, _heightXamarinUnits);
             _snapshotHandler.DisposeExtraSnapshots();
-
-            _invalidateSurfaceAction.Invoke();
         }
 
         public async void Dispose()
@@ -176,13 +167,14 @@ namespace SkiEngine.Xamarin
                 _index = 0;
             }
 
-            public void Snapshot()
+            public SnapshotImage Snapshot()
             {
                 var skImage = _renderer._offUiThreadSurface.Snapshot();
 
+                SnapshotImage snapshotImage;
                 lock (_renderer._snapshotLock)
                 {
-                    var snapshotImage = new SnapshotImage(
+                    snapshotImage = new SnapshotImage(
                         skImage, 
                         new SKSizeI(_renderer._widthPixels, _renderer._heightPixels)
                     );
@@ -199,6 +191,8 @@ namespace SkiEngine.Xamarin
                 }
 
                 _index++;
+                
+                return snapshotImage;
             }
 
             internal void DisposeExtraSnapshots()
