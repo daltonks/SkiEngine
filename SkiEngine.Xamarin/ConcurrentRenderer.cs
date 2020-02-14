@@ -132,6 +132,57 @@ namespace SkiEngine.Xamarin
             _snapshotHandler.DisposeExtraSnapshots();
         }
 
+        public SKColor GetPixelColor(IEnumerable<int> snapshotIndexes, SKPoint pixelPoint)
+        {
+            using (
+                var skImage = CreateImage(
+                    snapshotIndexes,
+                    SKRectI.Create(
+                        (int) pixelPoint.X,
+                        (int) pixelPoint.Y,
+                        1,
+                        1
+                    )
+                )
+            )
+            using (var pixels = skImage.PeekPixels())
+            {
+                var pixelColor = pixels.GetPixelColor(0, 0);
+                return pixelColor;
+            }
+        }
+
+        public SKImage CreateImage(IEnumerable<int> snapshotIndexes)
+        {
+            return CreateImage(snapshotIndexes, new SKRectI(0, 0, _widthPixels, _heightPixels));
+        }
+
+        public SKImage CreateImage(IEnumerable<int> snapshotIndexes, SKRectI rect)
+        {
+            using (
+                var surface = SKSurface.Create(
+                    new SKImageInfo(
+                        rect.Width,
+                        rect.Height,
+                        SKImageInfo.PlatformColorType,
+                        SKAlphaType.Premul
+                    )
+                )
+            )
+            {
+                var canvas = surface.Canvas;
+                canvas.Clear();
+                canvas.Translate(-rect.Left, -rect.Top);
+                foreach (var i in snapshotIndexes)
+                {
+                    var snapshotImage = AddSnapshotImageUser(i);
+                    canvas.DrawImage(snapshotImage.SkImage, 0, 0);
+                    snapshotImage.RemoveUser();
+                }
+                return surface.Snapshot();
+            }
+        }
+
         public async void Dispose()
         {
             await _taskQueue.ShutdownAsync();
