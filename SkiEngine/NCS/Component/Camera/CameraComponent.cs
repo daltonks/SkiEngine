@@ -78,6 +78,13 @@ namespace SkiEngine.NCS.Component.Camera
             }
         }
 
+        public SKMatrix GetXamarinToWorldMatrix()
+        {
+            var xamarinToWorldMatrix = new SKMatrix();
+            SKMatrix.Concat(ref xamarinToWorldMatrix, ref XamarinToPixelMatrix, ref PixelToWorldMatrix);
+            return xamarinToWorldMatrix;
+        }
+
         internal void OnZChanged(IDrawableComponent drawableComponent, int previousZ)
         {
             if (_drawableComponents.Remove(drawableComponent, previousZ))
