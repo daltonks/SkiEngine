@@ -1,21 +1,23 @@
-﻿using System;
-using SkiaSharp;
+﻿using SkiaSharp;
 using SkiEngine.NCS.Component.Base;
+using SkiEngine.NCS.Component.Camera;
 
 namespace SkiEngine.NCS.Component
 {
     public class DrawableComponent : Base.Component, IDrawableComponent
     {
-        public Action<SKCanvas> DrawAction { get; }
+        public delegate void DrawDelegate(SKCanvas canvas, CameraComponent camera);
+
+        public DrawDelegate DrawAction { get; }
         
-        public DrawableComponent(Action<SKCanvas> drawAction)
+        public DrawableComponent(DrawDelegate drawAction)
         {
             DrawAction = drawAction;
         }
 
-        public void Draw(SKCanvas canvas)
+        public void Draw(SKCanvas canvas, CameraComponent camera)
         {
-            DrawAction.Invoke(canvas);
+            DrawAction.Invoke(canvas, camera);
         }
     }
 }

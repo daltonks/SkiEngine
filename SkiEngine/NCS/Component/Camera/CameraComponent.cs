@@ -164,7 +164,7 @@ namespace SkiEngine.NCS.Component.Camera
 
                 canvas.SetMatrix(drawMatrix);
 
-                component.Draw(canvas);
+                component.Draw(canvas, this);
             }
         }
 

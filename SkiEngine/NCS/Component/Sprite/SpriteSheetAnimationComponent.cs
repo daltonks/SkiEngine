@@ -2,6 +2,7 @@
 using SkiaSharp;
 using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
+using SkiEngine.NCS.Component.Camera;
 using SkiEngine.NCS.System;
 
 namespace SkiEngine.NCS.Component.Sprite
@@ -56,7 +57,7 @@ namespace SkiEngine.NCS.Component.Sprite
             }
         }
 
-        public void Draw(SKCanvas canvas)
+        public void Draw(SKCanvas canvas, CameraComponent camera)
         {
             foreach (var spriteData in _currentFrame.Sprites)
             {

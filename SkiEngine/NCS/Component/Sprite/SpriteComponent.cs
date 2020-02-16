@@ -1,6 +1,7 @@
 ﻿using SkiaSharp;
 using SkiEngine.Extensions.SkiaSharp;
 using SkiEngine.NCS.Component.Base;
+using SkiEngine.NCS.Component.Camera;
 
 namespace SkiEngine.NCS.Component.Sprite
 {
@@ -17,7 +18,7 @@ namespace SkiEngine.NCS.Component.Sprite
             Paint = paint;
         }
 
-        public void Draw(SKCanvas canvas)
+        public void Draw(SKCanvas canvas, CameraComponent camera)
         {
             canvas.DrawImage(Image, Paint, Data);
         }
