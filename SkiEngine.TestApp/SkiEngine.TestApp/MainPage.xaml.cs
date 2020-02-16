@@ -8,6 +8,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiEngine.NCS;
 using SkiEngine.NCS.Component;
+using SkiEngine.NCS.Component.Camera;
 using SkiEngine.NCS.Component.Sprite;
 using Xamarin.Forms;
 
@@ -31,10 +32,13 @@ namespace SkiEngine.TestApp
         }
 
         private readonly Scene _scene = new Scene();
-        private readonly CanvasComponent _canvasComponent1;
-        private readonly CanvasComponent _canvasComponent2;
         private readonly Dictionary<long, SKPath> _temporaryPaths = new Dictionary<long, SKPath>();
         private readonly List<SKPath> _paths = new List<SKPath>();
+
+        private readonly CanvasComponent _canvasComponent1;
+        private readonly CanvasComponent _canvasComponent2;
+        private readonly CameraGroup _cameraGroup1;
+        private readonly CameraGroup _cameraGroup2;
         private readonly CameraComponent _camera1;
         private readonly CameraComponent _camera2;
 
@@ -48,21 +52,25 @@ namespace SkiEngine.TestApp
             _canvasComponent1 = new CanvasComponent();
             _canvasComponent2 = new CanvasComponent();
 
+            // Camera groups
+            _cameraGroup1 = _canvasComponent1.CreateCameraGroup();
+            _cameraGroup2 = _canvasComponent2.CreateCameraGroup();
+
             // Cameras
             _camera1 = _scene.RootNode
                 .CreateChild()
-                .AddComponent(new CameraComponent(_canvasComponent1, 0));
+                .AddComponent(new CameraComponent(_cameraGroup1, 0));
 
             _camera2 = _scene.RootNode
                 .CreateChild(new SKPoint(50, 200), 0, (float) Math.PI / 8, new SKPoint(3, 3))
-                .AddComponent(new CameraComponent(_canvasComponent2, 0));
+                .AddComponent(new CameraComponent(_cameraGroup2, 0));
 
             // Scribble
             _scene.RootNode
                 .CreateChild()
                 .AddComponent(
                     new DrawableComponent(
-                        canvas =>
+                        (canvas, camera) =>
                         {
                             var touchPathStroke = new SKPaint
                             {
@@ -118,7 +126,10 @@ namespace SkiEngine.TestApp
             var canvas = args.Surface.Canvas;
             
             canvas.Clear(SKColors.Black);
-            _scene.Draw(args.Surface, _canvasComponent1, SkGlView1.Width, SkGlView1.Height);
+            _scene.Draw(() => {
+                _canvasComponent1.StartDraw(canvas, SkGlView1.Width, SkGlView1.Height);
+                _cameraGroup1.Draw(canvas);
+            });
             canvas.Flush();
         }
 
@@ -127,7 +138,10 @@ namespace SkiEngine.TestApp
             var canvas = args.Surface.Canvas;
 
             canvas.Clear(SKColors.Black);
-            _scene.Draw(args.Surface, _canvasComponent2, SkGlView2.Width, SkGlView2.Height);
+            _scene.Draw(() => {
+                _canvasComponent2.StartDraw(canvas, SkGlView2.Width, SkGlView2.Height);
+                _cameraGroup2.Draw(canvas);
+            });
             canvas.Flush();
         }
 
