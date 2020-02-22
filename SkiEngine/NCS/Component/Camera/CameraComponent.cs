@@ -45,7 +45,7 @@ namespace SkiEngine.NCS.Component.Camera
         public SKRectI PixelViewport { get; private set; }
         public SKRect WorldViewport { get; private set; }
 
-        private bool _enabled = true;
+        private bool _enabled;
         public bool Enabled
         {
             get => _enabled;
