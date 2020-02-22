@@ -9,17 +9,26 @@ namespace SkiEngine.NCS
     {
         private const double TwoPi = Math.PI * 2;
 
-        private SKPoint _relativePoint;
-        private float _relativeRotation;
-        private SKPoint _relativeScale;
-        private int _worldZ;
-
         private bool _localToWorldDirty;
         private bool _worldToLocalDirty;
 
-        private SKMatrix _localToWorldMatrix;
-        private SKMatrix _worldToLocalMatrix;
+        private void SetMatricesDirty()
+        {
+            if (_localToWorldDirty)
+            {
+                return;
+            }
 
+            _localToWorldDirty = true;
+            _worldToLocalDirty = true;
+
+            foreach (var child in _children)
+            {
+                child.SetMatricesDirty();
+            }
+        }
+
+        private SKMatrix _localToWorldMatrix;
         public ref SKMatrix LocalToWorldMatrix
         {
             get
@@ -40,6 +49,7 @@ namespace SkiEngine.NCS
             }
         }
 
+        private SKMatrix _worldToLocalMatrix;
         public ref SKMatrix WorldToLocalMatrix
         {
             get
@@ -56,6 +66,7 @@ namespace SkiEngine.NCS
             }
         }
         
+        private SKPoint _relativePoint;
         public SKPoint RelativePoint
         {
             get => _relativePoint;
@@ -64,6 +75,12 @@ namespace SkiEngine.NCS
                 _relativePoint = value;
                 SetMatricesDirty();
             }
+        }
+
+        public SKPoint WorldPoint
+        {
+            get => LocalToWorldMatrix.MapPoint(SKPoint.Empty);
+            set => RelativePoint = Parent?.WorldToLocalMatrix.MapPoint(value) ?? value;
         }
 
         public int RelativeZ
@@ -76,33 +93,7 @@ namespace SkiEngine.NCS
             }
         }
 
-        public float RelativeRotation
-        {
-            get => _relativeRotation;
-            set
-            {
-                // Wrap rotation to stay between -PI and PI
-                _relativeRotation = (float) (value - TwoPi * Math.Floor((value + Math.PI) / TwoPi));
-                SetMatricesDirty();
-            }
-        }
-
-        public SKPoint RelativeScale
-        {
-            get => _relativeScale;
-            set
-            {
-                _relativeScale = value;
-                SetMatricesDirty();
-            }
-        }
-
-        public SKPoint WorldPoint
-        {
-            get => LocalToWorldMatrix.MapPoint(SKPoint.Empty);
-            set => RelativePoint = Parent?.WorldToLocalMatrix.MapPoint(value) ?? value;
-        }
-
+        private int _worldZ;
         public int WorldZ
         {
             get => _worldZ;
@@ -126,6 +117,29 @@ namespace SkiEngine.NCS
             }
         }
 
+        private float _relativeRotation;
+        public float RelativeRotation
+        {
+            get => _relativeRotation;
+            set
+            {
+                // Wrap rotation to stay between -PI and PI
+                _relativeRotation = (float) (value - TwoPi * Math.Floor((value + Math.PI) / TwoPi));
+                SetMatricesDirty();
+            }
+        }
+
+        private SKPoint _relativeScale;
+        public SKPoint RelativeScale
+        {
+            get => _relativeScale;
+            set
+            {
+                _relativeScale = value;
+                SetMatricesDirty();
+            }
+        }
+
         public void CalculateLocalToParentMatrix(out SKMatrix result)
         {
             var translationMatrix = SKMatrix.MakeTranslation(_relativePoint.X, _relativePoint.Y);
@@ -135,22 +149,6 @@ namespace SkiEngine.NCS
             result = translationMatrix;
             SKMatrix.PreConcat(ref result, ref rotationMatrix);
             SKMatrix.PreConcat(ref result, ref scaleMatrix);
-        }
-
-        private void SetMatricesDirty()
-        {
-            if (_localToWorldDirty)
-            {
-                return;
-            }
-
-            _localToWorldDirty = true;
-            _worldToLocalDirty = true;
-
-            foreach (var child in _children)
-            {
-                child.SetMatricesDirty();
-            }
         }
     }
 }

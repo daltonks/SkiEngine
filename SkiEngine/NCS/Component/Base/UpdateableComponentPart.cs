@@ -1,18 +1,18 @@
-﻿using System;
-using SkiEngine.NCS.System;
+﻿using SkiEngine.NCS.System;
 
 namespace SkiEngine.NCS.Component.Base
 {
     public class UpdateableComponentPart
     {
+        public delegate void UpdateDelegate(UpdateTime updateTime);
         public delegate void UpdateOrderChangedDelegate(UpdateableComponentPart componentPart, int previousUpdateOrder);
 
         public event UpdateOrderChangedDelegate UpdateOrderChanged;
 
         private int _updateOrder;
-        private readonly Action<UpdateTime> _onUpdateAction;
+        private readonly UpdateDelegate _onUpdateAction;
 
-        public UpdateableComponentPart(Action<UpdateTime> onUpdateAction)
+        public UpdateableComponentPart(UpdateDelegate onUpdateAction)
         {
             _onUpdateAction = onUpdateAction;
         }
