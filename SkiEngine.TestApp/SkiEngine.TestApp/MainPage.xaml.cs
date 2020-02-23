@@ -49,8 +49,8 @@ namespace SkiEngine.TestApp
             _scene.Start();
 
             // Canvas components
-            _canvasComponent1 = new CanvasComponent();
-            _canvasComponent2 = new CanvasComponent();
+            _canvasComponent1 = _scene.RootNode.AddComponent(new CanvasComponent());
+            _canvasComponent2 = _scene.RootNode.AddComponent(new CanvasComponent());
 
             // Camera groups
             _cameraGroup1 = _canvasComponent1.CreateCameraGroup();
@@ -72,21 +72,24 @@ namespace SkiEngine.TestApp
                     new DrawableComponent(
                         (canvas, camera) =>
                         {
-                            var touchPathStroke = new SKPaint
+                            using (
+                                var touchPathStroke = new SKPaint
+                                {
+                                    IsAntialias = true,
+                                    Style = SKPaintStyle.Stroke,
+                                    Color = SKColors.Purple,
+                                    StrokeWidth = 1
+                                }
+                            )
                             {
-                                IsAntialias = true,
-                                Style = SKPaintStyle.Stroke,
-                                Color = SKColors.Purple,
-                                StrokeWidth = 1
-                            };
-
-                            foreach (var touchPath in _temporaryPaths)
-                            {
-                                canvas.DrawPath(touchPath.Value, touchPathStroke);
-                            }
-                            foreach (var touchPath in _paths)
-                            {
-                                canvas.DrawPath(touchPath, touchPathStroke);
+                                foreach (var touchPath in _temporaryPaths)
+                                {
+                                    canvas.DrawPath(touchPath.Value, touchPathStroke);
+                                }
+                                foreach (var touchPath in _paths)
+                                {
+                                    canvas.DrawPath(touchPath, touchPathStroke);
+                                }
                             }
                         }
                     )
@@ -98,11 +101,16 @@ namespace SkiEngine.TestApp
             var zeroSprite = CreateTileSprite(_scene.RootNode, new InitialNodeTransform());
             var secondSprite = CreateTileSprite(
                 zeroSprite.Node, 
-                new InitialNodeTransform(new SKPoint(50, 0), 0, (float) Math.PI / 2, new SKPoint(4, 4))
+                new InitialNodeTransform(new SKPoint(50, 0), 0, (float) Math.PI / 2, new SKPoint(2, 2))
             );
             var thirdSprite = CreateTileSprite(
                 secondSprite.Node, 
-                new InitialNodeTransform(new SKPoint(50, 0), 0, (float) Math.PI / 2, new SKPoint(4, 4))
+                new InitialNodeTransform(new SKPoint(50, 0), 0, (float) Math.PI / 2, new SKPoint(2, 2))
+            );
+
+            var fourthSprite = CreateTileSprite(
+                thirdSprite.Node, 
+                new InitialNodeTransform(new SKPoint(50, 0), 0, (float) Math.PI / 2, new SKPoint(2, 2))
             );
         }
 
@@ -166,7 +174,6 @@ namespace SkiEngine.TestApp
                 () =>
                 {
                     var worldPoint = camera.PixelToWorldMatrix.MapPoint(argsLocation);
-                    Debug.WriteLine(worldPoint);
 
                     switch (argsActionType)
                     {

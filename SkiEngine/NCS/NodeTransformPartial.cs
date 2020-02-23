@@ -39,7 +39,7 @@ namespace SkiEngine.NCS
 
                     if (Parent != null)
                     {
-                        SKMatrix.PreConcat(ref _localToWorldMatrix, ref Parent.LocalToWorldMatrix);
+                        SKMatrix.PostConcat(ref _localToWorldMatrix, ref Parent.LocalToWorldMatrix);
                     }
 
                     _localToWorldDirty = false;
@@ -145,7 +145,7 @@ namespace SkiEngine.NCS
             var translationMatrix = SKMatrix.MakeTranslation(_relativePoint.X, _relativePoint.Y);
             var rotationMatrix = SKMatrix.MakeRotation(_relativeRotation);
             var scaleMatrix = SKMatrix.MakeScale(_relativeScale.X, _relativeScale.Y);
-            
+
             result = translationMatrix;
             SKMatrix.PreConcat(ref result, ref rotationMatrix);
             SKMatrix.PreConcat(ref result, ref scaleMatrix);

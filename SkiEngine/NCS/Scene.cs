@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using SkiaSharp;
-using SkiEngine.NCS.Component;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.NCS.System;
 using SkiEngine.Util;
