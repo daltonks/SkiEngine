@@ -42,8 +42,10 @@ namespace SkiEngine.NCS.Component.Camera
         private SKMatrix _pixelToWorldMatrix;
         public ref SKMatrix PixelToWorldMatrix => ref _pixelToWorldMatrix;
 
-        public SKRectI PixelViewport { get; private set; }
-        public SKRect WorldViewport { get; private set; }
+        public ref SKRectI PixelViewport => ref CanvasComponent.PixelViewport;
+
+        private SKRect _worldViewPort;
+        public ref SKRect WorldViewport => ref _worldViewPort;
 
         private bool _enabled;
         public bool Enabled
