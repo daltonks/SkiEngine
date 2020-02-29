@@ -6,18 +6,17 @@ namespace SkiEngine.Extensions.SkiaSharp
 {
     public static class SKPaintExtensions
     {
-        public static MeasuredText MeasureTextImprovedPrecision(
+        public static MeasuredText MeasureTextScaled(
             this SKPaint paint, 
+            float pixelHeight,
             Func<SKPaint, SKRect> measureTextAction,
             bool centerHorizontally = false,
             bool centerVertically = false
         )
         {
-            // Scale up TextSize to get a more accurate measurement.
-            // It is inaccurate at small text sizes.
             var originalHeight = paint.TextSize;
-            paint.TextSize = 100;
-            var scaleToOriginal = originalHeight / 100;
+            paint.TextSize = pixelHeight;
+            var scaleToOriginal = originalHeight / pixelHeight;
             var bigTextBounds = measureTextAction.Invoke(paint);
 
             var width = bigTextBounds.Width * scaleToOriginal;
