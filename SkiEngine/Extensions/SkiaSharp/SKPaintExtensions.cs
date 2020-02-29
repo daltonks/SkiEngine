@@ -8,52 +8,51 @@ namespace SkiEngine.Extensions.SkiaSharp
     {
         public static MeasuredText MeasureTextScaled(
             this SKPaint paint, 
+            float drawHeight,
             float pixelHeight,
             Func<SKPaint, SKRect> measureTextAction,
             bool centerHorizontally = false,
             bool centerVertically = false
         )
         {
-            var height = paint.TextSize;
             paint.TextSize = pixelHeight;
 
-            var scale = height / pixelHeight;
+            var drawUnitPerPixel = drawHeight / pixelHeight;
             var pixelBounds = measureTextAction.Invoke(paint);
-
-            var width = pixelBounds.Width * scale;
+            var drawWidth = pixelBounds.Width * drawUnitPerPixel;
             
-            var offset = new SKPoint();
+            var drawOffset = new SKPoint();
             if (centerHorizontally)
             {
-                offset.X = -width / 2;
+                drawOffset.X = -drawWidth / 2;
             }
 
             if (centerVertically)
             {
-                offset.Y = -height / 2;
+                drawOffset.Y = -drawHeight / 2;
             }
 
-            var bounds = SKRect.Create(offset.X, offset.Y, width, height);
+            var drawBounds = SKRect.Create(drawOffset.X, drawOffset.Y, drawWidth, drawHeight);
             var drawPoint = new SKPoint(
-                bounds.Left - pixelBounds.Left * scale, 
-                bounds.Bottom - pixelBounds.Bottom * scale
+                drawBounds.Left - pixelBounds.Left * drawUnitPerPixel, 
+                drawBounds.Bottom - pixelBounds.Bottom * drawUnitPerPixel
             );
 
-            paint.TextSize = height;
+            paint.TextSize = drawHeight;
 
-            return new MeasuredText(bounds, drawPoint);
+            return new MeasuredText(drawBounds, drawPoint);
         }
     }
 
     public struct MeasuredText
     {
-        public MeasuredText(SKRect rect, SKPoint drawPoint)
+        public MeasuredText(SKRect drawBounds, SKPoint drawPoint)
         {
-            Rect = rect;
+            DrawBounds = drawBounds;
             DrawPoint = drawPoint;
         }
 
-        public SKRect Rect { get; }
+        public SKRect DrawBounds { get; }
         public SKPoint DrawPoint { get; }
     }
 }

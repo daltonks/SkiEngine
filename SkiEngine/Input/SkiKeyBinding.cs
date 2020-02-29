@@ -10,23 +10,23 @@ namespace SkiEngine.Input
             IReadOnlyCollection<SkiVirtualKey> modifiers,
             Func<bool> predicate,
             Action action,
-            InputViewFocusedOption inputViewFocusedBehavior)
+            BehaviorWhenInputViewFocused behaviorWhenInputViewFocused)
         {
             Key = key;
-            Modifiers = modifiers;
-            Action = action;
-            InputViewFocusedBehavior = inputViewFocusedBehavior;
-            Predicate = predicate;
+            Modifiers = modifiers ?? new SkiVirtualKey[0];
+            Action = action ?? (() => {});
+            BehaviorWhenInputViewFocused = behaviorWhenInputViewFocused;
+            Predicate = predicate ?? (() => true);
         }
 
         public SkiVirtualKey Key { get; }
         public IReadOnlyCollection<SkiVirtualKey> Modifiers { get; }
         public Func<bool> Predicate { get; }
         public Action Action { get; }
-        public InputViewFocusedOption InputViewFocusedBehavior { get; }
+        public BehaviorWhenInputViewFocused BehaviorWhenInputViewFocused { get; }
     }
 
-    public enum InputViewFocusedOption
+    public enum BehaviorWhenInputViewFocused
     {
         Active,
         Inactive

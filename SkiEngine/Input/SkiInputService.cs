@@ -35,18 +35,15 @@ namespace SkiEngine.Input
                 if (_keyBindingsMap.TryGetValue(key, out var keyBindings))
                 {
                     var isInputViewFocused = IsInputViewFocused;
-                    foreach (var keyBinding in keyBindings.Where(keyBinding => keyBinding.Modifiers?.All(IsKeyDown) ?? true))
-                    {
-                        if (keyBinding.InputViewFocusedBehavior == InputViewFocusedOption.Inactive && isInputViewFocused)
-                        {
-                            continue;
-                        }
 
-                        if (keyBinding.Predicate?.Invoke() ?? true)
-                        {
-                            keyBinding.Action?.Invoke();
-                        }
-                    }
+                    var keyBinding = keyBindings
+                        .Where(b => !isInputViewFocused || b.BehaviorWhenInputViewFocused == BehaviorWhenInputViewFocused.Active)
+                        .Where(b => b.Modifiers.All(IsKeyDown))
+                        .Where(b => b.Predicate.Invoke())
+                        .OrderByDescending(b => b.Modifiers.Count)
+                        .FirstOrDefault();
+
+                    keyBinding?.Action.Invoke();
                 }
             }
 
