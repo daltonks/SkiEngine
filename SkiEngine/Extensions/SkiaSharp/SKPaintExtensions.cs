@@ -14,12 +14,13 @@ namespace SkiEngine.Extensions.SkiaSharp
             bool centerVertically = false
         )
         {
-            var originalHeight = paint.TextSize;
+            var height = paint.TextSize;
             paint.TextSize = pixelHeight;
-            var scaleToOriginal = originalHeight / pixelHeight;
-            var bigTextBounds = measureTextAction.Invoke(paint);
 
-            var width = bigTextBounds.Width * scaleToOriginal;
+            var scale = height / pixelHeight;
+            var pixelBounds = measureTextAction.Invoke(paint);
+
+            var width = pixelBounds.Width * scale;
             
             var offset = new SKPoint();
             if (centerHorizontally)
@@ -29,16 +30,16 @@ namespace SkiEngine.Extensions.SkiaSharp
 
             if (centerVertically)
             {
-                offset.Y = -originalHeight / 2;
+                offset.Y = -height / 2;
             }
 
-            var bounds = SKRect.Create(offset.X, offset.Y, width, originalHeight);
+            var bounds = SKRect.Create(offset.X, offset.Y, width, height);
             var drawPoint = new SKPoint(
-                bounds.Left - bigTextBounds.Left * scaleToOriginal, 
-                bounds.Bottom - bigTextBounds.Bottom * scaleToOriginal
+                bounds.Left - pixelBounds.Left * scale, 
+                bounds.Bottom - pixelBounds.Bottom * scale
             );
 
-            paint.TextSize = originalHeight;
+            paint.TextSize = height;
 
             return new MeasuredText(bounds, drawPoint);
         }
