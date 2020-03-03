@@ -34,22 +34,33 @@ namespace SkiEngine.Xamarin
             _snapshotHandler = new SnapshotHandler(this);
         }
 
-        public SnapshotImage AddSnapshotImageUser(int index)
+        public SnapshotImage[] GetSnapshotsAndAddUsers(IList<int> indices)
         {
+            var result = new SnapshotImage[indices.Count];
+
             lock (_snapshotLock)
             {
-                if (index < _snapshotImages.Count)
+                for(var i = 0; i < indices.Count; i++)
                 {
-                    var snapshotImage = _snapshotImages[index];
-                    snapshotImage.AddUser();
-                    return snapshotImage;
-                }
+                    var index = indices[i];
 
-                return new SnapshotImage(
-                    SKImage.Create(new SKImageInfo(1, 1)),
-                    new SKSizeI(0, 0)
-                );
+                    if (index < _snapshotImages.Count)
+                    {
+                        var snapshotImage = _snapshotImages[index];
+                        snapshotImage.AddUser();
+                        result[i] = snapshotImage;
+                    }
+                    else
+                    {
+                        result[i] = new SnapshotImage(
+                            SKImage.Create(new SKImageInfo(1, 1)),
+                            new SKSizeI(0, 0)
+                        );
+                    }
+                }
             }
+
+            return result;
         }
 
         private readonly object _pendingDrawLock = new object();
@@ -77,9 +88,21 @@ namespace SkiEngine.Xamarin
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         public void OnPaintSurface(SKPaintSurfaceEventArgs e, double widthXamarinUnits, double heightXamarinUnits, Action<IReadOnlyList<SnapshotImage>> drawAction)
         {
+            SnapshotImage[] snapshots;
             lock (_snapshotLock)
             {
-                drawAction(_snapshotImages);
+                snapshots = _snapshotImages.ToArray();
+                foreach (var snapshot in snapshots)
+                {
+                    snapshot.AddUser();
+                }
+            }
+
+            drawAction(snapshots);
+
+            foreach (var snapshot in snapshots)
+            {
+                snapshot.RemoveUser();
             }
 
             var imageInfo = e.Info;
@@ -128,15 +151,41 @@ namespace SkiEngine.Xamarin
             _pendingDraw = false;
 
             _snapshotHandler.Reset();
+
             await _offUiThreadDrawAction(_offUiThreadSurface, _snapshotHandler, _widthXamarinUnits, _heightXamarinUnits);
-            _snapshotHandler.DisposeExtraSnapshots();
+
+            lock (_snapshotLock)
+            {
+                // Update _snapshotImages with new snapshots
+                for(var i = 0; i < _snapshotHandler.Snapshots.Count; i++)
+                {
+                    var newSnapshot = _snapshotHandler.Snapshots[i];
+
+                    if (i < _snapshotImages.Count)
+                    {
+                        _snapshotImages[i].RemoveUser();
+                        _snapshotImages[i] = newSnapshot;
+                    }
+                    else
+                    {
+                        _snapshotImages.Add(newSnapshot);
+                    }
+                }
+
+                // Dispose snapshots of unused indices
+                for (var i = _snapshotHandler.Snapshots.Count; i < _snapshotImages.Count;)
+                {
+                    _snapshotImages[i].RemoveUser();
+                    _snapshotImages.RemoveAt(i);
+                }
+            }
         }
 
-        public SKColor GetPixelColor(IEnumerable<int> snapshotIndexes, SKPoint pixelPoint)
+        public SKColor GetPixelColor(IList<int> snapshotIndices, SKPoint pixelPoint)
         {
             using (
                 var skImage = CreateImage(
-                    snapshotIndexes,
+                    snapshotIndices,
                     SKRectI.Create(
                         (int) pixelPoint.X,
                         (int) pixelPoint.Y,
@@ -152,12 +201,12 @@ namespace SkiEngine.Xamarin
             }
         }
 
-        public SKImage CreateImage(IEnumerable<int> snapshotIndexes)
+        public SKImage CreateImage(IList<int> snapshotIndices)
         {
-            return CreateImage(snapshotIndexes, new SKRectI(0, 0, _widthPixels, _heightPixels));
+            return CreateImage(snapshotIndices, new SKRectI(0, 0, _widthPixels, _heightPixels));
         }
 
-        public SKImage CreateImage(IEnumerable<int> snapshotIndexes, SKRectI rect)
+        public SKImage CreateImage(IList<int> snapshotIndices, SKRectI rect)
         {
             using (
                 var surface = SKSurface.Create(
@@ -173,12 +222,14 @@ namespace SkiEngine.Xamarin
                 var canvas = surface.Canvas;
                 canvas.Clear();
                 canvas.Translate(-rect.Left, -rect.Top);
-                foreach (var i in snapshotIndexes)
+
+                var snapshots = GetSnapshotsAndAddUsers(snapshotIndices);
+                foreach (var snapshot in snapshots)
                 {
-                    var snapshotImage = AddSnapshotImageUser(i);
-                    canvas.DrawImage(snapshotImage.SkImage, 0, 0);
-                    snapshotImage.RemoveUser();
+                    canvas.DrawImage(snapshot.SkImage, 0, 0);
+                    snapshot.RemoveUser();
                 }
+
                 return surface.Snapshot();
             }
         }
@@ -197,8 +248,6 @@ namespace SkiEngine.Xamarin
 
         public class SnapshotHandler
         {
-            private int _index;
-
             private readonly ConcurrentRenderer _renderer;
 
             public SnapshotHandler(ConcurrentRenderer renderer)
@@ -206,50 +255,26 @@ namespace SkiEngine.Xamarin
                 _renderer = renderer;
             }
 
+            private readonly List<SnapshotImage> _snapshots = new List<SnapshotImage>();
+            public IReadOnlyList<SnapshotImage> Snapshots => _snapshots;
+
             internal void Reset()
             {
-                _index = 0;
+                _snapshots.Clear();
             }
 
             public SnapshotImage Snapshot()
             {
                 var skImage = _renderer._offUiThreadSurface.Snapshot();
 
-                SnapshotImage snapshotImage;
-                lock (_renderer._snapshotLock)
-                {
-                    snapshotImage = new SnapshotImage(
-                        skImage, 
-                        new SKSizeI(_renderer._widthPixels, _renderer._heightPixels)
-                    );
+                var snapshot = new SnapshotImage(
+                    skImage, 
+                    new SKSizeI(_renderer._widthPixels, _renderer._heightPixels)
+                );
 
-                    if (_index < _renderer._snapshotImages.Count)
-                    {
-                        _renderer._snapshotImages[_index].RemoveUser();
-                        _renderer._snapshotImages[_index] = snapshotImage;
-                    }
-                    else
-                    {
-                        _renderer._snapshotImages.Add(snapshotImage);
-                    }
-                }
+                _snapshots.Add(snapshot);
 
-                _index++;
-                
-                return snapshotImage;
-            }
-
-            internal void DisposeExtraSnapshots()
-            {
-                lock (_renderer._snapshotLock)
-                {
-                    for (var i = _index; i < _renderer._snapshotImages.Count;)
-                    {
-                        var snapshot = _renderer._snapshotImages[i];
-                        snapshot.RemoveUser();
-                        _renderer._snapshotImages.RemoveAt(i);
-                    }
-                }
+                return snapshot;
             }
         }
     }

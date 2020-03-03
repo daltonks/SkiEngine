@@ -82,6 +82,13 @@ namespace SkiEngine.Extensions.SkiaSharp
             return p2 - p1;
         }
 
+        public static double AngleTo(this SKPoint vector, SKPoint otherVector)
+        {
+            var normalized = vector.Normalized();
+            var otherNormalized = otherVector.Normalized();
+            return Math.Atan2(otherNormalized.Y, otherNormalized.X) - Math.Atan2(normalized.Y, normalized.X);
+        }
+
         public static double Angle(this SKPoint a, SKPoint b, SKPoint c)
         {
             double v1X = b.X - c.X;
@@ -92,15 +99,21 @@ namespace SkiEngine.Extensions.SkiaSharp
             return Math.Atan2(v1X, v1Y) - Math.Atan2(v2X, v2Y);
         }
 
-        public static SKPoint Rotate(this SKPoint point, double radians)
+        public static SKPoint Rotate(this SKPoint vector, double radians)
         {
             var cos = Math.Cos(radians);
             var sin = Math.Sin(radians);
 
             return new SKPoint(
-                (float) (point.X * cos - point.Y * sin),
-                (float) (point.X * sin + point.Y * cos)
+                (float) (vector.X * cos - vector.Y * sin),
+                (float) (vector.X * sin + vector.Y * cos)
             );
+        }
+
+        public static SKPoint RotateAround(this SKPoint point, SKPoint rotateAroundPoint, double radians)
+        {
+            var rotatedVector = rotateAroundPoint.VectorTo(point).Rotate(radians);
+            return rotateAroundPoint + rotatedVector;
         }
 
         public static SKPoint Average(this IEnumerable<SKPoint> points)
