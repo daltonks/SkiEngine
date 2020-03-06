@@ -51,6 +51,17 @@ namespace SkiEngine.Extensions.SkiaSharp
             }
         }
 
+        public static SKPoint[] Points(this SKRect rect)
+        {
+            return new[]
+            {
+                new SKPoint(rect.Left, rect.Top),
+                new SKPoint(rect.Right, rect.Top),
+                new SKPoint(rect.Right, rect.Bottom),
+                new SKPoint(rect.Left, rect.Bottom)
+            };
+        }
+
         public static SKPoint TopLeft(this SKRect rect)
         {
             return new SKPoint(rect.Left, rect.Top);
