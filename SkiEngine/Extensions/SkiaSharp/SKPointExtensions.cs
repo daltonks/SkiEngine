@@ -86,7 +86,17 @@ namespace SkiEngine.Extensions.SkiaSharp
         {
             var normalized = vector.Normalized();
             var otherNormalized = otherVector.Normalized();
-            return Math.Atan2(otherNormalized.Y, otherNormalized.X) - Math.Atan2(normalized.Y, normalized.X);
+
+            var result =  Math.Atan2(otherNormalized.Y, otherNormalized.X) - Math.Atan2(normalized.Y, normalized.X);
+            if (result > Math.PI)
+            {
+                result -= 2 * Math.PI;
+            }
+            else if (result <= -Math.PI)
+            {
+                result += 2 * Math.PI;
+            }
+            return result;
         }
 
         public static double Angle(this SKPoint a, SKPoint b, SKPoint c)
