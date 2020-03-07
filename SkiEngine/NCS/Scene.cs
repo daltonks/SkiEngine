@@ -31,6 +31,9 @@ namespace SkiEngine.NCS
             AddSystem(new CanvasSystem());
         }
 
+        internal volatile int NumberNodes;
+        public int NumberOfNodes => NumberNodes;
+
         public Node RootNode { get; }
 
         public bool IsDestroyed { get; private set; }

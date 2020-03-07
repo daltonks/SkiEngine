@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using SkiaSharp;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.Util;
@@ -17,6 +19,7 @@ namespace SkiEngine.NCS
         internal Node(Scene scene, InitialNodeTransform initialTransform)
         {
             Scene = scene;
+            Interlocked.Increment(ref scene.NumberNodes);
 
             RelativePoint = initialTransform.RelativePoint;
             RelativeRotation = initialTransform.RelativeRotation;
@@ -170,6 +173,8 @@ namespace SkiEngine.NCS
             }
 
             Destroyed?.Invoke(this);
+
+            Interlocked.Decrement(ref Scene.NumberNodes);
         }
     }
 
