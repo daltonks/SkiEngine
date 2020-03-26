@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using SkiaSharp;
 
 namespace SkiEngine.Extensions.SkiaSharp
@@ -75,6 +76,11 @@ namespace SkiEngine.Extensions.SkiaSharp
         public static SKPoint Divide(this SKPoint point, double divisor)
         {
             return new SKPoint((float) (point.X / divisor), (float) (point.Y / divisor));
+        }
+
+        public static double Dot(this SKPoint p1, SKPoint p2)
+        {
+            return p1.X * p2.X + p1.Y * p2.Y;
         }
         
         public static SKPoint VectorTo(this SKPoint p1, SKPoint p2)
