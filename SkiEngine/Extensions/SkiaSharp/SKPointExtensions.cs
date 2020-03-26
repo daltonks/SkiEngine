@@ -53,9 +53,19 @@ namespace SkiEngine.Extensions.SkiaSharp
             return new SKPoint((float) (point.X + value), (float) (point.Y + value));
         }
 
+        public static SKPoint Add(this SKPoint p1, SKPoint p2)
+        {
+            return p1 + p2;
+        }
+
         public static SKPoint Subtract(this SKPoint point, double value)
         {
             return new SKPoint((float) (point.X - value), (float) (point.Y - value));
+        }
+
+        public static SKPoint Subtract(this SKPoint p1, SKPoint p2)
+        {
+            return p1 - p2;
         }
 
         public static SKPoint Multiply(this SKPoint point, double scalar)
