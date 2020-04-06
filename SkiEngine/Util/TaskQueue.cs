@@ -23,6 +23,28 @@ namespace SkiEngine.Util
             _enablePropertyChanged = enablePropertyChanged;
         }
 
+        public async Task<T> QueueAsync<T>(Func<T> function)
+        {
+            T result = default;
+
+            await QueueAsync(() => {
+                result = function.Invoke();
+            });
+
+            return result;
+        }
+
+        public async Task<T> QueueAsync<T>(Func<Task<T>> asyncFunction)
+        {
+            T result = default;
+
+            await QueueAsync(async () => {
+                result = await asyncFunction.Invoke();
+            });
+
+            return result;
+        }
+
         public Task QueueAsync(Action action)
         {
             return QueueAsync(() => {
@@ -41,7 +63,10 @@ namespace SkiEngine.Util
                 _lastTask = _lastTask.ContinueWith(
                     async _ =>
                     {
-                        ThrowIfShutdown();
+                        if (_isShutdown)
+                        {
+                            throw new ObjectDisposedException(nameof(TaskQueue));
+                        }
 
                         await asyncAction();
 
@@ -51,66 +76,6 @@ namespace SkiEngine.Util
                     TaskContinuationOptions.RunContinuationsAsynchronously
                 ).Unwrap();
                 return _lastTask;
-            }
-        }
-
-        public Task<T> QueueAsync<T>(Func<T> function)
-        {
-            Interlocked.Increment(ref _numTasksQueued);
-            OnPropertyChanged(nameof(NumTasksQueued));
-
-            lock (_locker)
-            {
-                var resultTask = _lastTask.ContinueWith(
-                    _ =>
-                    {
-                        ThrowIfShutdown();
-                        var result = function();
-
-                        Interlocked.Decrement(ref _numTasksQueued);
-                        OnPropertyChanged(nameof(NumTasksQueued));
-
-                        return result;
-                    }, 
-                    TaskContinuationOptions.RunContinuationsAsynchronously
-                );
-                _lastTask = resultTask;
-                return resultTask;
-            }
-        }
-
-        public Task<T> QueueAsync<T>(Func<Task<T>> asyncFunction)
-        {
-            Interlocked.Increment(ref _numTasksQueued);
-            OnPropertyChanged(nameof(NumTasksQueued));
-
-            lock (_locker)
-            {
-                var resultTask = _lastTask.ContinueWith(
-                    async _ =>
-                    {
-                        ThrowIfShutdown();
-
-                        var result = await asyncFunction();
-
-                        Interlocked.Decrement(ref _numTasksQueued);
-                        OnPropertyChanged(nameof(NumTasksQueued));
-
-                        return result;
-                    }, 
-                    TaskContinuationOptions.RunContinuationsAsynchronously
-                ).Unwrap();
-
-                _lastTask = resultTask;
-                return resultTask;
-            }
-        }
-
-        private void ThrowIfShutdown()
-        {
-            if (_isShutdown)
-            {
-                throw new ObjectDisposedException(nameof(TaskQueue));
             }
         }
 
