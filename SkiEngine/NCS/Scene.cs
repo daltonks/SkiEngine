@@ -20,8 +20,7 @@ namespace SkiEngine.NCS
         private readonly UpdateTime _updateTime = new UpdateTime();
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
-        private readonly ConcurrentQueue<Action> _runDuringUpdateActions = new ConcurrentQueue<Action>();
-        private readonly ReaderWriterLockSlim _updateReaderWriterLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        private readonly object _lock = new object();
         
         public Scene()
         {
@@ -96,25 +95,19 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void RunDuringUpdate(Action action)
+        private readonly TaskQueue _actionTaskQueue = new TaskQueue();
+        private readonly ConcurrentQueue<Action> _actionQueue = new ConcurrentQueue<Action>();
+        public Task RunAsync(Action action)
         {
-            _runDuringUpdateActions.Enqueue(action);
-        }
+            _actionQueue.Enqueue(action);
 
-        private readonly TaskQueue _outsideOfUpdateTaskQueue = new TaskQueue();
-        private readonly ConcurrentQueue<Action> _outsideOfUpdateActionQueue = new ConcurrentQueue<Action>();
-        public Task QueueOutsideOfUpdateAsync(Action action)
-        {
-            _outsideOfUpdateActionQueue.Enqueue(action);
-
-            return _outsideOfUpdateTaskQueue.QueueAsync(() => {
-                if (!_outsideOfUpdateActionQueue.TryDequeue(out var a))
+            return _actionTaskQueue.QueueAsync(() => {
+                if (!_actionQueue.TryDequeue(out var a))
                 {
                     return;
                 }
 
-                _updateReaderWriterLock.EnterWriteLock();
-                try
+                lock(_lock)
                 {
                     if (IsDestroyed)
                     {
@@ -123,14 +116,10 @@ namespace SkiEngine.NCS
 
                     a.Invoke();
 
-                    while (_outsideOfUpdateActionQueue.TryDequeue(out a))
+                    while (_actionQueue.TryDequeue(out a))
                     {
                         a.Invoke();
                     }
-                }
-                finally
-                {
-                    _updateReaderWriterLock.ExitWriteLock();
                 }
             });
         }
@@ -141,35 +130,23 @@ namespace SkiEngine.NCS
             _updateTime.Delta = stopwatchElapsed - _previousStopwatchElapsed;
             _previousStopwatchElapsed = stopwatchElapsed;
             
-            _updateReaderWriterLock.EnterWriteLock();
-            try
+            lock(_lock)
             {
-                while (_runDuringUpdateActions.TryDequeue(out var action))
+                try
                 {
-                    action.Invoke();
+                    foreach (var system in _updateableSystems)
+                    {
+                        system.Update(_updateTime);
+                    }
                 }
-
-                foreach (var system in _updateableSystems)
+                catch (Exception ex)
                 {
-                    system.Update(_updateTime);
-                }
+                    Debug.WriteLine(ex);
 
-                while (_runDuringUpdateActions.TryDequeue(out var action))
-                {
-                    action.Invoke();
+                    throw;
                 }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-
-                throw;
-            }
-            finally
-            {
-                _updateReaderWriterLock.ExitWriteLock();
-            }
-
+            
             if (_updateStopwatch.Elapsed.TotalHours >= 1)
             {
                 _updateStopwatch.Restart();
@@ -179,14 +156,9 @@ namespace SkiEngine.NCS
 
         public void Draw(Action drawAction)
         {
-            _updateReaderWriterLock.EnterReadLock();
-            try
+            lock(_lock)
             {
                 drawAction();
-            }
-            finally
-            {
-                _updateReaderWriterLock.ExitReadLock();
             }
         }
 
@@ -202,8 +174,6 @@ namespace SkiEngine.NCS
             RootNode.Destroy();
 
             Destroyed?.Invoke(this);
-
-            _updateReaderWriterLock.Dispose();
         }
     }
 }
