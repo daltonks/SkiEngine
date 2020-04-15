@@ -10,7 +10,7 @@ using SkiEngine.Util;
 
 namespace SkiEngine.NCS
 {
-    public class Scene : IDestroyable<Scene>
+    public class Scene
     {
         public event Action<Scene> Destroyed;
 
@@ -20,7 +20,7 @@ namespace SkiEngine.NCS
         private readonly UpdateTime _updateTime = new UpdateTime();
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
-        private readonly object _lock = new object();
+        private readonly TaskQueue _taskQueue = new TaskQueue();
         
         public Scene()
         {
@@ -42,6 +42,11 @@ namespace SkiEngine.NCS
         public void Start()
         {
             _updateStopwatch.Start();
+        }
+
+        public Task RunAsync(Action action)
+        {
+            return _taskQueue.QueueAsync(action);
         }
         
         public void AddSystem(ISystem system)
@@ -95,58 +100,26 @@ namespace SkiEngine.NCS
             }
         }
 
-        private readonly TaskQueue _actionTaskQueue = new TaskQueue();
-        private readonly ConcurrentQueue<Action> _actionQueue = new ConcurrentQueue<Action>();
-        public Task RunAsync(Action action)
-        {
-            _actionQueue.Enqueue(action);
-
-            return _actionTaskQueue.QueueAsync(() => {
-                if (!_actionQueue.TryDequeue(out var a))
-                {
-                    return;
-                }
-
-                lock(_lock)
-                {
-                    if (IsDestroyed)
-                    {
-                        return;
-                    }
-
-                    a.Invoke();
-
-                    while (_actionQueue.TryDequeue(out a))
-                    {
-                        a.Invoke();
-                    }
-                }
-            });
-        }
-
         public void Update()
         {
             var stopwatchElapsed = _updateStopwatch.Elapsed;
             _updateTime.Delta = stopwatchElapsed - _previousStopwatchElapsed;
             _previousStopwatchElapsed = stopwatchElapsed;
-            
-            lock(_lock)
-            {
-                try
-                {
-                    foreach (var system in _updateableSystems)
-                    {
-                        system.Update(_updateTime);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex);
 
-                    throw;
+            try
+            {
+                foreach (var system in _updateableSystems)
+                {
+                    system.Update(_updateTime);
                 }
             }
-            
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+
+                throw;
+            }
+
             if (_updateStopwatch.Elapsed.TotalHours >= 1)
             {
                 _updateStopwatch.Restart();
@@ -154,15 +127,7 @@ namespace SkiEngine.NCS
             }
         }
 
-        public void Draw(Action drawAction)
-        {
-            lock(_lock)
-            {
-                drawAction();
-            }
-        }
-
-        public void Destroy()
+        public async Task DestroyAsync()
         {
             if (IsDestroyed)
             {
@@ -171,8 +136,10 @@ namespace SkiEngine.NCS
 
             IsDestroyed = true;
 
-            RootNode.Destroy();
+            await _taskQueue.ShutdownAsync();
 
+            RootNode.Destroy();
+            
             Destroyed?.Invoke(this);
         }
     }

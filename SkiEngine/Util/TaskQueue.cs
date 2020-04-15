@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,7 +69,14 @@ namespace SkiEngine.Util
                             throw new ObjectDisposedException(nameof(TaskQueue));
                         }
 
-                        await asyncAction();
+                        try
+                        {
+                            await asyncAction();
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex);
+                        }
 
                         Interlocked.Decrement(ref _numTasksQueued);
                         OnPropertyChanged(nameof(NumTasksQueued));
