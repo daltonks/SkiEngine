@@ -20,7 +20,6 @@ namespace SkiEngine.NCS
         private readonly UpdateTime _updateTime = new UpdateTime();
         private readonly Stopwatch _updateStopwatch = new Stopwatch();
         private TimeSpan _previousStopwatchElapsed = TimeSpan.Zero;
-        private readonly TaskQueue _taskQueue = new TaskQueue();
         
         public Scene()
         {
@@ -42,11 +41,6 @@ namespace SkiEngine.NCS
         public void Start()
         {
             _updateStopwatch.Start();
-        }
-
-        public Task RunAsync(Action action)
-        {
-            return _taskQueue.QueueAsync(action);
         }
         
         public void AddSystem(ISystem system)
@@ -127,7 +121,7 @@ namespace SkiEngine.NCS
             }
         }
 
-        public async Task DestroyAsync()
+        public void Destroy()
         {
             if (IsDestroyed)
             {
@@ -135,8 +129,6 @@ namespace SkiEngine.NCS
             }
 
             IsDestroyed = true;
-
-            await _taskQueue.ShutdownAsync();
 
             RootNode.Destroy();
             
