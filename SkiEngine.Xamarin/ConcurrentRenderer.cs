@@ -64,7 +64,7 @@ namespace SkiEngine.Xamarin
         }
 
         private readonly object _pendingDrawLock = new object();
-        public bool TryQueueDraw()
+        public async Task<bool> TryDrawAsync()
         {
             var shouldDraw = false;
 
@@ -79,7 +79,7 @@ namespace SkiEngine.Xamarin
 
             if (shouldDraw)
             {
-                _taskQueue.QueueAsync(ConcurrentDrawAndInvalidateSurfaceAsync);
+                await _taskQueue.QueueAsync(ConcurrentDrawAndInvalidateSurfaceAsync);
             }
 
             return shouldDraw;
@@ -148,9 +148,9 @@ namespace SkiEngine.Xamarin
                 return;
             }
 
-            _pendingDraw = false;
-
             _snapshotHandler.Reset();
+
+            _pendingDraw = false;
 
             await _offUiThreadDrawAction(_offUiThreadSurface, _snapshotHandler, _widthXamarinUnits, _heightXamarinUnits);
 
