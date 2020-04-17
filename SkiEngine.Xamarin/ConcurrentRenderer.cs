@@ -8,7 +8,13 @@ using SkiEngine.Util;
 
 namespace SkiEngine.Xamarin
 {
-    public delegate Task OffUiThreadDrawDelegate(SKSurface surface, ConcurrentRenderer.SnapshotHandler snapshotHandler, double widthXamarinUnits, double heightXamarinUnits);
+    public delegate Task OffUiThreadDrawDelegate(
+        SKSurface surface, 
+        Action startingToDrawCallback,
+        ConcurrentRenderer.SnapshotHandler snapshotHandler, 
+        double widthXamarinUnits, 
+        double heightXamarinUnits
+    );
 
     public class ConcurrentRenderer : IDisposable
     {
@@ -150,9 +156,13 @@ namespace SkiEngine.Xamarin
 
             _snapshotHandler.Reset();
 
-            _pendingDraw = false;
-
-            await _offUiThreadDrawAction(_offUiThreadSurface, _snapshotHandler, _widthXamarinUnits, _heightXamarinUnits);
+            await _offUiThreadDrawAction(
+                _offUiThreadSurface, 
+                () => _pendingDraw = false,
+                _snapshotHandler, 
+                _widthXamarinUnits, 
+                _heightXamarinUnits
+            );
 
             lock (_snapshotLock)
             {

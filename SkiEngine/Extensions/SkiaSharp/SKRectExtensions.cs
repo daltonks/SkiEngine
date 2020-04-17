@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SkiaSharp;
 
 namespace SkiEngine.Extensions.SkiaSharp
@@ -80,6 +81,16 @@ namespace SkiEngine.Extensions.SkiaSharp
         public static SKPoint BottomRight(this SKRect rect)
         {
             return new SKPoint(rect.Right, rect.Bottom);
+        }
+
+        public static SKRectI ToSKRectI(this SKRect rect)
+        {
+            return new SKRectI(
+                (int) Math.Round(rect.Left),
+                (int) Math.Round(rect.Top),
+                (int) Math.Round(rect.Right),
+                (int) Math.Round(rect.Bottom)
+            );
         }
     }
 }
