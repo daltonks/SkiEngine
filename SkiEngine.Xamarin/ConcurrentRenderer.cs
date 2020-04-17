@@ -13,7 +13,8 @@ namespace SkiEngine.Xamarin
         Action startingToDrawCallback,
         ConcurrentRenderer.SnapshotHandler snapshotHandler, 
         double widthXamarinUnits, 
-        double heightXamarinUnits
+        double heightXamarinUnits,
+        bool canvasSizeChanged
     );
 
     public class ConcurrentRenderer : IDisposable
@@ -85,7 +86,9 @@ namespace SkiEngine.Xamarin
 
             if (shouldDraw)
             {
-                await _taskQueue.QueueAsync(ConcurrentDrawAndInvalidateSurfaceAsync);
+                await _taskQueue.QueueAsync(
+                    () => ConcurrentDrawAndInvalidateSurfaceAsync(false)
+                );
             }
 
             return shouldDraw;
@@ -124,7 +127,6 @@ namespace SkiEngine.Xamarin
             }
 
             // Canvas size has changed
-
             _widthPixels = widthPixels;
             _heightPixels = heightPixels;
             _widthXamarinUnits = widthXamarinUnits;
@@ -143,11 +145,11 @@ namespace SkiEngine.Xamarin
                 );
 
                 // Redraw
-                return ConcurrentDrawAndInvalidateSurfaceAsync();
+                return ConcurrentDrawAndInvalidateSurfaceAsync(true);
             });
         }
 
-        private async Task ConcurrentDrawAndInvalidateSurfaceAsync()
+        private async Task ConcurrentDrawAndInvalidateSurfaceAsync(bool canvasSizeChanged)
         {
             if (_offUiThreadSurface == null)
             {
@@ -161,7 +163,8 @@ namespace SkiEngine.Xamarin
                 () => _pendingDraw = false,
                 _snapshotHandler, 
                 _widthXamarinUnits, 
-                _heightXamarinUnits
+                _heightXamarinUnits,
+                canvasSizeChanged
             );
 
             lock (_snapshotLock)
