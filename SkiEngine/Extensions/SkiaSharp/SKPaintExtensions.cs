@@ -6,15 +6,16 @@ namespace SkiEngine.Extensions.SkiaSharp
 {
     public static class SKPaintExtensions
     {
-        public static MeasuredText MeasureTextScaled(
+        public static BoundsAndTextDrawPoint MeasureTextScaled(
             this SKPaint paint, 
             float drawHeight,
-            float pixelHeight,
+            Func<float, float> getPixelHeight,
             Func<SKPaint, SKRect> measureTextAction,
             bool centerHorizontally = false,
             bool centerVertically = false
         )
         {
+            var pixelHeight = getPixelHeight(drawHeight);
             paint.TextSize = pixelHeight;
 
             var drawUnitPerPixel = drawHeight / pixelHeight;
@@ -40,19 +41,19 @@ namespace SkiEngine.Extensions.SkiaSharp
 
             paint.TextSize = drawHeight;
 
-            return new MeasuredText(drawBounds, drawPoint);
+            return new BoundsAndTextDrawPoint(drawBounds, drawPoint);
         }
     }
 
-    public struct MeasuredText
+    public struct BoundsAndTextDrawPoint
     {
-        public MeasuredText(SKRect drawBounds, SKPoint drawPoint)
+        public BoundsAndTextDrawPoint(SKRect bounds, SKPoint textDrawPoint)
         {
-            DrawBounds = drawBounds;
-            DrawPoint = drawPoint;
+            Bounds = bounds;
+            TextDrawPoint = textDrawPoint;
         }
 
-        public SKRect DrawBounds { get; }
-        public SKPoint DrawPoint { get; }
+        public SKRect Bounds { get; set; }
+        public SKPoint TextDrawPoint { get; set; }
     }
 }
