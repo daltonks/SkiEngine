@@ -14,7 +14,7 @@ namespace SkiEngine.NCS.System
         private readonly List<IComponent> _componentsToAdd = new List<IComponent>();
         private readonly List<IComponent> _componentsToRemove = new List<IComponent>();
 
-        public void OnNodeZChanged(Node node, int previousZ)
+        public void OnNodeZChanged(Node node, float previousZ)
         {
             
         }

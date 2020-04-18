@@ -84,7 +84,7 @@ namespace SkiEngine.NCS.Component.Camera
             }
         }
 
-        public void OnDrawableZChanged(IDrawableComponent drawableComponent, int previousZ)
+        public void OnDrawableZChanged(IDrawableComponent drawableComponent, float previousZ)
         {
             foreach (var camera in _cameras)
             {

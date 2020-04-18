@@ -43,17 +43,17 @@ namespace SkiEngine.NCS
             return CreateChild(new InitialNodeTransform(relativePoint));
         }
 
-        public Node CreateChild(SKPoint relativePoint, int relativeZ)
+        public Node CreateChild(SKPoint relativePoint, float relativeZ)
         {
             return CreateChild(new InitialNodeTransform(relativePoint, relativeZ));
         }
 
-        public Node CreateChild(SKPoint relativePoint, int relativeZ, float relativeRotation)
+        public Node CreateChild(SKPoint relativePoint, float relativeZ, float relativeRotation)
         {
             return CreateChild(new InitialNodeTransform(relativePoint, relativeZ, relativeRotation));
         }
 
-        public Node CreateChild(SKPoint relativePoint, int relativeZ, float relativeRotation, SKPoint relativeScale)
+        public Node CreateChild(SKPoint relativePoint, float relativeZ, float relativeRotation, SKPoint relativeScale)
         {
             return CreateChild(new InitialNodeTransform(relativePoint, relativeZ, relativeRotation, relativeScale));
         }
@@ -183,7 +183,7 @@ namespace SkiEngine.NCS
         public SKPoint RelativePoint { get; set; }
         public float RelativeRotation { get; set; }
         public SKPoint RelativeScale { get; set; } = new SKPoint(1, 1);
-        public int RelativeZ { get; set; }
+        public float RelativeZ { get; set; }
 
         public InitialNodeTransform()
         {
@@ -195,20 +195,20 @@ namespace SkiEngine.NCS
             RelativePoint = relativePoint;
         }
 
-        public InitialNodeTransform(SKPoint relativePoint, int relativeZ)
+        public InitialNodeTransform(SKPoint relativePoint, float relativeZ)
         {
             RelativePoint = relativePoint;
             RelativeZ = relativeZ;
         }
 
-        public InitialNodeTransform(SKPoint relativePoint, int relativeZ, float relativeRotation)
+        public InitialNodeTransform(SKPoint relativePoint, float relativeZ, float relativeRotation)
         {
             RelativePoint = relativePoint;
             RelativeZ = relativeZ;
             RelativeRotation = relativeRotation;
         }
 
-        public InitialNodeTransform(SKPoint relativePoint, int relativeZ, float relativeRotation, SKPoint relativeScale)
+        public InitialNodeTransform(SKPoint relativePoint, float relativeZ, float relativeRotation, SKPoint relativeScale)
         {
             RelativePoint = relativePoint;
             RelativeZ = relativeZ;

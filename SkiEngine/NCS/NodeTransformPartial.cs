@@ -83,7 +83,7 @@ namespace SkiEngine.NCS
             set => RelativePoint = Parent?.WorldToLocalMatrix.MapPoint(value) ?? value;
         }
 
-        public int RelativeZ
+        public float RelativeZ
         {
             get => Parent == null ? WorldZ : WorldZ - Parent.WorldZ;
             set
@@ -93,8 +93,8 @@ namespace SkiEngine.NCS
             }
         }
 
-        private int _worldZ;
-        public int WorldZ
+        private float _worldZ;
+        public float WorldZ
         {
             get => _worldZ;
             set

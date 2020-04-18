@@ -63,7 +63,7 @@ namespace SkiEngine.NCS
             }
         }
 
-        internal void OnNodeZChanged(Node node, int previousZ)
+        internal void OnNodeZChanged(Node node, float previousZ)
         {
             foreach (var system in _systems)
             {

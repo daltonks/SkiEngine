@@ -16,12 +16,12 @@ namespace SkiEngine.NCS.Component.Camera
         public event EnabledChangedDelegate EnabledChanged;
         public event DrawOrderChangedDelegate DrawOrderChanged;
 
-        private readonly LayeredSets<int, IDrawableComponent> _drawableComponents;
+        private readonly LayeredSets<float, IDrawableComponent> _drawableComponents;
 
         public CameraComponent(CameraGroup cameraGroup, int drawOrder, bool enabled = true)
         {
             _drawOrder = drawOrder;
-            _drawableComponents = new LayeredSets<int, IDrawableComponent>(component => component.Node.WorldZ);
+            _drawableComponents = new LayeredSets<float, IDrawableComponent>(component => component.Node.WorldZ);
             _enabled = enabled;
 
             cameraGroup?.Add(this);
@@ -30,7 +30,7 @@ namespace SkiEngine.NCS.Component.Camera
         public CameraGroup Group { get; internal set; }
         public CanvasComponent CanvasComponent => Group.CanvasComponent;
 
-        public IReadOnlyList<int> OrderedLayers => _drawableComponents.OrderedLayers;
+        public IReadOnlyList<float> OrderedLayers => _drawableComponents.OrderedLayers;
         public IEnumerable<IDrawableComponent> ReversedComponents => _drawableComponents.ReversedItems;
 
         public ref SKMatrix XamarinToPixelMatrix => ref CanvasComponent.XamarinToPixelMatrix;
@@ -87,7 +87,7 @@ namespace SkiEngine.NCS.Component.Camera
             return xamarinToWorldMatrix;
         }
 
-        internal void OnZChanged(IDrawableComponent drawableComponent, int previousZ)
+        internal void OnZChanged(IDrawableComponent drawableComponent, float previousZ)
         {
             if (_drawableComponents.Remove(drawableComponent, previousZ))
             {

@@ -9,7 +9,7 @@ namespace SkiEngine.NCS.System
     {
         private readonly HashSet<CanvasComponent> _canvasComponents = new HashSet<CanvasComponent>();
 
-        public void OnNodeZChanged(Node node, int previousZ)
+        public void OnNodeZChanged(Node node, float previousZ)
         {
             foreach (var canvasComponent in _canvasComponents)
             {

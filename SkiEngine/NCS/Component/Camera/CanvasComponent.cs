@@ -33,7 +33,7 @@ namespace SkiEngine.NCS.Component.Camera
             return cameraGroup;
         }
 
-        public void OnNodeZChanged(Node node, int previousZ)
+        public void OnNodeZChanged(Node node, float previousZ)
         {
             foreach (var drawableComponent in node.Components.OfType<IDrawableComponent>())
             foreach (var group in _cameraGroups)
