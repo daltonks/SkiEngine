@@ -10,7 +10,7 @@ namespace SkiEngine.Xamarin
 {
     public static class SKTouchEventArgsExtensions
     {
-        public static SkiTouch ToSKTouch(this SKTouchEventArgs eventArgs)
+        public static SkiTouch ToSkiTouch(this SKTouchEventArgs eventArgs)
         {
             return SkiTouch.Get(
                 eventArgs.Id,

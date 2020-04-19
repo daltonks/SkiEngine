@@ -16,18 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="SkiCanvasView.xaml.cs">
-      <DependentUpon>SkiCanvasView.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="SkiCanvasView.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="SkiCanvasView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
