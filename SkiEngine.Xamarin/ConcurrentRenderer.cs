@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
-using SkiEngine.Util;
 
 namespace SkiEngine.Xamarin
 {
-    public delegate Task OffUiThreadDrawDelegate(
+    public delegate void OffUiThreadDrawDelegate(
         SKSurface surface, 
-        Action startingToDrawCallback,
         ConcurrentRenderer.SnapshotHandler snapshotHandler, 
         double widthXamarinUnits, 
         double heightXamarinUnits,
@@ -19,8 +16,8 @@ namespace SkiEngine.Xamarin
 
     public class ConcurrentRenderer : IDisposable
     {
-        private readonly TaskQueue _taskQueue = new TaskQueue();
         private readonly OffUiThreadDrawDelegate _offUiThreadDrawAction;
+        private readonly Action<Action> _queueDrawAction;
 
         private volatile bool _pendingDraw;
         private SKSurface _offUiThreadSurface;
@@ -34,9 +31,13 @@ namespace SkiEngine.Xamarin
         private double _widthXamarinUnits;
         private double _heightXamarinUnits;
 
-        public ConcurrentRenderer(OffUiThreadDrawDelegate offUiThreadDrawAction)
+        public ConcurrentRenderer(
+            Action<Action> queueDrawAction,
+            OffUiThreadDrawDelegate offUiThreadDrawAction
+        )
         {
             _offUiThreadDrawAction = offUiThreadDrawAction;
+            _queueDrawAction = queueDrawAction;
 
             _snapshotHandler = new SnapshotHandler(this);
         }
@@ -71,7 +72,7 @@ namespace SkiEngine.Xamarin
         }
 
         private readonly object _pendingDrawLock = new object();
-        public async Task<bool> TryDrawAsync()
+        public void TryDrawAsync()
         {
             var shouldDraw = false;
 
@@ -86,12 +87,10 @@ namespace SkiEngine.Xamarin
 
             if (shouldDraw)
             {
-                await _taskQueue.QueueAsync(
-                    () => ConcurrentDrawAndInvalidateSurfaceAsync(false)
-                );
+                _queueDrawAction(() => {
+                    ConcurrentDrawAndInvalidateSurface(false);
+                });
             }
-
-            return shouldDraw;
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
@@ -131,7 +130,7 @@ namespace SkiEngine.Xamarin
             _widthXamarinUnits = widthXamarinUnits;
             _heightXamarinUnits = heightXamarinUnits;
             
-            _taskQueue.QueueAsync(() => {
+            _queueDrawAction(() => {
                 // Recreate _offUiThreadSurface
                 _offUiThreadSurface?.Dispose();
                 _offUiThreadSurface = SKSurface.Create(
@@ -144,11 +143,11 @@ namespace SkiEngine.Xamarin
                 );
 
                 // Redraw
-                return ConcurrentDrawAndInvalidateSurfaceAsync(true);
+                ConcurrentDrawAndInvalidateSurface(true);
             });
         }
 
-        private async Task ConcurrentDrawAndInvalidateSurfaceAsync(bool canvasSizeChanged)
+        private void ConcurrentDrawAndInvalidateSurface(bool canvasSizeChanged)
         {
             if (_offUiThreadSurface == null)
             {
@@ -157,9 +156,10 @@ namespace SkiEngine.Xamarin
 
             _snapshotHandler.Reset();
 
-            await _offUiThreadDrawAction(
+            _pendingDraw = false;
+
+             _offUiThreadDrawAction(
                 _offUiThreadSurface, 
-                () => _pendingDraw = false,
                 _snapshotHandler, 
                 _widthXamarinUnits, 
                 _heightXamarinUnits,
@@ -248,8 +248,6 @@ namespace SkiEngine.Xamarin
 
         public async void Dispose()
         {
-            await _taskQueue.ShutdownAsync();
-
             _offUiThreadSurface?.Dispose();
 
             foreach (var snapshotImage in _snapshotImages)
