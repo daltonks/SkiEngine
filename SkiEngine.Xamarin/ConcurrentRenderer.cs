@@ -17,9 +17,10 @@ namespace SkiEngine.Xamarin
 
     public class ConcurrentRenderer : IDisposable
     {
-        private readonly DrawDelegate _drawAction;
         private readonly Action<Action> _queueDrawAction;
-
+        private readonly DrawDelegate _drawAction;
+        private readonly Action _drawCompleteAction;
+        
         private volatile bool _pendingDraw;
         private SKSurface _surface;
 
@@ -34,10 +35,12 @@ namespace SkiEngine.Xamarin
 
         public ConcurrentRenderer(
             Action<Action> queueDrawAction,
-            DrawDelegate drawAction
+            DrawDelegate drawAction,
+            Action drawCompleteAction
         )
         {
             _drawAction = drawAction;
+            _drawCompleteAction = drawCompleteAction;
             _queueDrawAction = queueDrawAction;
 
             _snapshotHandler = new SnapshotHandler(this);
@@ -197,6 +200,8 @@ namespace SkiEngine.Xamarin
                     _snapshotImages.RemoveAt(i);
                 }
             }
+
+            _drawCompleteAction();
         }
 
         public SKColor GetPixelColor(IList<int> snapshotIndices, SKPoint pixelPoint)
