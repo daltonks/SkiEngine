@@ -76,7 +76,7 @@ namespace SkiEngine.Xamarin
         }
 
         private readonly object _pendingDrawLock = new object();
-        public void TryDrawAsync()
+        public void TryDraw()
         {
             var shouldDraw = false;
 
@@ -135,9 +135,6 @@ namespace SkiEngine.Xamarin
             _heightXamarinUnits = heightXamarinUnits;
             
             _queueDrawAction(() => {
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
-
                 // Recreate _surface
                 _surface?.Dispose();
 
@@ -149,7 +146,6 @@ namespace SkiEngine.Xamarin
                         SKAlphaType.Premul
                     )
                 );
-                Debug.WriteLine($"Create canvas: {stopwatch.Elapsed.TotalMilliseconds}");
 
                 // Redraw
                 Draw(true);
