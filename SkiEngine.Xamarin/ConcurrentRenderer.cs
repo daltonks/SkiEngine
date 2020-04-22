@@ -26,7 +26,7 @@ namespace SkiEngine.Xamarin
 
         private readonly object _snapshotLock = new object();
         private readonly SnapshotHandler _snapshotHandler;
-        private readonly List<SnapshotImage> _snapshotImages = new List<SnapshotImage>(1);
+        private readonly Dictionary<int, SnapshotImage> _snapshots = new Dictionary<int, SnapshotImage>(1);
        
         private int _widthPixels;
         private int _heightPixels;
@@ -46,25 +46,22 @@ namespace SkiEngine.Xamarin
             _snapshotHandler = new SnapshotHandler(this);
         }
 
-        public SnapshotImage[] GetSnapshotsAndAddUsers(IList<int> indices)
+        public SnapshotImage[] GetSnapshotsAndAddUsers(IList<int> ids)
         {
-            var result = new SnapshotImage[indices.Count];
+            var result = new SnapshotImage[ids.Count];
 
             lock (_snapshotLock)
             {
-                for(var i = 0; i < indices.Count; i++)
+                foreach (var id in ids)
                 {
-                    var index = indices[i];
-
-                    if (index < _snapshotImages.Count)
+                    if (_snapshots.TryGetValue(id, out var snapshotImage))
                     {
-                        var snapshotImage = _snapshotImages[index];
                         snapshotImage.AddUser();
-                        result[i] = snapshotImage;
+                        result[id] = snapshotImage;
                     }
                     else
                     {
-                        result[i] = new SnapshotImage(
+                        result[id] = new SnapshotImage(
                             SKImage.Create(new SKImageInfo(1, 1)),
                             new SKSizeI(0, 0)
                         );
@@ -98,13 +95,13 @@ namespace SkiEngine.Xamarin
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-        public void OnPaintSurface(SKPaintGLSurfaceEventArgs e, double widthXamarinUnits, double heightXamarinUnits, Action<IReadOnlyList<SnapshotImage>> drawAction)
+        public void OnPaintSurface(SKPaintGLSurfaceEventArgs e, double widthXamarinUnits, double heightXamarinUnits, Action<Dictionary<int, SnapshotImage>> drawAction)
         {
-            SnapshotImage[] snapshots;
+            Dictionary<int, SnapshotImage> snapshots;
             lock (_snapshotLock)
             {
-                snapshots = _snapshotImages.ToArray();
-                foreach (var snapshot in snapshots)
+                snapshots = new Dictionary<int, SnapshotImage>(_snapshots);
+                foreach (var snapshot in snapshots.Values)
                 {
                     snapshot.AddUser();
                 }
@@ -112,7 +109,7 @@ namespace SkiEngine.Xamarin
 
             drawAction(snapshots);
 
-            foreach (var snapshot in snapshots)
+            foreach (var snapshot in snapshots.Values)
             {
                 snapshot.RemoveUser();
             }
@@ -173,27 +170,17 @@ namespace SkiEngine.Xamarin
 
             lock (_snapshotLock)
             {
-                // Update _snapshotImages with new snapshots
-                for(var i = 0; i < _snapshotHandler.Snapshots.Count; i++)
+                // Update _snapshots with new snapshots
+                foreach(var pair in _snapshotHandler.Snapshots)
                 {
-                    var newSnapshot = _snapshotHandler.Snapshots[i];
+                    var id = pair.Key;
+                    var newSnapshot = pair.Value;
 
-                    if (i < _snapshotImages.Count)
+                    if (_snapshots.TryGetValue(id, out var existingSnapshot))
                     {
-                        _snapshotImages[i].RemoveUser();
-                        _snapshotImages[i] = newSnapshot;
+                        existingSnapshot.RemoveUser();
                     }
-                    else
-                    {
-                        _snapshotImages.Add(newSnapshot);
-                    }
-                }
-
-                // Dispose snapshots of unused indices
-                for (var i = _snapshotHandler.Snapshots.Count; i < _snapshotImages.Count;)
-                {
-                    _snapshotImages[i].RemoveUser();
-                    _snapshotImages.RemoveAt(i);
+                    _snapshots[id] = newSnapshot;
                 }
             }
 
@@ -257,7 +244,7 @@ namespace SkiEngine.Xamarin
         {
             _surface?.Dispose();
 
-            foreach (var snapshotImage in _snapshotImages)
+            foreach (var snapshotImage in _snapshots.Values)
             {
                 snapshotImage.RemoveUser();
             }
@@ -272,15 +259,15 @@ namespace SkiEngine.Xamarin
                 _renderer = renderer;
             }
 
-            private readonly List<SnapshotImage> _snapshots = new List<SnapshotImage>();
-            public IReadOnlyList<SnapshotImage> Snapshots => _snapshots;
+            private readonly Dictionary<int, SnapshotImage> _snapshots = new Dictionary<int, SnapshotImage>();
+            public IReadOnlyDictionary<int, SnapshotImage> Snapshots => _snapshots;
 
             internal void Reset()
             {
                 _snapshots.Clear();
             }
 
-            public SnapshotImage Snapshot()
+            public SnapshotImage Snapshot(int id)
             {
                 var skImage = _renderer._surface.Snapshot();
 
@@ -289,7 +276,7 @@ namespace SkiEngine.Xamarin
                     new SKSizeI(_renderer._widthPixels, _renderer._heightPixels)
                 );
 
-                _snapshots.Add(snapshot);
+                _snapshots[id] = snapshot;
 
                 return snapshot;
             }
