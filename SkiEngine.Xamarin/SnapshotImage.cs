@@ -31,8 +31,11 @@ namespace SkiEngine.Xamarin
             }
         }
 
-        public SKColor? GetPixelColor(int pixelX, int pixelY)
+        public SKColor? GetPixelColor(SKPoint pixelPoint)
         {
+            var pixelX = (int) Math.Round(pixelPoint.X);
+            var pixelY = (int) Math.Round(pixelPoint.Y);
+
             if (pixelX < 0 || pixelX >= Size.Width || pixelY < 0 || pixelY >= Size.Height)
             {
                 return null;

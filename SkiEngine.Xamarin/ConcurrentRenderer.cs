@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 
@@ -46,30 +47,21 @@ namespace SkiEngine.Xamarin
             _snapshotHandler = new SnapshotHandler(this);
         }
 
-        public SnapshotImage[] GetSnapshotsAndAddUsers(IList<int> ids)
+        public SnapshotImage GetSnapshotAndAddUser(int id)
         {
-            var result = new SnapshotImage[ids.Count];
-
             lock (_snapshotLock)
             {
-                foreach (var id in ids)
+                if (_snapshots.TryGetValue(id, out var snapshotImage))
                 {
-                    if (_snapshots.TryGetValue(id, out var snapshotImage))
-                    {
-                        snapshotImage.AddUser();
-                        result[id] = snapshotImage;
-                    }
-                    else
-                    {
-                        result[id] = new SnapshotImage(
-                            SKImage.Create(new SKImageInfo(1, 1)),
-                            new SKSizeI(0, 0)
-                        );
-                    }
+                    snapshotImage.AddUser();
+                    return snapshotImage;
                 }
-            }
 
-            return result;
+                return new SnapshotImage(
+                    SKImage.Create(new SKImageInfo(1, 1)),
+                    new SKSizeI(0, 0)
+                );
+            }
         }
 
         private readonly object _pendingDrawLock = new object();
@@ -185,59 +177,6 @@ namespace SkiEngine.Xamarin
             }
 
             _drawCompleteAction();
-        }
-
-        public SKColor GetPixelColor(IList<int> snapshotIndices, SKPoint pixelPoint)
-        {
-            using (
-                var skImage = CreateImage(
-                    snapshotIndices,
-                    SKRectI.Create(
-                        (int) pixelPoint.X,
-                        (int) pixelPoint.Y,
-                        1,
-                        1
-                    )
-                )
-            )
-            using (var pixels = skImage.PeekPixels())
-            {
-                var pixelColor = pixels.GetPixelColor(0, 0);
-                return pixelColor;
-            }
-        }
-
-        public SKImage CreateImage(IList<int> snapshotIndices)
-        {
-            return CreateImage(snapshotIndices, new SKRectI(0, 0, _widthPixels, _heightPixels));
-        }
-
-        public SKImage CreateImage(IList<int> snapshotIndices, SKRectI rect)
-        {
-            using (
-                var surface = SKSurface.Create(
-                    new SKImageInfo(
-                        rect.Width,
-                        rect.Height,
-                        SKImageInfo.PlatformColorType,
-                        SKAlphaType.Premul
-                    )
-                )
-            )
-            {
-                var canvas = surface.Canvas;
-                canvas.Clear();
-                canvas.Translate(-rect.Left, -rect.Top);
-
-                var snapshots = GetSnapshotsAndAddUsers(snapshotIndices);
-                foreach (var snapshot in snapshots)
-                {
-                    canvas.DrawImage(snapshot.SkImage, 0, 0);
-                    snapshot.RemoveUser();
-                }
-
-                return surface.Snapshot();
-            }
         }
 
         public void Dispose()
