@@ -9,13 +9,12 @@ namespace SkiEngine.Extensions.SkiaSharp
         public static BoundsAndTextDrawPoint MeasureTextScaled(
             this SKPaint paint, 
             float drawHeight,
-            Func<float, float> getPixelHeight,
             Func<SKPaint, SKRect> measureTextAction,
             bool centerHorizontally = false,
             bool centerVertically = false
         )
         {
-            var pixelHeight = getPixelHeight(drawHeight);
+            const int pixelHeight = 100;
             paint.TextSize = pixelHeight;
 
             var drawUnitPerPixel = drawHeight / pixelHeight;
@@ -33,15 +32,15 @@ namespace SkiEngine.Extensions.SkiaSharp
                 drawOffset.Y = -drawHeight / 2;
             }
 
-            var drawBounds = SKRect.Create(drawOffset.X, drawOffset.Y, drawWidth, drawHeight);
-            var drawPoint = new SKPoint(
-                drawBounds.Left - pixelBounds.Left * drawUnitPerPixel, 
-                drawBounds.Bottom - pixelBounds.Bottom * drawUnitPerPixel
+            var bounds = SKRect.Create(drawOffset.X, drawOffset.Y, drawWidth, drawHeight);
+            var textDrawPoint = new SKPoint(
+                bounds.Left - pixelBounds.Left * drawUnitPerPixel, 
+                bounds.Bottom - pixelBounds.Bottom * drawUnitPerPixel
             );
 
             paint.TextSize = drawHeight;
 
-            return new BoundsAndTextDrawPoint(drawBounds, drawPoint);
+            return new BoundsAndTextDrawPoint(bounds, textDrawPoint);
         }
     }
 
