@@ -87,7 +87,7 @@ namespace SkiEngine.Xamarin
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-        public void OnPaintSurface(SKPaintGLSurfaceEventArgs e, double widthXamarinUnits, double heightXamarinUnits, Action<Dictionary<int, SnapshotImage>> drawAction)
+        public void OnPaintSurface(int widthPixels, int heightPixels, double widthXamarinUnits, double heightXamarinUnits, Action<Dictionary<int, SnapshotImage>> drawAction)
         {
             Dictionary<int, SnapshotImage> snapshots;
             lock (_snapshotLock)
@@ -105,9 +105,6 @@ namespace SkiEngine.Xamarin
             {
                 snapshot.RemoveUser();
             }
-
-            var widthPixels = e.BackendRenderTarget.Width;
-            var heightPixels = e.BackendRenderTarget.Height;
 
             if (_widthPixels == widthPixels 
                 && _heightPixels == heightPixels 
