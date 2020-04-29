@@ -6,7 +6,7 @@ namespace SkiEngine.Input
 {
     public class SkiTouch
     {
-        private static readonly ConcurrentQueue<SkiTouch> _cachedTouches = new ConcurrentQueue<SkiTouch>();
+        private static readonly ConcurrentBag<SkiTouch> _cachedTouches = new ConcurrentBag<SkiTouch>();
 
         public static SkiTouch Get(
             long id,
@@ -18,7 +18,7 @@ namespace SkiEngine.Input
             int wheelDelta
         )
         {
-            if (!_cachedTouches.TryDequeue(out var result))
+            if (!_cachedTouches.TryTake(out var result))
             {
                 result = new SkiTouch();
             }
@@ -44,7 +44,7 @@ namespace SkiEngine.Input
 
         public void Recycle()
         {
-            _cachedTouches.Enqueue(this);
+            _cachedTouches.Add(this);
         }
     }
 
