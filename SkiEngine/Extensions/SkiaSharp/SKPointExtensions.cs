@@ -117,12 +117,7 @@ namespace SkiEngine.Extensions.SkiaSharp
 
         public static double Angle(this SKPoint a, SKPoint b, SKPoint c)
         {
-            double v1X = b.X - c.X;
-            double v1Y = b.Y - c.Y;
-            double v2X = a.X - c.X;
-            double v2Y = a.Y - c.Y;
-
-            return Math.Atan2(v1X, v1Y) - Math.Atan2(v2X, v2Y);
+            return AngleTo(a - b, c - b);
         }
 
         public static SKPoint Rotate(this SKPoint vector, double radians)
