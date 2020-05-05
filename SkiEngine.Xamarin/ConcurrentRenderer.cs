@@ -65,20 +65,20 @@ namespace SkiEngine.Xamarin
         }
 
         private readonly object _pendingDrawLock = new object();
-        public void TryDraw()
+        public void TryQueueDraw()
         {
-            var shouldDraw = false;
+            var shouldQueueDraw = false;
 
             lock (_pendingDrawLock)
             {
                 if (!_pendingDraw)
                 {
                     _pendingDraw = true;
-                    shouldDraw = true;
+                    shouldQueueDraw = true;
                 }
             }
 
-            if (shouldDraw)
+            if (shouldQueueDraw)
             {
                 _queueDrawAction(() => {
                     Draw(false);
@@ -145,9 +145,9 @@ namespace SkiEngine.Xamarin
                 return;
             }
 
-            _snapshotHandler.Reset();
-
             _pendingDraw = false;
+
+            _snapshotHandler.Reset();
 
              _drawAction(
                 _surface, 
