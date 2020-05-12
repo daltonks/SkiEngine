@@ -14,6 +14,9 @@ namespace SkiEngine.NCS.Component.Camera
             Destroyed += OnDestroyed;
         }
 
+        private SKRect _xamarinViewport;
+        public ref SKRect XamarinViewport => ref _xamarinViewport;
+
         private SKRectI _pixelViewport;
         public ref SKRectI PixelViewport => ref _pixelViewport;
 
@@ -48,6 +51,8 @@ namespace SkiEngine.NCS.Component.Camera
             PixelViewport = canvas.DeviceClipBounds;
             if (PixelViewport != _previousPixelViewport)
             {
+                XamarinViewport = new SKRect(0, 0, (float) widthXamarinUnits, (float) heightXamarinUnits);
+
                 _xamarinToPixelMatrix = SKMatrix.MakeScale(
                     (float) (PixelViewport.Width / widthXamarinUnits),
                     (float) (PixelViewport.Height / heightXamarinUnits)
