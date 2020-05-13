@@ -1,5 +1,6 @@
 ﻿using System;
 using SkiaSharp;
+using SkiEngine.Util;
 
 // ReSharper disable CompareOfFloatsByEqualityOperator
 
@@ -7,8 +8,6 @@ namespace SkiEngine.NCS
 {
     public partial class Node
     {
-        private const double TwoPi = Math.PI * 2;
-
         private bool _localToWorldDirty;
         private bool _worldToLocalDirty;
 
@@ -123,8 +122,7 @@ namespace SkiEngine.NCS
             get => _relativeRotation;
             set
             {
-                // Wrap rotation to stay between -PI and PI
-                _relativeRotation = (float) (value - TwoPi * Math.Floor((value + Math.PI) / TwoPi));
+                _relativeRotation = (float) RotationUtil.WrapRotation(value);
                 SetMatricesDirty();
             }
         }

@@ -14,17 +14,17 @@ namespace SkiEngine.NCS.Component.Camera
             Destroyed += OnDestroyed;
         }
 
-        private SKRect _xamarinViewport;
-        public ref SKRect XamarinViewport => ref _xamarinViewport;
+        private SKRect _dpViewport;
+        public ref SKRect DpViewport => ref _dpViewport;
 
         private SKRectI _pixelViewport;
         public ref SKRectI PixelViewport => ref _pixelViewport;
 
-        private SKMatrix _xamarinToPixelMatrix;
-        public ref SKMatrix XamarinToPixelMatrix => ref _xamarinToPixelMatrix;
+        private SKMatrix _dpToPixelMatrix;
+        public ref SKMatrix DpToPixelMatrix => ref _dpToPixelMatrix;
 
-        private SKMatrix _pixelToXamarinMatrix;
-        public ref SKMatrix PixelToXamarinMatrix => ref _pixelToXamarinMatrix;
+        private SKMatrix _pixelToDpMatrix;
+        public ref SKMatrix PixelToDpMatrix => ref _pixelToDpMatrix;
 
         private SKMatrix _halfPixelViewportTranslationMatrix;
         public ref SKMatrix HalfPixelViewportTranslationMatrix => ref _halfPixelViewportTranslationMatrix;
@@ -46,21 +46,21 @@ namespace SkiEngine.NCS.Component.Camera
         }
 
         private SKRectI _previousPixelViewport;
-        public void StartDraw(SKCanvas canvas, double widthXamarinUnits, double heightXamarinUnits)
+        public void StartDraw(SKCanvas canvas, double widthDp, double heightDp)
         {
             PixelViewport = canvas.DeviceClipBounds;
             if (PixelViewport != _previousPixelViewport)
             {
-                XamarinViewport = new SKRect(0, 0, (float) widthXamarinUnits, (float) heightXamarinUnits);
+                DpViewport = new SKRect(0, 0, (float) widthDp, (float) heightDp);
 
-                _xamarinToPixelMatrix = SKMatrix.MakeScale(
-                    (float) (PixelViewport.Width / widthXamarinUnits),
-                    (float) (PixelViewport.Height / heightXamarinUnits)
+                _dpToPixelMatrix = SKMatrix.MakeScale(
+                    (float) (PixelViewport.Width / widthDp),
+                    (float) (PixelViewport.Height / heightDp)
                 );
 
-                _pixelToXamarinMatrix = SKMatrix.MakeScale(
-                    (float) (widthXamarinUnits / PixelViewport.Width),
-                    (float) (heightXamarinUnits / PixelViewport.Height)
+                _pixelToDpMatrix = SKMatrix.MakeScale(
+                    (float) (widthDp / PixelViewport.Width),
+                    (float) (heightDp / PixelViewport.Height)
                 );
 
                 _halfPixelViewportTranslationMatrix = SKMatrix.MakeTranslation(PixelViewport.Width / 2f, PixelViewport.Height / 2f);

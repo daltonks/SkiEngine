@@ -33,10 +33,10 @@ namespace SkiEngine.NCS.Component.Camera
         public IReadOnlyList<float> OrderedLayers => _drawableComponents.OrderedLayers;
         public IEnumerable<IDrawableComponent> ReversedComponents => _drawableComponents.ReversedItems;
 
-        public SKMatrix XamarinToWorldMatrix => XamarinToPixelMatrix.PostConcat(PixelToWorldMatrix);
+        public SKMatrix DpToWorldMatrix => DpToPixelMatrix.PostConcat(PixelToWorldMatrix);
 
-        public ref SKMatrix XamarinToPixelMatrix => ref CanvasComponent.XamarinToPixelMatrix;
-        public ref SKMatrix PixelToXamarinMatrix => ref CanvasComponent.PixelToXamarinMatrix;
+        public ref SKMatrix DpToPixelMatrix => ref CanvasComponent.DpToPixelMatrix;
+        public ref SKMatrix PixelToDpMatrix => ref CanvasComponent.PixelToDpMatrix;
 
         private SKMatrix _worldToPixelMatrix;
         public ref SKMatrix WorldToPixelMatrix => ref _worldToPixelMatrix;
@@ -44,7 +44,7 @@ namespace SkiEngine.NCS.Component.Camera
         private SKMatrix _pixelToWorldMatrix;
         public ref SKMatrix PixelToWorldMatrix => ref _pixelToWorldMatrix;
 
-        public ref SKRect XamarinViewport => ref CanvasComponent.XamarinViewport;
+        public ref SKRect DpViewport => ref CanvasComponent.DpViewport;
         public ref SKRectI PixelViewport => ref CanvasComponent.PixelViewport;
 
         private SKRect _worldViewPort;

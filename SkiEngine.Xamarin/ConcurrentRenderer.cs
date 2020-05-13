@@ -11,8 +11,8 @@ namespace SkiEngine.Xamarin
     public delegate void DrawDelegate(
         SKSurface surface, 
         ConcurrentRenderer.SnapshotHandler snapshotHandler, 
-        double widthXamarinUnits, 
-        double heightXamarinUnits,
+        double widthDp, 
+        double heightDp,
         bool canvasSizeChanged
     );
 
@@ -31,8 +31,8 @@ namespace SkiEngine.Xamarin
        
         private int _widthPixels;
         private int _heightPixels;
-        private double _widthXamarinUnits;
-        private double _heightXamarinUnits;
+        private double _widthDp;
+        private double _heightDp;
 
         public ConcurrentRenderer(
             Action<Action> queueDrawAction,
@@ -87,7 +87,7 @@ namespace SkiEngine.Xamarin
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-        public void OnPaintSurface(int widthPixels, int heightPixels, double widthXamarinUnits, double heightXamarinUnits, Action<Dictionary<int, SnapshotImage>> drawAction)
+        public void OnPaintSurface(int widthPixels, int heightPixels, double widthDp, double heightDp, Action<Dictionary<int, SnapshotImage>> drawAction)
         {
             Dictionary<int, SnapshotImage> snapshots;
             lock (_snapshotLock)
@@ -108,8 +108,8 @@ namespace SkiEngine.Xamarin
 
             if (_widthPixels == widthPixels 
                 && _heightPixels == heightPixels 
-                && _widthXamarinUnits == widthXamarinUnits 
-                && _heightXamarinUnits == heightXamarinUnits)
+                && _widthDp == widthDp 
+                && _heightDp == heightDp)
             {
                 return;
             }
@@ -117,8 +117,8 @@ namespace SkiEngine.Xamarin
             // Canvas size has changed
             _widthPixels = widthPixels;
             _heightPixels = heightPixels;
-            _widthXamarinUnits = widthXamarinUnits;
-            _heightXamarinUnits = heightXamarinUnits;
+            _widthDp = widthDp;
+            _heightDp = heightDp;
             
             _queueDrawAction(() => {
                 // Recreate _surface
@@ -152,8 +152,8 @@ namespace SkiEngine.Xamarin
              _drawAction(
                 _surface, 
                 _snapshotHandler, 
-                _widthXamarinUnits, 
-                _heightXamarinUnits,
+                _widthDp, 
+                _heightDp,
                 canvasSizeChanged
             );
 
