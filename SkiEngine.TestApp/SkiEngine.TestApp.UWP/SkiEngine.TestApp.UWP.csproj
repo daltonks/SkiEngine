@@ -146,10 +146,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp.Views.Forms">
-      <Version>1.68.1.1</Version>
+      <Version>1.68.3</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.4.0.991640" />
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" />
+    <PackageReference Include="Xamarin.Forms" Version="4.6.0.800" />
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.10" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SkiEngine.TestApp\SkiEngine.TestApp.csproj">

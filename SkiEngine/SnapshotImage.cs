@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using SkiaSharp;
 
-namespace SkiEngine.Xamarin
+namespace SkiEngine
 {
     public class SnapshotImage
     {
