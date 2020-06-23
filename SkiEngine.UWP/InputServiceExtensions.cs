@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using Windows.Devices.Input;
-using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -11,34 +10,30 @@ namespace SkiEngine.UWP
 {
     public static class InputServiceExtensions
     {
-        public static SkiInputService CreateSkiInputService(this Page _)
+        public static void InitializeSkiInputService(this Page _)
         {
             var window = CoreWindow.GetForCurrentThread();
 
-            var inputService = new SkiInputService
-            {
-                CalculateNumberOfMousePointersFunc = () => 
-                    PointerDevice
-                        .GetPointerDevices()
-                        .Count(pointer => pointer.PointerDeviceType == PointerDeviceType.Mouse),
-                IsInputViewFocusedFunc = () => FocusManager.GetFocusedElement() is TextBox
-            };
-            
+            SkiInputService.Instance.CalculateNumberOfMousePointersFunc = () =>
+                PointerDevice
+                    .GetPointerDevices()
+                    .Count(pointer => pointer.PointerDeviceType == PointerDeviceType.Mouse);
+
+            SkiInputService.Instance.IsInputViewFocusedFunc = () => FocusManager.GetFocusedElement() is TextBox;
+
             window.KeyDown += (sender, args) =>
             {
                 var intKey = (int) args.VirtualKey;
                 var skiVirtualKey = (SkiVirtualKey) intKey;
-                inputService.OnKeyDown(skiVirtualKey);
+                SkiInputService.Instance.OnKeyDown(skiVirtualKey);
             };
 
             window.KeyUp += (sender, args) =>
             {
                 var intKey = (int) args.VirtualKey;
                 var skiVirtualKey = (SkiVirtualKey) intKey;
-                inputService.OnKeyUp(skiVirtualKey);
+                SkiInputService.Instance.OnKeyUp(skiVirtualKey);
             };
-
-            return inputService;
         }
     }
 }

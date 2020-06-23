@@ -6,6 +6,8 @@ namespace SkiEngine.Input
 {
     public class SkiInputService
     {
+        public static SkiInputService Instance { get; } = new SkiInputService();
+
         public event Action<SkiVirtualKey> KeyDown = key => { };
         public event Action<SkiVirtualKey> KeyUp = key => { };
 
@@ -13,8 +15,10 @@ namespace SkiEngine.Input
 
         private readonly Dictionary<SkiVirtualKey, List<SkiKeyBinding>> _keyBindingsMap = new Dictionary<SkiVirtualKey, List<SkiKeyBinding>>();
 
-        public Func<int> CalculateNumberOfMousePointersFunc { private get; set; } = () => 0;
-        public Func<bool> IsInputViewFocusedFunc { private get; set; } = () => false;
+        private SkiInputService() { }
+
+        public Func<int> CalculateNumberOfMousePointersFunc { get; set; } = () => 0;
+        public Func<bool> IsInputViewFocusedFunc { get; set; } = () => false;
 
         public bool IsInputViewFocused => IsInputViewFocusedFunc.Invoke();
 
