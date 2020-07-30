@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.NCS.System;
+using SkiEngine.Touch;
 using SkiEngine.Util;
 
 namespace SkiEngine.NCS
@@ -25,18 +26,19 @@ namespace SkiEngine.NCS
         {
             RootNode = new Node(this, new InitialNodeTransform());
 
-            AddSystem(new UpdateSystem());
-            AddSystem(new CanvasSystem());
+            AddSystem(UpdateSystem);
+            AddSystem(CanvasSystem);
+            AddSystem(SingleTouchInterceptorSystem);
         }
 
         internal volatile int NumberNodes;
         public int NumberOfNodes => NumberNodes;
-
         public Node RootNode { get; }
-
         public bool IsDestroyed { get; private set; }
 
-        public IReadOnlyList<ISystem> Systems => _systems;
+        public UpdateSystem UpdateSystem { get; } = new UpdateSystem();
+        public CanvasSystem CanvasSystem { get; } = new CanvasSystem();
+        public SingleTouchInterceptorSystem SingleTouchInterceptorSystem { get; } = new SingleTouchInterceptorSystem();
 
         public void Start()
         {

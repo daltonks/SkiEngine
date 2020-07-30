@@ -27,7 +27,7 @@ namespace SkiEngine.Input
             result.ActionType = type;
             result.MouseButton = mouseButton;
             result.DeviceType = deviceType;
-            result.Location = location;
+            result.PointPixels = location;
             result.InContact = inContact;
             result.WheelDelta = wheelDelta;
 
@@ -38,7 +38,8 @@ namespace SkiEngine.Input
         public SKTouchAction ActionType { get; set; }
         public SKTouchDeviceType DeviceType { get; set; }
         public SKMouseButton MouseButton { get; set; }
-        public SKPoint Location { get; set; }
+        public SKPoint PointPixels { get; set; }
+        public SKPoint PointWorld { get; set; }
         public bool InContact { get; set; }
         public int WheelDelta { get; set; }
 
