@@ -7,7 +7,7 @@ using SkiEngine.Touch;
 
 namespace SkiEngine.UI
 {
-    public class SkiViewScene
+    public class SkiUiViewScene
     {
         private readonly Scene _scene = new Scene();
         private readonly ConcurrentRenderer _concurrentRenderer;
@@ -17,7 +17,7 @@ namespace SkiEngine.UI
         private readonly Action _invalidateSurface;
         private readonly DiscardMultipleTouchInterceptor _touchInterceptor;
         
-        public SkiViewScene(Action invalidateSurface)
+        public SkiUiViewScene(Action invalidateSurface)
         {
             _invalidateSurface = invalidateSurface;
 
