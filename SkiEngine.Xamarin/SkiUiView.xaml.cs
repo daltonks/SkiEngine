@@ -21,7 +21,7 @@ namespace SkiEngine.Xamarin
 
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
         {
-            _skiUiViewScene.OnPaintSurface(e.Surface.Canvas, e.Info.Width, e.Info.Height, Width, Height);
+            _skiUiViewScene.OnPaintSurface(e.Surface.Canvas, Width, Height);
 
             base.OnPaintSurface(e);
         }
