@@ -31,7 +31,7 @@ namespace SkiEngine.UI
             _scene.Start();
 
             _concurrentRenderer = new ConcurrentRenderer(
-                queueDrawAction: action => SkiUi.RunAsync(action),
+                queueDrawAction: action => SkiUi.RunAsync(action, true),
                 drawAction: Draw,
                 drawCompleteAction: InvalidateSurface
             );
@@ -93,7 +93,10 @@ namespace SkiEngine.UI
 
         public void OnTouch(SkiTouch touch)
         {
-            _touchInterceptor.OnTouch(touch);
+            SkiUi.RunAsync(() => {
+                _touchInterceptor.OnTouch(touch);
+                _concurrentRenderer.TryQueueDraw();
+            });
         }
     }
 }
