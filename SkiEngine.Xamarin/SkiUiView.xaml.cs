@@ -8,7 +8,7 @@ namespace SkiEngine.Xamarin
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class SkiUiView : SKCanvasView
     {
-        private SkiUiViewScene _skiUiViewScene;
+        private SkiUiScene _skiUiScene;
 
         public SkiUiView()
         {
@@ -19,7 +19,7 @@ namespace SkiEngine.Xamarin
         {
             base.OnBindingContextChanged();
 
-            _skiUiViewScene = new SkiUiViewScene(
+            _skiUiScene = new SkiUiScene(
                 (SkiView) BindingContext, 
                 () => Device.BeginInvokeOnMainThread(InvalidateSurface)
             );
@@ -27,7 +27,7 @@ namespace SkiEngine.Xamarin
 
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
         {
-            _skiUiViewScene.OnPaintSurface(e.Surface.Canvas, Width, Height);
+            _skiUiScene.OnPaintSurface(e.Surface.Canvas, Width, Height);
 
             base.OnPaintSurface(e);
         }
@@ -36,7 +36,7 @@ namespace SkiEngine.Xamarin
         {
             e.Handled = true;
 
-            _skiUiViewScene.OnTouch(e.ToSkiTouch());
+            _skiUiScene.OnTouch(e.ToSkiTouch());
 
             base.OnTouch(e);
         }

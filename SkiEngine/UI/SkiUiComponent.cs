@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SkiaSharp;
 using SkiEngine.Camera;
 using SkiEngine.Drawable;
@@ -54,9 +55,41 @@ namespace SkiEngine.UI
             View.Draw(canvas);
         }
 
+        private readonly Dictionary<long, UiPressedTouchTracker> _touchTrackers = new Dictionary<long, UiPressedTouchTracker>();
         public void OnTouch(SkiTouch touch)
         {
+            touch.PointWorld = Camera.PixelToWorldMatrix.MapPoint(touch.PointPixels);
 
+            if (touch.ActionType == SKTouchAction.WheelChanged)
+            {
+
+            }
+            else if (!touch.InContact 
+                     && touch.ActionType != SKTouchAction.Released 
+                     && touch.ActionType != SKTouchAction.Cancelled)
+            {
+
+            }
+            else
+            {
+                switch (touch.ActionType)
+                {
+                    case SKTouchAction.Pressed:
+                        var touchTracker = new UiPressedTouchTracker();
+                        _touchTrackers[touch.Id] = touchTracker;
+                        touchTracker.OnPressed(View, touch);
+                        break;
+                    case SKTouchAction.Moved:
+                        break;
+                    case SKTouchAction.Released:
+                        
+                        break;
+                    case SKTouchAction.Cancelled:
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 }

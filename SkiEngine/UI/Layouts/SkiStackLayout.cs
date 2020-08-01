@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using SkiEngine.Input;
 
 namespace SkiEngine.UI.Layouts
 {
@@ -8,6 +9,8 @@ namespace SkiEngine.UI.Layouts
     {
         private readonly List<SkiView> _children = new List<SkiView>();
         public override IEnumerable<SkiView> Children => _children;
+
+        public override bool ListensForPressedTouches => false;
 
         public void Add(SkiView view)
         {

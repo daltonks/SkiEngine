@@ -6,7 +6,7 @@ using SkiEngine.Input;
 
 namespace SkiEngine.UI
 {
-    public class SkiUiViewScene
+    public class SkiUiScene
     {
         private readonly Scene _scene = new Scene();
         private readonly CanvasComponent _canvasComponent;
@@ -14,7 +14,7 @@ namespace SkiEngine.UI
         private readonly CameraComponent _camera;
         private readonly Action _invalidateSurface;
         
-        public SkiUiViewScene(SkiView view, Action invalidateSurface)
+        public SkiUiScene(SkiView view, Action invalidateSurface)
         {
             _invalidateSurface = invalidateSurface;
 

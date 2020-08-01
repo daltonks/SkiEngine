@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using SkiaSharp;
+using SkiEngine.Input;
 
 namespace SkiEngine.UI.Layouts
 {
@@ -20,6 +21,8 @@ namespace SkiEngine.UI.Layouts
         {
             get { yield return Content; }
         }
+
+        public override bool ListensForPressedTouches => true;
 
         public override void Layout(float maxWidth, float maxHeight)
         {

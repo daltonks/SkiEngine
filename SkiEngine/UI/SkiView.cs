@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SkiaSharp;
+using SkiEngine.Input;
 using SkiEngine.Util;
 
 namespace SkiEngine.UI
@@ -30,6 +31,7 @@ namespace SkiEngine.UI
         }
 
         public abstract IEnumerable<SkiView> Children { get; }
+        public abstract bool ListensForPressedTouches { get; }
 
         public void Initialize(SkiUiComponent uiComponent, Node node)
         {
@@ -38,7 +40,12 @@ namespace SkiEngine.UI
         }
 
         public abstract void Layout(float maxWidth, float maxHeight);
-
         public abstract void Draw(SKCanvas canvas);
+        
+        public bool HitTest(SKPoint pointWorld)
+        {
+            var localPoint = Node.WorldToLocalMatrix.MapPoint(pointWorld);
+            return LocalBounds.Contains(localPoint);
+        }
     }
 }
