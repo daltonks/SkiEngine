@@ -45,6 +45,7 @@ namespace SkiEngine.UI
         public void OnPaintSurface(SKCanvas canvas, double widthDp, double heightDp)
         {
             _scene.Update();
+            _camera.Node.RelativePoint = new SKPoint(canvas.DeviceClipBounds.Width / 2f, canvas.DeviceClipBounds.Height / 2f);
 
             canvas.Clear(BackgroundColor);
             _canvasComponent.StartDraw(canvas, widthDp, heightDp);
