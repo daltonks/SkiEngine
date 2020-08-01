@@ -41,11 +41,31 @@ namespace SkiEngine.UI
 
         public abstract void Layout(float maxWidth, float maxHeight);
         public abstract void Draw(SKCanvas canvas);
-        
+
         public bool HitTest(SKPoint pointWorld)
         {
             var localPoint = Node.WorldToLocalMatrix.MapPoint(pointWorld);
             return LocalBounds.Contains(localPoint);
+        }
+
+        public virtual ViewTouchResult OnPressed(SkiTouch touch)
+        {
+            return ViewTouchResult.Passthrough;
+        }
+
+        public virtual ViewTouchResult OnMoved(SkiTouch touch)
+        {
+            return ViewTouchResult.Passthrough;
+        }
+
+        public virtual ViewTouchResult OnReleased(SkiTouch touch)
+        {
+            return ViewTouchResult.Passthrough;
+        }
+
+        public virtual void OnCancelled(SkiTouch touch)
+        {
+            
         }
     }
 }

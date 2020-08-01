@@ -72,19 +72,27 @@ namespace SkiEngine.UI
             }
             else
             {
+                UiPressedTouchTracker touchTracker;
                 switch (touch.ActionType)
                 {
                     case SKTouchAction.Pressed:
-                        var touchTracker = new UiPressedTouchTracker();
+                        touchTracker = new UiPressedTouchTracker();
                         _touchTrackers[touch.Id] = touchTracker;
                         touchTracker.OnPressed(View, touch);
                         break;
                     case SKTouchAction.Moved:
+                        touchTracker = _touchTrackers[touch.Id];
+                        touchTracker.OnMoved(touch);
                         break;
                     case SKTouchAction.Released:
-                        
+                        touchTracker = _touchTrackers[touch.Id];
+                        touchTracker.OnReleased(touch);
+                        _touchTrackers.Remove(touch.Id);
                         break;
                     case SKTouchAction.Cancelled:
+                        touchTracker = _touchTrackers[touch.Id];
+                        touchTracker.OnCancelled(touch);
+                        _touchTrackers.Remove(touch.Id);
                         break;
                     default:
                         break;

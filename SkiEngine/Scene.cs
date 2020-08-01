@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using SkiEngine.Canvas;
+using SkiEngine.Input;
+using SkiEngine.UI;
 using SkiEngine.Updateable;
 
 namespace SkiEngine
@@ -23,6 +25,7 @@ namespace SkiEngine
 
             AddSystem(UpdateSystem);
             AddSystem(CanvasSystem);
+            AddSystem(UiSystem);
         }
 
         internal volatile int NumberNodes;
@@ -32,7 +35,7 @@ namespace SkiEngine
 
         public UpdateSystem UpdateSystem { get; } = new UpdateSystem();
         public CanvasSystem CanvasSystem { get; } = new CanvasSystem();
-        
+        public UiSystem UiSystem { get; } = new UiSystem();
 
         public void Start()
         {
@@ -115,6 +118,11 @@ namespace SkiEngine
                 _updateStopwatch.Restart();
                 _previousStopwatchElapsed = TimeSpan.Zero;
             }
+        }
+
+        public void OnTouch(SkiTouch touch)
+        {
+            UiSystem.OnTouch(touch);
         }
 
         public void Destroy()

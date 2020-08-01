@@ -59,7 +59,7 @@ namespace SkiEngine.UI
 
         public void OnTouch(SkiTouch touch)
         {
-            UiComponent.OnTouch(touch);
+            _scene.OnTouch(touch);
         }
     }
 }
