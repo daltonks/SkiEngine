@@ -36,8 +36,8 @@ namespace SkiEngine.UI
             }
         }
 
-        private SKSizeI _size;
-        public SKSizeI Size
+        private SKSize _size;
+        public SKSize Size
         {
             get => _size;
             set

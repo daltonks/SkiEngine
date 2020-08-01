@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using SkiaSharp;
 using SkiEngine.Camera;
 using SkiEngine.Canvas;
@@ -26,6 +27,7 @@ namespace SkiEngine.UI
             _scene.RootNode.AddComponent(_canvasComponent);
 
             UiComponent = _scene.RootNode
+                .CreateChild()
                 .AddComponent(new SkiUiComponent(_scene.RootNode, _camera, InvalidateSurface))
                 .AddToCamera(_camera);
 
@@ -41,13 +43,27 @@ namespace SkiEngine.UI
             _invalidateSurface();
         }
 
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         public void OnPaintSurface(SKCanvas canvas, double widthDp, double heightDp)
         {
             _scene.Update();
 
             var widthPixels = canvas.DeviceClipBounds.Width;
             var heightPixels = canvas.DeviceClipBounds.Height;
-            UiComponent.Size = new SKSizeI(widthPixels, heightPixels);
+
+            if (widthDp == 0 || widthDp == 0)
+            {
+                return;
+            }
+
+            var dpScale = (float) (widthPixels / widthDp);
+            var scale = new SKPoint(dpScale, dpScale);
+            if (UiComponent.Node.RelativeScale != scale)
+            {
+                UiComponent.Node.RelativeScale = scale;
+            }
+
+            UiComponent.Size = new SKSize((float) widthDp, (float) heightDp);
             _camera.Node.RelativePoint = new SKPoint(widthPixels / 2f, heightPixels / 2f);
 
             canvas.Clear(BackgroundColor);
