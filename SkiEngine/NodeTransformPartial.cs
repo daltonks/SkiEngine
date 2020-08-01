@@ -3,7 +3,7 @@ using SkiEngine.Util;
 
 // ReSharper disable CompareOfFloatsByEqualityOperator
 
-namespace SkiEngine.Node
+namespace SkiEngine
 {
     public partial class Node
     {

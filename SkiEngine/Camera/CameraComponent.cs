@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.Canvas;
-using SkiEngine.Component;
 using SkiEngine.Drawable;
 using SkiEngine.Util;
 using SkiEngine.Util.Extensions.SkiaSharp;
 
 namespace SkiEngine.Camera
 {
-    public class CameraComponent : Component.Component, IEnumerable<IDrawableComponent>
+    public class CameraComponent : Component, IEnumerable<IDrawableComponent>
     {
         public delegate void EnabledChangedDelegate(CameraComponent component);
         public delegate void DrawOrderChangedDelegate(CameraComponent component, int previousDrawOrder);

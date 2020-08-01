@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using SkiEngine.Component;
 
 namespace SkiEngine.Canvas
 {
@@ -7,7 +6,7 @@ namespace SkiEngine.Canvas
     {
         private readonly HashSet<CanvasComponent> _canvasComponents = new HashSet<CanvasComponent>();
 
-        public void OnNodeZChanged(Node.Node node, float previousZ)
+        public void OnNodeZChanged(Node node, float previousZ)
         {
             foreach (var canvasComponent in _canvasComponents)
             {

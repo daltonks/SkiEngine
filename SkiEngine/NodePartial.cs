@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using SkiaSharp;
-using SkiEngine.Component;
 using SkiEngine.Util;
 
-namespace SkiEngine.Node
+namespace SkiEngine
 {
     public sealed partial class Node : IDestroyable<Node>
     {
@@ -114,7 +113,7 @@ namespace SkiEngine.Node
             }
         }
 
-        public TComponent AddComponent<TComponent>(TComponent component) where TComponent : Component.Component
+        public TComponent AddComponent<TComponent>(TComponent component) where TComponent : Component
         {
             if (component.Node == this)
             {

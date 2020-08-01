@@ -6,7 +6,7 @@ using SkiEngine.Input;
 
 namespace SkiEngine.UI
 {
-    public class SkiUiComponent : Component.Component, IDrawableComponent
+    public class SkiUiComponent : Component, IDrawableComponent
     {
         private readonly Action _invalidateSurface;
 

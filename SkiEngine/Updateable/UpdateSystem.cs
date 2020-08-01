@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using SkiEngine.Component;
 using SkiEngine.Util;
 
 namespace SkiEngine.Updateable
@@ -14,7 +13,7 @@ namespace SkiEngine.Updateable
         private readonly List<IComponent> _componentsToAdd = new List<IComponent>();
         private readonly List<IComponent> _componentsToRemove = new List<IComponent>();
 
-        public void OnNodeZChanged(Node.Node node, float previousZ)
+        public void OnNodeZChanged(Node node, float previousZ)
         {
             
         }

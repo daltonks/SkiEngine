@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace SkiEngine.Component
+namespace SkiEngine
 {
     public abstract class Component : IComponent
     {
         public event Action<IComponent> Destroyed;
 
-        public Node.Node Node { get; internal set; }
+        public Node Node { get; internal set; }
         public bool CreationHandled { get; set; }
         public bool IsDestroyed { get; private set; }
 

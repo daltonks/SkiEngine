@@ -3,7 +3,7 @@ using SkiEngine.Camera;
 
 namespace SkiEngine.Drawable
 {
-    public class DrawableComponent : Component.Component, IDrawableComponent
+    public class DrawableComponent : Component, IDrawableComponent
     {
         public delegate void DrawDelegate(SKCanvas canvas, CameraComponent camera);
 

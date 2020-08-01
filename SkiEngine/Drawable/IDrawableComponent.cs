@@ -1,6 +1,5 @@
 ﻿using SkiaSharp;
 using SkiEngine.Camera;
-using SkiEngine.Component;
 
 namespace SkiEngine.Drawable
 {

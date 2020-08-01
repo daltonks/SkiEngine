@@ -2,12 +2,11 @@
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.Camera;
-using SkiEngine.Component;
 using SkiEngine.Drawable;
 
 namespace SkiEngine.Canvas
 {
-    public class CanvasComponent : Component.Component
+    public class CanvasComponent : Component
     {
         private readonly HashSet<CameraGroup> _cameraGroups = new HashSet<CameraGroup>();
 
@@ -38,7 +37,7 @@ namespace SkiEngine.Canvas
             return cameraGroup;
         }
 
-        public void OnNodeZChanged(Node.Node node, float previousZ)
+        public void OnNodeZChanged(Node node, float previousZ)
         {
             foreach (var drawableComponent in node.Components.OfType<IDrawableComponent>())
             foreach (var group in _cameraGroups)

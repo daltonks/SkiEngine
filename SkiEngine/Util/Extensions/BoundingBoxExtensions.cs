@@ -1,7 +1,6 @@
 ﻿using SkiaSharp;
-using SkiEngine.Util;
 
-namespace SkiEngine.Component
+namespace SkiEngine.Util.Extensions
 {
     public static class BoundingBoxExtensions
     {

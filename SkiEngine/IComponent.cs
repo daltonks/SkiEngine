@@ -1,10 +1,10 @@
 ﻿using SkiEngine.Util;
 
-namespace SkiEngine.Component
+namespace SkiEngine
 {
     public interface IComponent : IDestroyable<IComponent>
     {
-        Node.Node Node { get; }
+        Node Node { get; }
         bool CreationHandled { get; set; }
     }
 }

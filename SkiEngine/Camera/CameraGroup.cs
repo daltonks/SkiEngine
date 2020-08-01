@@ -2,7 +2,6 @@
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.Canvas;
-using SkiEngine.Component;
 using SkiEngine.Drawable;
 using SkiEngine.Util;
 

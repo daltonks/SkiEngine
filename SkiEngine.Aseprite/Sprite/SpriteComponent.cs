@@ -5,7 +5,7 @@ using SkiEngine.Extensions.SkiaSharp;
 
 namespace SkiEngine.NCS.Component.Sprite
 {
-    public class SpriteComponent : SkiEngine.Component.Component, IDrawableComponent
+    public class SpriteComponent : SkiEngine.Component, IDrawableComponent
     {
         public SKImage Image { get; set; }
         public SKPaint Paint { get; set; }

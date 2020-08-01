@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using SkiEngine.Canvas;
-using SkiEngine.Component;
-using SkiEngine.Node;
 using SkiEngine.Updateable;
 
 namespace SkiEngine
@@ -21,7 +19,7 @@ namespace SkiEngine
         
         public Scene()
         {
-            RootNode = new Node.Node(this, new InitialNodeTransform());
+            RootNode = new Node(this, new InitialNodeTransform());
 
             AddSystem(UpdateSystem);
             AddSystem(CanvasSystem);
@@ -29,7 +27,7 @@ namespace SkiEngine
 
         internal volatile int NumberNodes;
         public int NumberOfNodes => NumberNodes;
-        public Node.Node RootNode { get; }
+        public Node RootNode { get; }
         public bool IsDestroyed { get; private set; }
 
         public UpdateSystem UpdateSystem { get; } = new UpdateSystem();
@@ -61,7 +59,7 @@ namespace SkiEngine
             }
         }
 
-        internal void OnNodeZChanged(Node.Node node, float previousZ)
+        internal void OnNodeZChanged(Node node, float previousZ)
         {
             foreach (var system in _systems)
             {

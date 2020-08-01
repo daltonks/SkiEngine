@@ -1,6 +1,4 @@
-﻿using SkiEngine.Component;
-
-namespace SkiEngine.Updateable
+﻿namespace SkiEngine.Updateable
 {
     public interface IUpdateableComponent : IComponent
     {
