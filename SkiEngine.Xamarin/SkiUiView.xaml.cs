@@ -6,15 +6,16 @@ using Xamarin.Forms.Xaml;
 namespace SkiEngine.Xamarin
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class SkiView : SKCanvasView
+    public partial class SkiUiView : SKCanvasView
     {
         private readonly SkiUiViewScene _skiUiViewScene;
 
-        public SkiView()
+        public SkiUiView()
         {
             InitializeComponent();
 
             _skiUiViewScene = new SkiUiViewScene(
+                (SkiView) BindingContext, 
                 () => Device.BeginInvokeOnMainThread(InvalidateSurface)
             );
         }

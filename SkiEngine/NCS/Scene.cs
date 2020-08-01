@@ -1,13 +1,8 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using SkiEngine.NCS.Component.Base;
 using SkiEngine.NCS.System;
-using SkiEngine.Touch;
-using SkiEngine.Util;
 
 namespace SkiEngine.NCS
 {
@@ -28,7 +23,6 @@ namespace SkiEngine.NCS
 
             AddSystem(UpdateSystem);
             AddSystem(CanvasSystem);
-            AddSystem(SingleTouchInterceptorSystem);
         }
 
         internal volatile int NumberNodes;
@@ -38,7 +32,7 @@ namespace SkiEngine.NCS
 
         public UpdateSystem UpdateSystem { get; } = new UpdateSystem();
         public CanvasSystem CanvasSystem { get; } = new CanvasSystem();
-        public SingleTouchInterceptorSystem SingleTouchInterceptorSystem { get; } = new SingleTouchInterceptorSystem();
+        
 
         public void Start()
         {

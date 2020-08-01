@@ -3,7 +3,6 @@ using SkiaSharp;
 using SkiEngine.Input;
 using SkiEngine.NCS;
 using SkiEngine.NCS.Component.Camera;
-using SkiEngine.Touch;
 
 namespace SkiEngine.UI
 {
@@ -14,9 +13,8 @@ namespace SkiEngine.UI
         private readonly CameraGroup _cameraGroup;
         private readonly CameraComponent _camera;
         private readonly Action _invalidateSurface;
-        private readonly DiscardMultipleTouchInterceptor _touchInterceptor;
         
-        public SkiUiViewScene(Action invalidateSurface)
+        public SkiUiViewScene(SkiView view, Action invalidateSurface)
         {
             _invalidateSurface = invalidateSurface;
 
@@ -27,13 +25,13 @@ namespace SkiEngine.UI
                 .AddComponent(new CameraComponent(_cameraGroup, 0));
             _scene.RootNode.AddComponent(_canvasComponent);
 
-            _scene.Start();
+            UiComponent = new SkiUiComponent(view, _camera, InvalidateSurface);
+            _scene.RootNode.AddComponent(UiComponent);
 
-            _touchInterceptor = new DiscardMultipleTouchInterceptor(
-                new SingleTouchInterceptorSystemTouchHandler(null, _scene.SingleTouchInterceptorSystem)
-            );
+            _scene.Start();
         }
 
+        public SkiUiComponent UiComponent { get; }
         public SKColor BackgroundColor { get; set; }
 
         public void InvalidateSurface()
@@ -53,8 +51,7 @@ namespace SkiEngine.UI
 
         public void OnTouch(SkiTouch touch)
         {
-            _touchInterceptor.OnTouch(touch);
-            InvalidateSurface();
+            UiComponent.OnTouch(touch);
         }
     }
 }
