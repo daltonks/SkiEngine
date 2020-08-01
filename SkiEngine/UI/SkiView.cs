@@ -30,6 +30,8 @@ namespace SkiEngine.UI
             }
         }
 
+        public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(LocalBounds);
+
         public abstract IEnumerable<SkiView> Children { get; }
         public abstract bool ListensForPressedTouches { get; }
 
@@ -55,6 +57,11 @@ namespace SkiEngine.UI
         protected abstract void OnNodeChanged();
         public abstract void Layout(float maxWidth, float maxHeight);
         public abstract void Draw(SKCanvas canvas);
+
+        public void InvalidateSurface()
+        {
+            UiComponent.InvalidateSurface();
+        }
 
         public bool HitTest(SKPoint pointWorld)
         {

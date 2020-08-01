@@ -52,6 +52,11 @@ namespace SkiEngine.UI
             }
         }
 
+        public void InvalidateSurface()
+        {
+            _invalidateSurface();
+        }
+
         public void Draw(SKCanvas canvas, CameraComponent camera)
         {
             View.Draw(canvas);
