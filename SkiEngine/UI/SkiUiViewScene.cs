@@ -1,8 +1,8 @@
 ﻿using System;
 using SkiaSharp;
+using SkiEngine.Camera;
+using SkiEngine.Canvas;
 using SkiEngine.Input;
-using SkiEngine.NCS;
-using SkiEngine.NCS.Component.Camera;
 
 namespace SkiEngine.UI
 {
@@ -45,7 +45,11 @@ namespace SkiEngine.UI
         public void OnPaintSurface(SKCanvas canvas, double widthDp, double heightDp)
         {
             _scene.Update();
-            _camera.Node.RelativePoint = new SKPoint(canvas.DeviceClipBounds.Width / 2f, canvas.DeviceClipBounds.Height / 2f);
+
+            var widthPixels = canvas.DeviceClipBounds.Width;
+            var heightPixels = canvas.DeviceClipBounds.Height;
+            UiComponent.Size = new SKSizeI(widthPixels, heightPixels);
+            _camera.Node.RelativePoint = new SKPoint(widthPixels / 2f, heightPixels / 2f);
 
             canvas.Clear(BackgroundColor);
             _canvasComponent.StartDraw(canvas, widthDp, heightDp);

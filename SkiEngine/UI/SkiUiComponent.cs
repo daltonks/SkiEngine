@@ -1,14 +1,12 @@
 ﻿using System;
 using SkiaSharp;
+using SkiEngine.Camera;
+using SkiEngine.Drawable;
 using SkiEngine.Input;
-using SkiEngine.NCS;
-using SkiEngine.NCS.Component.Base;
-using SkiEngine.NCS.Component.Camera;
-using SkiEngine.NCS.System;
 
 namespace SkiEngine.UI
 {
-    public class SkiUiComponent : Component, IUpdateableComponent, IDrawableComponent
+    public class SkiUiComponent : Component.Component, IDrawableComponent
     {
         private readonly Action _invalidateSurface;
 
@@ -16,7 +14,6 @@ namespace SkiEngine.UI
         {
             Camera = camera;
             _invalidateSurface = invalidateSurface;
-            UpdateablePart = new UpdateableComponentPart(Update);
         }
 
         public CameraComponent Camera { get; }
@@ -29,24 +26,26 @@ namespace SkiEngine.UI
             {
                 value.Initialize(this, Node);
                 _view = value;
-                if (_width != 0 && _height != 0)
+                if (Size.Width != 0 && Size.Height != 0)
                 {
-                    View.Layout(_width, _height);
+                    View.Layout(Size.Width, Size.Height);
                 }
             }
         }
 
-        public UpdateableComponentPart UpdateablePart { get; }
-
-        private int _width;
-        private int _height;
-        private void Update(UpdateTime updateTime)
+        private SKSizeI _size;
+        public SKSizeI Size
         {
-            if (Camera.PixelViewport.Width != _width || Camera.PixelViewport.Height != _height)
+            get => _size;
+            set
             {
-                _width = Camera.PixelViewport.Width;
-                _height = Camera.PixelViewport.Height;
-                View.Layout(_width, _height);
+                if (_size == value)
+                {
+                    return;
+                }
+
+                _size = value;
+                View.Layout(_size.Width, _size.Height);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using SkiEngine.NCS.Component.Sprite;
 using SkiEngine.Protobuf;
+using SkiEngine.Util.Extensions.Protobuf;
 
 namespace SkiEngine.Extensions.Protobuf.Sprite
 {

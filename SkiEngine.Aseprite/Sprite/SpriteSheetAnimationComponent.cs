@@ -1,13 +1,13 @@
 ﻿using System;
 using SkiaSharp;
+using SkiEngine.Camera;
+using SkiEngine.Drawable;
 using SkiEngine.Extensions.SkiaSharp;
-using SkiEngine.NCS.Component.Base;
-using SkiEngine.NCS.Component.Camera;
-using SkiEngine.NCS.System;
+using SkiEngine.Updateable;
 
 namespace SkiEngine.NCS.Component.Sprite
 {
-    public class SpriteSheetAnimationComponent<TState, TLayer> : Base.Component, IDrawableComponent, IUpdateableComponent
+    public class SpriteSheetAnimationComponent<TState, TLayer> : SkiEngine.Component.Component, IDrawableComponent, IUpdateableComponent
     {
         public SKImage Image { get; set; }
         public SKPaint Paint { get; set; }

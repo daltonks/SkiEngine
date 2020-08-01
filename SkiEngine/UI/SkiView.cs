@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using SkiaSharp;
-using SkiEngine.NCS;
 using SkiEngine.Util;
 
 namespace SkiEngine.UI
@@ -11,7 +10,7 @@ namespace SkiEngine.UI
         public event Action<SKRect, SKRect> LocalBoundsChanged;
 
         public SkiUiComponent UiComponent { get; private set; }
-        public Node Node { get; private set; }
+        public Node.Node Node { get; private set; }
 
         private SKRect _localBounds;
         public SKRect LocalBounds
@@ -32,7 +31,7 @@ namespace SkiEngine.UI
 
         public abstract IEnumerable<SkiView> Children { get; }
 
-        public void Initialize(SkiUiComponent uiComponent, Node node)
+        public void Initialize(SkiUiComponent uiComponent, Node.Node node)
         {
             UiComponent = uiComponent;
             Node = node;
