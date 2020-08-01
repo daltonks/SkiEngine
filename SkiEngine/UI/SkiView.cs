@@ -33,12 +33,26 @@ namespace SkiEngine.UI
         public abstract IEnumerable<SkiView> Children { get; }
         public abstract bool ListensForPressedTouches { get; }
 
-        public void Initialize(SkiUiComponent uiComponent, Node node)
+        public void CreateChildNode(SkiView child, InitialNodeTransform transform = null)
         {
-            UiComponent = uiComponent;
-            Node = node;
+            if (Node != null)
+            {
+                child.SetNode(UiComponent, Node.CreateChild(transform ?? new InitialNodeTransform()));
+            }
         }
 
+        public void SetNode(SkiUiComponent uiComponent, Node node)
+        {
+            UiComponent = uiComponent;
+            if (Node != node)
+            {
+                Node?.Destroy();
+                Node = node;
+                OnNodeChanged();
+            }
+        }
+
+        protected abstract void OnNodeChanged();
         public abstract void Layout(float maxWidth, float maxHeight);
         public abstract void Draw(SKCanvas canvas);
 

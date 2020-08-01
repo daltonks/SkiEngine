@@ -11,8 +11,9 @@ namespace SkiEngine.UI
     {
         private readonly Action _invalidateSurface;
 
-        public SkiUiComponent(CameraComponent camera, Action invalidateSurface)
+        public SkiUiComponent(Node node, CameraComponent camera, Action invalidateSurface)
         {
+            Node = node;
             Camera = camera;
             _invalidateSurface = invalidateSurface;
         }
@@ -25,7 +26,8 @@ namespace SkiEngine.UI
             get => _view;
             set
             {
-                value.Initialize(this, Node);
+                _view?.Node.Destroy();
+                value.SetNode(this, Node.CreateChild());
                 _view = value;
                 if (Size.Width != 0 && Size.Height != 0)
                 {
@@ -76,7 +78,7 @@ namespace SkiEngine.UI
                 switch (touch.ActionType)
                 {
                     case SKTouchAction.Pressed:
-                        touchTracker = new UiPressedTouchTracker();
+                        touchTracker = UiPressedTouchTracker.Get();
                         _touchTrackers[touch.Id] = touchTracker;
                         touchTracker.OnPressed(View, touch);
                         break;
@@ -88,11 +90,13 @@ namespace SkiEngine.UI
                         touchTracker = _touchTrackers[touch.Id];
                         touchTracker.OnReleased(touch);
                         _touchTrackers.Remove(touch.Id);
+                        touchTracker.Recycle();
                         break;
                     case SKTouchAction.Cancelled:
                         touchTracker = _touchTrackers[touch.Id];
                         touchTracker.OnCancelled(touch);
                         _touchTrackers.Remove(touch.Id);
+                        touchTracker.Recycle();
                         break;
                     default:
                         break;

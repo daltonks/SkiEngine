@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SkiaSharp;
 using SkiEngine.Input;
 
@@ -12,21 +13,35 @@ namespace SkiEngine.UI.Layouts
 
         public override bool ListensForPressedTouches => false;
 
+        protected override void OnNodeChanged()
+        {
+            var copiedChildren = _children.ToList();
+            _children.Clear();
+            foreach (var child in copiedChildren)
+            {
+                Add(child);
+            }
+        }
+
         public void Add(SkiView view)
         {
-            view.Initialize(UiComponent, Node.CreateChild(new SKPoint(0, LocalBounds.Height)));
             _children.Add(view);
 
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (LocalBounds.Width != 0)
+            if (Node != null)
             {
-                view.Layout(LocalBounds.Width, float.MaxValue);
-                LocalBounds = new SKRect(
-                    0, 
-                    0, 
-                    Math.Max(view.LocalBounds.Width, LocalBounds.Width), 
-                    LocalBounds.Height + view.LocalBounds.Height
-                );
+                CreateChildNode(view, new InitialNodeTransform(new SKPoint(0, LocalBounds.Height)));
+
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if (LocalBounds.Width != 0)
+                {
+                    view.Layout(LocalBounds.Width, float.MaxValue);
+                    LocalBounds = new SKRect(
+                        0, 
+                        0, 
+                        Math.Max(view.LocalBounds.Width, LocalBounds.Width), 
+                        LocalBounds.Height + view.LocalBounds.Height
+                    );
+                }
             }
         }
 

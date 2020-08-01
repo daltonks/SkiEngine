@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using SkiEngine.Input;
 
@@ -6,6 +7,17 @@ namespace SkiEngine.UI
 {
     public class UiPressedTouchTracker
     {
+        private static readonly ConcurrentBag<UiPressedTouchTracker> Cached = new ConcurrentBag<UiPressedTouchTracker>();
+
+        public static UiPressedTouchTracker Get()
+        {
+            return Cached.TryTake(out var cachedTracker) 
+                ? cachedTracker 
+                : new UiPressedTouchTracker();
+        }
+
+        private UiPressedTouchTracker() { }
+
         private readonly List<SkiView> _listeners = new List<SkiView>();
 
         public void OnPressed(SkiView rootView, SkiTouch touch)
@@ -87,6 +99,12 @@ namespace SkiEngine.UI
                     break;
                 }
             }
+        }
+
+        public void Recycle()
+        {
+            _listeners.Clear();
+            Cached.Add(this);
         }
     }
 

@@ -12,7 +12,8 @@ namespace SkiEngine.UI.Layouts
             get => _content;
             set
             {
-                value.Initialize(UiComponent, Node);
+                _content?.Node.Destroy();
+                CreateChildNode(value);
                 _content = value;
             }
         }
@@ -23,6 +24,11 @@ namespace SkiEngine.UI.Layouts
         }
 
         public override bool ListensForPressedTouches => true;
+
+        protected override void OnNodeChanged()
+        {
+            CreateChildNode(Content);
+        }
 
         public override void Layout(float maxWidth, float maxHeight)
         {
@@ -36,6 +42,16 @@ namespace SkiEngine.UI.Layouts
             canvas.ClipRect(LocalBounds);
             Content.Draw(canvas);
             canvas.Restore();
+        }
+
+        public override ViewTouchResult OnPressed(SkiTouch touch)
+        {
+            return ViewTouchResult.CancelLowerListeners;
+        }
+
+        public override ViewTouchResult OnMoved(SkiTouch touch)
+        {
+            return ViewTouchResult.CancelLowerListeners;
         }
     }
 }

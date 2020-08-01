@@ -8,21 +8,22 @@ namespace SkiEngine.Xamarin
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class SkiUiView : SKCanvasView
     {
-        private SkiUiScene _skiUiScene;
+        private readonly SkiUiScene _skiUiScene;
 
         public SkiUiView()
         {
             InitializeComponent();
+
+            _skiUiScene = new SkiUiScene(
+                () => Device.BeginInvokeOnMainThread(InvalidateSurface)
+            );
         }
 
         protected override void OnBindingContextChanged()
         {
             base.OnBindingContextChanged();
 
-            _skiUiScene = new SkiUiScene(
-                (SkiView) BindingContext, 
-                () => Device.BeginInvokeOnMainThread(InvalidateSurface)
-            );
+            _skiUiScene.UiComponent.View = (SkiView) BindingContext;
         }
 
         protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
