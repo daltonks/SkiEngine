@@ -9,7 +9,7 @@ using SkiEngine.Util;
 
 namespace SkiEngine.NCS
 {
-    public partial class Node : IDestroyable<Node>
+    public sealed partial class Node : IDestroyable<Node>
     {
         public event Action<Node> Destroyed;
 

@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using SkiaSharp;
-using SkiEngine.Input;
-using SkiEngine.NCS.Component.Camera;
 
 namespace SkiEngine.UI
 {
@@ -23,11 +21,17 @@ namespace SkiEngine.UI
             get { yield return Content; }
         }
 
-        public override void Draw(SKCanvas canvas, CameraComponent camera)
+        public override void Layout(float maxWidth, float maxHeight)
+        {
+            LocalBounds = new SKRect(0, 0, maxWidth, maxHeight);
+            Content.Layout(maxWidth, maxHeight);
+        }
+
+        public override void Draw(SKCanvas canvas)
         {
             canvas.Save();
             canvas.ClipRect(LocalBounds);
-            Content.Draw(canvas, camera);
+            Content.Draw(canvas);
             canvas.Restore();
         }
     }

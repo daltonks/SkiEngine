@@ -8,11 +8,16 @@ namespace SkiEngine.Xamarin
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class SkiUiView : SKCanvasView
     {
-        private readonly SkiUiViewScene _skiUiViewScene;
+        private SkiUiViewScene _skiUiViewScene;
 
         public SkiUiView()
         {
             InitializeComponent();
+        }
+
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
 
             _skiUiViewScene = new SkiUiViewScene(
                 (SkiView) BindingContext, 

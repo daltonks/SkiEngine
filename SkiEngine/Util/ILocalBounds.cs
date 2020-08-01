@@ -4,6 +4,6 @@ namespace SkiEngine.Util
 {
     public interface ILocalBounds
     {
-        ref SKRect LocalBounds { get; }
+        SKRect LocalBounds { get; }
     }
 }

@@ -25,10 +25,13 @@ namespace SkiEngine.UI
                 .AddComponent(new CameraComponent(_cameraGroup, 0));
             _scene.RootNode.AddComponent(_canvasComponent);
 
-            UiComponent = new SkiUiComponent(view, _camera, InvalidateSurface);
-            _scene.RootNode.AddComponent(UiComponent);
+            UiComponent = _scene.RootNode
+                .AddComponent(new SkiUiComponent(_camera, InvalidateSurface))
+                .AddToCamera(_camera);
+            UiComponent.View = view;
 
             _scene.Start();
+            InvalidateSurface();
         }
 
         public SkiUiComponent UiComponent { get; }

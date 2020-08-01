@@ -10,16 +10,16 @@ namespace SkiEngine.UI
 {
     public class SkiUiComponent : Component, IUpdateableComponent, IDrawableComponent
     {
-        private readonly CameraComponent _camera;
         private readonly Action _invalidateSurface;
 
-        public SkiUiComponent(SkiView view, CameraComponent camera, Action invalidateSurface)
+        public SkiUiComponent(CameraComponent camera, Action invalidateSurface)
         {
-            View = view;
-            _camera = camera;
+            Camera = camera;
             _invalidateSurface = invalidateSurface;
             UpdateablePart = new UpdateableComponentPart(Update);
         }
+
+        public CameraComponent Camera { get; }
 
         private SkiView _view;
         public SkiView View
@@ -29,19 +29,30 @@ namespace SkiEngine.UI
             {
                 value.Initialize(this, Node);
                 _view = value;
+                if (_width != 0 && _height != 0)
+                {
+                    View.Layout(_width, _height);
+                }
             }
         }
 
         public UpdateableComponentPart UpdateablePart { get; }
 
+        private int _width;
+        private int _height;
         private void Update(UpdateTime updateTime)
         {
-            
+            if (Camera.PixelViewport.Width != _width || Camera.PixelViewport.Height != _height)
+            {
+                _width = Camera.PixelViewport.Width;
+                _height = Camera.PixelViewport.Height;
+                View.Layout(_width, _height);
+            }
         }
 
         public void Draw(SKCanvas canvas, CameraComponent camera)
         {
-            View.Draw(canvas, camera);
+            View.Draw(canvas);
         }
 
         public void OnTouch(SkiTouch touch)
