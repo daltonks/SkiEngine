@@ -38,14 +38,21 @@ namespace SkiEngine.UI
         public SkiUiComponent UiComponent { get; }
         public SKColor BackgroundColor { get; set; }
 
+        private bool _waitingForDraw;
         public void InvalidateSurface()
         {
+            if (_waitingForDraw)
+            {
+                return;
+            }
+            _waitingForDraw = true;
             _invalidateSurface();
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         public void OnPaintSurface(SKCanvas canvas, double widthDp, double heightDp)
         {
+            _waitingForDraw = false;
             _scene.Update();
 
             var widthPixels = canvas.DeviceClipBounds.Width;
