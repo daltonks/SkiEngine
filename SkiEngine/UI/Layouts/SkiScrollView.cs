@@ -34,7 +34,7 @@ namespace SkiEngine.UI.Layouts
 
         private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
         {
-            Scroll(0);
+            AdjustScrollIfOutOfBounds();
         }
 
         public override IEnumerable<SkiView> Children
@@ -46,16 +46,20 @@ namespace SkiEngine.UI.Layouts
 
         public void Scroll(float yDelta)
         {
-            var point = new SKPoint(Content.Node.RelativePoint.X, Content.Node.RelativePoint.Y + yDelta);
-            if (point.Y > 0)
+            Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, Content.Node.RelativePoint.Y + yDelta);
+            AdjustScrollIfOutOfBounds();
+        }
+
+        private void AdjustScrollIfOutOfBounds()
+        {
+            if (Content.Node.RelativePoint.Y > 0)
             {
-                point.Y = 0;
+                Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, 0);
             }
-            else if (point.Y < -Content.Size.Height + Size.Height)
+            else if (Content.Node.RelativePoint.Y < -Content.Size.Height + Size.Height)
             {
-                point.Y = -Content.Size.Height + Size.Height;
+                Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, -Content.Size.Height + Size.Height);
             }
-            Content.Node.RelativePoint = point;
         }
 
         protected override void OnNodeChanged()
@@ -67,7 +71,7 @@ namespace SkiEngine.UI.Layouts
         {
             Size = new SKSize(maxWidth, maxHeight);
             Content.Layout(maxWidth, float.MaxValue);
-            Scroll(0);
+            AdjustScrollIfOutOfBounds();
         }
 
         protected override void DrawInternal(SKCanvas canvas)
