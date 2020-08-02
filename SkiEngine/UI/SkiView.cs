@@ -6,31 +6,31 @@ using SkiEngine.Util;
 
 namespace SkiEngine.UI
 {
-    public abstract class SkiView : ILocalBounds
+    public abstract class SkiView
     {
-        public event Action<SKRect, SKRect> LocalBoundsChanged;
+        public event Action<SKSize, SKSize> SizeChanged;
 
         public SkiUiComponent UiComponent { get; private set; }
         public Node Node { get; private set; }
 
-        private SKRect _localBounds;
-        public SKRect LocalBounds
+        private SKSize _size;
+        public SKSize Size
         {
-            get => _localBounds;
-            set
+            get => _size;
+            protected set
             {
-                if (_localBounds == value)
+                if (_size == value)
                 {
                     return;
                 }
 
-                var previous = _localBounds;
-                _localBounds = value;
-                LocalBoundsChanged?.Invoke(previous, value);
+                var previous = _size;
+                _size = value;
+                SizeChanged?.Invoke(previous, value);
             }
         }
 
-        public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(LocalBounds);
+        public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Width, Size.Height));
 
         public abstract IEnumerable<SkiView> Children { get; }
         public abstract bool ListensForPressedTouches { get; }
@@ -56,7 +56,20 @@ namespace SkiEngine.UI
 
         protected abstract void OnNodeChanged();
         public abstract void Layout(float maxWidth, float maxHeight);
-        public abstract void Draw(SKCanvas canvas);
+        protected abstract void DrawInternal(SKCanvas canvas);
+
+        public void Draw(SKCanvas canvas)
+        {
+            var drawMatrix = Node.LocalToWorldMatrix.PostConcat(UiComponent.Camera.WorldToPixelMatrix);
+            canvas.SetMatrix(drawMatrix);
+
+            if (canvas.QuickReject(new SKRect(0, 0, Size.Width, Size.Height)))
+            {
+                return;
+            }
+
+            DrawInternal(canvas);
+        }
 
         public void InvalidateSurface()
         {
@@ -66,7 +79,7 @@ namespace SkiEngine.UI
         public bool HitTest(SKPoint pointWorld)
         {
             var localPoint = Node.WorldToLocalMatrix.MapPoint(pointWorld);
-            return LocalBounds.Contains(localPoint);
+            return new SKRect(0, 0, Size.Width, Size.Height).Contains(localPoint);
         }
 
         public virtual ViewTouchResult OnPressed(SkiTouch touch)

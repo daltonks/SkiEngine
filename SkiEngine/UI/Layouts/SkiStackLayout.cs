@@ -29,17 +29,15 @@ namespace SkiEngine.UI.Layouts
 
             if (Node != null)
             {
-                CreateChildNode(view, new InitialNodeTransform(new SKPoint(0, LocalBounds.Height)));
+                CreateChildNode(view, new InitialNodeTransform(new SKPoint(0, Size.Height)));
 
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
-                if (LocalBounds.Width != 0)
+                if (Size.Width != 0)
                 {
-                    view.Layout(LocalBounds.Width, float.MaxValue);
-                    LocalBounds = new SKRect(
-                        0, 
-                        0, 
-                        Math.Max(view.LocalBounds.Width, LocalBounds.Width), 
-                        LocalBounds.Height + view.LocalBounds.Height
+                    view.Layout(Size.Width, float.MaxValue);
+                    Size = new SKSize(
+                        Math.Max(view.Size.Width, Size.Width), 
+                        Size.Height + view.Size.Height
                     );
                 }
             }
@@ -48,23 +46,22 @@ namespace SkiEngine.UI.Layouts
         public override void Layout(float maxWidth, float maxHeight)
         {
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (maxWidth == LocalBounds.Width)
+            if (maxWidth == Size.Width)
             {
                 return;
             }
 
-            var width = maxWidth;
             var height = 0f;
             foreach (var child in Children)
             {
                 child.Node.RelativePoint = new SKPoint(0, height);
                 child.Layout(maxWidth, float.MaxValue);
-                height += child.LocalBounds.Height;
+                height += child.Size.Height;
             }
-            LocalBounds = new SKRect(0, 0, width, height);
+            Size = new SKSize(maxWidth, height);
         }
 
-        public override void Draw(SKCanvas canvas)
+        protected override void DrawInternal(SKCanvas canvas)
         {
             foreach (var view in Children)
             {

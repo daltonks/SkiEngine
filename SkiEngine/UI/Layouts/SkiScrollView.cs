@@ -20,10 +20,21 @@ namespace SkiEngine.UI.Layouts
             get => _content;
             set
             {
-                _content?.Node.Destroy();
+                if (_content != null)
+                {
+                    _content.Node.Destroy();
+                    _content.SizeChanged -= OnContentSizeChanged;
+                }
+                
                 CreateChildNode(value);
                 _content = value;
+                _content.SizeChanged += OnContentSizeChanged;
             }
+        }
+
+        private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
+        {
+            Scroll(0);
         }
 
         public override IEnumerable<SkiView> Children
@@ -33,6 +44,20 @@ namespace SkiEngine.UI.Layouts
 
         public override bool ListensForPressedTouches => true;
 
+        public void Scroll(float yDelta)
+        {
+            var point = new SKPoint(Content.Node.RelativePoint.X, Content.Node.RelativePoint.Y + yDelta);
+            if (point.Y > 0)
+            {
+                point.Y = 0;
+            }
+            else if (point.Y < -Content.Size.Height + Size.Height)
+            {
+                point.Y = -Content.Size.Height + Size.Height;
+            }
+            Content.Node.RelativePoint = point;
+        }
+
         protected override void OnNodeChanged()
         {
             CreateChildNode(Content);
@@ -40,14 +65,16 @@ namespace SkiEngine.UI.Layouts
 
         public override void Layout(float maxWidth, float maxHeight)
         {
-            LocalBounds = new SKRect(0, 0, maxWidth, maxHeight);
-            Content.Layout(maxWidth, maxHeight);
+            Size = new SKSize(maxWidth, maxHeight);
+            Content.Layout(maxWidth, float.MaxValue);
+            Scroll(0);
         }
 
-        public override void Draw(SKCanvas canvas)
+        protected override void DrawInternal(SKCanvas canvas)
         {
             canvas.Save();
-            canvas.ClipRect(LocalBounds);
+            var skRect = new SKRect(0, 0, Size.Width, Size.Height);
+            canvas.ClipRect(skRect);
             Content.Draw(canvas);
             canvas.Restore();
         }
@@ -75,18 +102,19 @@ namespace SkiEngine.UI.Layouts
             _touchInterceptor.OnTouch(touch);
         }
 
-        private SKPoint _previousPointLocal;
+        private SKPoint _previousPointPixels;
         public void OnTouchPressed(SkiTouch touch)
         {
-            _previousPointLocal = Node.WorldToLocalMatrix.MapPoint(touch.PointWorld);
+            _previousPointPixels = touch.PointPixels;
         }
 
         public void OnTouchMoved(SkiTouch touch)
         {
-            var pointLocal = Node.WorldToLocalMatrix.MapPoint(touch.PointWorld);
-            var difference = pointLocal - _previousPointLocal;
-            Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, Content.Node.RelativePoint.Y + difference.Y);
-            _previousPointLocal = pointLocal;
+            var differenceLocal = UiComponent.Camera.PixelToWorldMatrix
+                .PostConcat(Node.WorldToLocalMatrix)
+                .MapVector(touch.PointPixels - _previousPointPixels);
+            Scroll(differenceLocal.Y);
+            _previousPointPixels = touch.PointPixels;
             InvalidateSurface();
         }
 
