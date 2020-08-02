@@ -70,6 +70,10 @@ namespace SkiEngine
             get => _relativePoint;
             set
             {
+                if (_relativePoint == value)
+                {
+                    return;
+                }
                 _relativePoint = value;
                 SetMatricesDirty();
             }
@@ -121,7 +125,12 @@ namespace SkiEngine
             get => _relativeRotation;
             set
             {
-                _relativeRotation = (float) RotationUtil.WrapRotation(value);
+                value = (float) RotationUtil.WrapRotation(value);
+                if (_relativeRotation == value)
+                {
+                    return;
+                }
+                _relativeRotation = value;
                 SetMatricesDirty();
             }
         }
@@ -132,6 +141,10 @@ namespace SkiEngine
             get => _relativeScale;
             set
             {
+                if (_relativeScale == value)
+                {
+                    return;
+                }
                 _relativeScale = value;
                 SetMatricesDirty();
             }

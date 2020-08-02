@@ -65,10 +65,7 @@ namespace SkiEngine.UI
 
             var dpScale = (float) (widthPixels / widthDp);
             var scale = new SKPoint(dpScale, dpScale);
-            if (UiComponent.Node.RelativeScale != scale)
-            {
-                UiComponent.Node.RelativeScale = scale;
-            }
+            UiComponent.Node.RelativeScale = scale;
 
             UiComponent.Size = new SKSize((float) widthDp, (float) heightDp);
             _camera.Node.RelativePoint = new SKPoint(widthPixels / 2f, heightPixels / 2f);
