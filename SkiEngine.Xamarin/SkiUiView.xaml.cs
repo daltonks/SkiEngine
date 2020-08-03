@@ -1,6 +1,9 @@
-﻿using SkiaSharp.Views.Forms;
+﻿using System;
+using SkiaSharp.Views.Forms;
 using SkiEngine.UI;
+using Xamarin.Essentials;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 
 namespace SkiEngine.Xamarin
@@ -13,9 +16,20 @@ namespace SkiEngine.Xamarin
         public SkiUiView()
         {
             InitializeComponent();
-
+            
             _skiUiScene = new SkiUiScene(
-                () => Device.BeginInvokeOnMainThread(InvalidateSurface)
+                () => MainThread.BeginInvokeOnMainThread(InvalidateSurface),
+                skiAnimation => new Animation(
+                    skiAnimation.Callback, 
+                    skiAnimation.Start, 
+                    skiAnimation.End,
+                    Easing.SinOut,
+                    skiAnimation.Finished
+                ).Commit(
+                    this, 
+                    Guid.NewGuid().ToString(), 
+                    length: (uint) skiAnimation.Length.Milliseconds
+                )
             );
         }
 

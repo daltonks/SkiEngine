@@ -14,8 +14,8 @@ namespace SkiEngine.UI
         private readonly CameraGroup _cameraGroup;
         private readonly CameraComponent _camera;
         private readonly Action _invalidateSurface;
-        
-        public SkiUiScene(Action invalidateSurface)
+
+        public SkiUiScene(Action invalidateSurface, Action<SkiAnimation> startAnimation)
         {
             _invalidateSurface = invalidateSurface;
 
@@ -28,7 +28,7 @@ namespace SkiEngine.UI
 
             UiComponent = _scene.RootNode
                 .CreateChild()
-                .AddComponent(new SkiUiComponent(_scene.RootNode, _camera, InvalidateSurface))
+                .AddComponent(new SkiUiComponent(_scene.RootNode, _camera, InvalidateSurface, startAnimation))
                 .AddToCamera(_camera);
 
             _scene.Start();
@@ -38,30 +38,30 @@ namespace SkiEngine.UI
         public SkiUiComponent UiComponent { get; }
         public SKColor BackgroundColor { get; set; }
 
-        private bool _waitingForDraw;
+        private bool _drawPending;
         public void InvalidateSurface()
         {
-            if (_waitingForDraw)
+            if (_drawPending)
             {
                 return;
             }
-            _waitingForDraw = true;
+            _drawPending = true;
             _invalidateSurface();
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         public void OnPaintSurface(SKCanvas canvas, double widthDp, double heightDp)
         {
-            _waitingForDraw = false;
             _scene.Update();
-
-            var widthPixels = canvas.DeviceClipBounds.Width;
-            var heightPixels = canvas.DeviceClipBounds.Height;
+            _drawPending = false;
 
             if (widthDp == 0 || widthDp == 0)
             {
                 return;
             }
+
+            var widthPixels = canvas.DeviceClipBounds.Width;
+            var heightPixels = canvas.DeviceClipBounds.Height;
 
             var dpScale = (float) (widthPixels / widthDp);
             var scale = new SKPoint(dpScale, dpScale);

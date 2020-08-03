@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using SkiaSharp;
 using SkiEngine.Input;
 
@@ -37,23 +39,27 @@ namespace SkiEngine.UI.Layouts
         public override bool ListensForPressedTouches => true;
         public override bool IsMultiTouchEnabled => true;
 
-        public void Scroll(float yDelta)
+        public bool Scroll(float yDelta)
         {
             Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, Content.Node.RelativePoint.Y + yDelta);
-            AdjustScrollIfOutOfBounds();
+            return AdjustScrollIfOutOfBounds();
         }
 
-        private void AdjustScrollIfOutOfBounds()
+        private bool AdjustScrollIfOutOfBounds()
         {
             var point = Content.Node.RelativePoint;
-            if (point.Y > 0)
+            if (point.Y > 0 || Content.Size.Height <= Size.Height)
             {
                 Content.Node.RelativePoint = new SKPoint(point.X, 0);
+                return false;
             }
             else if (point.Y < -Content.Size.Height + Size.Height)
             {
                 Content.Node.RelativePoint = new SKPoint(point.X, -Content.Size.Height + Size.Height);
+                return false;
             }
+
+            return true;
         }
 
         protected override void OnNodeChanged()
@@ -80,19 +86,29 @@ namespace SkiEngine.UI.Layouts
         private readonly Dictionary<long, SKPoint> _touchPointsPixels = new Dictionary<long, SKPoint>();
         protected override ViewTouchResult OnPressedInternal(SkiTouch touch)
         {
+            _secondsSinceLastMove = 0;
             _touchPointsPixels[touch.Id] = touch.PointPixels;
 
             return ViewTouchResult.CancelLowerListeners;
         }
 
+        private readonly Stopwatch _timeSinceLastMoveStopwatch = new Stopwatch();
+        private double _secondsSinceLastMove;
+        private SKPoint _lastMoveDelta;
         protected override ViewTouchResult OnMovedInternal(SkiTouch touch)
         {
+            _secondsSinceLastMove = _timeSinceLastMoveStopwatch.Elapsed.TotalSeconds;
+            _timeSinceLastMoveStopwatch.Restart();
+
             var previousPointPixels = _touchPointsPixels[touch.Id];
-            var differenceLocal = UiComponent.Camera.PixelToWorldMatrix
+
+            _lastMoveDelta = UiComponent.Camera.PixelToWorldMatrix
                 .PostConcat(Node.WorldToLocalMatrix)
                 .MapVector(touch.PointPixels - previousPointPixels);
-            Scroll(differenceLocal.Y);
+            Scroll(_lastMoveDelta.Y);
+
             _touchPointsPixels[touch.Id] = touch.PointPixels;
+
             InvalidateSurface();
 
             return ViewTouchResult.CancelLowerListeners;
@@ -100,6 +116,23 @@ namespace SkiEngine.UI.Layouts
 
         protected override ViewTouchResult OnReleasedInternal(SkiTouch touch)
         {
+            if (NumPressedTouches == 0 && _secondsSinceLastMove > 0)
+            {
+                var velocity = (float) (_lastMoveDelta.Y / _secondsSinceLastMove / 16);
+                UiComponent.Animate(
+                    new SkiAnimation(
+                        value =>
+                        {
+                            Scroll((float) value);
+                            InvalidateSurface();
+                        },
+                        velocity,
+                        0,
+                        TimeSpan.FromSeconds(2)
+                    )
+                );
+            }
+            
             _touchPointsPixels.Remove(touch.Id);
 
             return ViewTouchResult.CancelLowerListeners;

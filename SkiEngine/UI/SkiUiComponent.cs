@@ -10,12 +10,14 @@ namespace SkiEngine.UI
     public class SkiUiComponent : Component, IDrawableComponent
     {
         private readonly Action _invalidateSurface;
+        private readonly Action<SkiAnimation> _startAnimation;
 
-        public SkiUiComponent(Node node, CameraComponent camera, Action invalidateSurface)
+        public SkiUiComponent(Node node, CameraComponent camera, Action invalidateSurface, Action<SkiAnimation> startAnimation)
         {
             Node = node;
             Camera = camera;
             _invalidateSurface = invalidateSurface;
+            _startAnimation = startAnimation;
         }
 
         public CameraComponent Camera { get; }
@@ -56,6 +58,11 @@ namespace SkiEngine.UI
         public void InvalidateSurface()
         {
             _invalidateSurface();
+        }
+
+        public void Animate(SkiAnimation animation)
+        {
+            _startAnimation(animation);
         }
 
         public void Draw(SKCanvas canvas, CameraComponent camera)
