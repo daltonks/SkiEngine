@@ -21,7 +21,7 @@ namespace SkiEngine.Xamarin
                 skiAnimation.Callback,
                 skiAnimation.Start,
                 skiAnimation.End,
-                Easing.Linear,
+                Easing.CubicOut,
                 skiAnimation.Finished
             ).Commit(
                 _canvasView,

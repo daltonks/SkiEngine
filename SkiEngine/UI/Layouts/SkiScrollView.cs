@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using SkiaSharp;
 using SkiEngine.Input;
+using SkiEngine.Util.Extensions.SkiaSharp;
 
 namespace SkiEngine.UI.Layouts
 {
@@ -41,27 +44,29 @@ namespace SkiEngine.UI.Layouts
         public override bool ListensForPressedTouches => true;
         public override bool IsMultiTouchEnabled => true;
 
-        public bool Scroll(float yDelta)
+        public void Scroll(float yDelta)
         {
             Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, Content.Node.RelativePoint.Y + yDelta);
-            return AdjustScrollIfOutOfBounds();
+            AdjustScrollIfOutOfBounds();
         }
 
-        private bool AdjustScrollIfOutOfBounds()
+        public void ScrollTo(float y)
+        {
+            Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, y);
+            AdjustScrollIfOutOfBounds();
+        }
+
+        private void AdjustScrollIfOutOfBounds()
         {
             var point = Content.Node.RelativePoint;
             if (point.Y > 0 || Content.Size.Height <= Size.Height)
             {
                 Content.Node.RelativePoint = new SKPoint(point.X, 0);
-                return false;
             }
             else if (point.Y < -Content.Size.Height + Size.Height)
             {
                 Content.Node.RelativePoint = new SKPoint(point.X, -Content.Size.Height + Size.Height);
-                return false;
             }
-
-            return true;
         }
 
         protected override void OnNodeChanged()
@@ -85,7 +90,8 @@ namespace SkiEngine.UI.Layouts
             canvas.Restore();
         }
 
-        private readonly Dictionary<long, SKPoint> _touchPointsPixels = new Dictionary<long, SKPoint>();
+
+        private readonly Dictionary<long, ScrollTouchTracker> _touchTrackers = new Dictionary<long, ScrollTouchTracker>();
         protected override ViewTouchResult OnPressedInternal(SkiTouch touch)
         {
             if (_flingAnimation != null)
@@ -93,28 +99,21 @@ namespace SkiEngine.UI.Layouts
                 UiComponent.AbortAnimation(_flingAnimation);
                 _flingAnimation = null;
             }
-            _secondsSinceLastMove = 0;
-            _touchPointsPixels[touch.Id] = touch.PointPixels;
+            _touchTrackers[touch.Id] = ScrollTouchTracker.Get(touch);
 
             return ViewTouchResult.CancelLowerListeners;
         }
 
-        private readonly Stopwatch _timeSinceLastMoveStopwatch = new Stopwatch();
-        private double _secondsSinceLastMove;
-        private SKPoint _lastMoveDelta;
         protected override ViewTouchResult OnMovedInternal(SkiTouch touch)
         {
-            _secondsSinceLastMove = _timeSinceLastMoveStopwatch.Elapsed.TotalSeconds;
-            _timeSinceLastMoveStopwatch.Restart();
+            var previousPointPixels = _touchTrackers[touch.Id].GetLastPointPixels();
 
-            var previousPointPixels = _touchPointsPixels[touch.Id];
-
-            _lastMoveDelta = UiComponent.Camera.PixelToWorldMatrix
+            var delta = UiComponent.Camera.PixelToWorldMatrix
                 .PostConcat(Node.WorldToLocalMatrix)
                 .MapVector(touch.PointPixels - previousPointPixels);
-            Scroll(_lastMoveDelta.Y);
+            Scroll(delta.Y);
 
-            _touchPointsPixels[touch.Id] = touch.PointPixels;
+            _touchTrackers[touch.Id].Add(touch);
 
             InvalidateSurface();
 
@@ -123,30 +122,118 @@ namespace SkiEngine.UI.Layouts
 
         protected override ViewTouchResult OnReleasedInternal(SkiTouch touch)
         {
-            if (NumPressedTouches == 0 && _secondsSinceLastMove > 0)
+            var touchTracker = _touchTrackers[touch.Id];
+
+            var flingVelocityPixels = touchTracker.FlingVelocityPixels.Y;
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (NumPressedTouches == 0 && flingVelocityPixels != 0)
             {
-                var velocity = (float) (_lastMoveDelta.Y / _secondsSinceLastMove / 16);
+                var animationSeconds = .5;
+
+                var startingY = Content.Node.RelativePoint.Y;
+                var finalY = startingY + flingVelocityPixels * animationSeconds;
                 _flingAnimation = new SkiAnimation(
-                    value =>
+                    y =>
                     {
-                        Scroll((float) (1 - value) * velocity);
+                        ScrollTo((float) y);
                         InvalidateSurface();
                     },
-                    0,
-                    1,
-                    TimeSpan.FromSeconds(1)
+                    startingY,
+                    finalY,
+                    TimeSpan.FromSeconds(animationSeconds)
                 );
                 UiComponent.StartAnimation(_flingAnimation);
             }
-            
-            _touchPointsPixels.Remove(touch.Id);
+
+            touchTracker.Recycle();
+            _touchTrackers.Remove(touch.Id);
 
             return ViewTouchResult.CancelLowerListeners;
         }
 
         protected override void OnCancelledInternal(SkiTouch touch)
         {
-            _touchPointsPixels.Remove(touch.Id);
+            _touchTrackers[touch.Id].Recycle();
+            _touchTrackers.Remove(touch.Id);
+        }
+
+        class ScrollTouchTracker
+        {
+            private static readonly ConcurrentBag<ScrollTouchTracker> Cached = new ConcurrentBag<ScrollTouchTracker>();
+            internal static ScrollTouchTracker Get(SkiTouch pressedTouch)
+            {
+                if (Cached.TryTake(out var tracker))
+                {
+                    tracker._stopwatch.Restart();
+                    tracker._touches.Clear();
+                    tracker._touches.Add(new ScrollTouch(TimeSpan.Zero, pressedTouch.PointPixels));
+                    return tracker;
+                }
+
+                return new ScrollTouchTracker(pressedTouch);
+            }
+
+            private readonly Stopwatch _stopwatch = new Stopwatch();
+            private readonly List<ScrollTouch> _touches = new List<ScrollTouch>();
+
+            private ScrollTouchTracker(SkiTouch pressedTouch)
+            {
+                _stopwatch.Start();
+                _touches.Add(new ScrollTouch(TimeSpan.Zero, pressedTouch.PointPixels));
+            }
+
+            public SKPoint FlingVelocityPixels
+            {
+                get
+                {
+                    if (_touches.Count < 2)
+                    {
+                        return new SKPoint();
+                    }
+
+                    var lastTouch = _touches.Last();
+                    var firstConsideredTouch = _touches.FirstOrDefault(
+                        t => t != lastTouch 
+                             && t.TimeSpan >= lastTouch.TimeSpan - TimeSpan.FromSeconds(.25)
+                    );
+
+                    if (firstConsideredTouch == null)
+                    {
+                        return new SKPoint();
+                    }
+
+                    return lastTouch.PointPixels
+                        .Subtract(firstConsideredTouch.PointPixels)
+                        .Divide((lastTouch.TimeSpan - firstConsideredTouch.TimeSpan).TotalSeconds);
+                }
+            }
+
+            public void Add(SkiTouch touch)
+            {
+                _touches.Add(new ScrollTouch(_stopwatch.Elapsed, touch.PointPixels));
+            }
+
+            public SKPoint GetLastPointPixels()
+            {
+                return _touches.Last().PointPixels;
+            }
+
+            public void Recycle()
+            {
+                Cached.Add(this);
+            }
+
+            private class ScrollTouch
+            {
+                public ScrollTouch(TimeSpan timeSpan, SKPoint pointPixels)
+                {
+                    TimeSpan = timeSpan;
+                    PointPixels = pointPixels;
+                }
+
+                public TimeSpan TimeSpan { get; }
+                public SKPoint PointPixels { get; }
+            }
         }
     }
 }
