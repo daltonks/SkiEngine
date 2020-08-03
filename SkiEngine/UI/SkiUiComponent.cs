@@ -7,17 +7,19 @@ using SkiEngine.Input;
 
 namespace SkiEngine.UI
 {
-    public class SkiUiComponent : Component, IDrawableComponent
+    public abstract class SkiUiComponent : Component, IDrawableComponent
     {
         private readonly Action _invalidateSurface;
-        private readonly Action<SkiAnimation> _startAnimation;
-
-        public SkiUiComponent(Node node, CameraComponent camera, Action invalidateSurface, Action<SkiAnimation> startAnimation)
+        
+        public SkiUiComponent(
+            Node node, 
+            CameraComponent camera, 
+            Action invalidateSurface
+        )
         {
             Node = node;
             Camera = camera;
             _invalidateSurface = invalidateSurface;
-            _startAnimation = startAnimation;
         }
 
         public CameraComponent Camera { get; }
@@ -60,10 +62,8 @@ namespace SkiEngine.UI
             _invalidateSurface();
         }
 
-        public void Animate(SkiAnimation animation)
-        {
-            _startAnimation(animation);
-        }
+        public abstract void StartAnimation(SkiAnimation skiAnimation);
+        public abstract void AbortAnimation(SkiAnimation skiAnimation);
 
         public void Draw(SKCanvas canvas, CameraComponent camera)
         {
@@ -96,20 +96,26 @@ namespace SkiEngine.UI
                         touchTracker.OnPressed(View, touch);
                         break;
                     case SKTouchAction.Moved:
-                        touchTracker = _touchTrackers[touch.Id];
-                        touchTracker.OnMoved(touch);
+                        if (_touchTrackers.TryGetValue(touch.Id, out touchTracker))
+                        {
+                            touchTracker.OnMoved(touch);
+                        }
                         break;
                     case SKTouchAction.Released:
-                        touchTracker = _touchTrackers[touch.Id];
-                        touchTracker.OnReleased(touch);
-                        _touchTrackers.Remove(touch.Id);
-                        touchTracker.Recycle();
+                        if (_touchTrackers.TryGetValue(touch.Id, out touchTracker))
+                        {
+                            touchTracker.OnReleased(touch);
+                            _touchTrackers.Remove(touch.Id);
+                            touchTracker.Recycle();
+                        }
                         break;
                     case SKTouchAction.Cancelled:
-                        touchTracker = _touchTrackers[touch.Id];
-                        touchTracker.OnCancelled(touch);
-                        _touchTrackers.Remove(touch.Id);
-                        touchTracker.Recycle();
+                        if (_touchTrackers.TryGetValue(touch.Id, out touchTracker))
+                        {
+                            touchTracker.OnCancelled(touch);
+                            _touchTrackers.Remove(touch.Id);
+                            touchTracker.Recycle();
+                        }
                         break;
                     default:
                         break;

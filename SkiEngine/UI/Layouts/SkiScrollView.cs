@@ -8,6 +8,8 @@ namespace SkiEngine.UI.Layouts
 {
     public class SkiScrollView : SkiView
     {
+        private SkiAnimation _flingAnimation;
+
         private SkiView _content;
         public SkiView Content
         {
@@ -86,6 +88,11 @@ namespace SkiEngine.UI.Layouts
         private readonly Dictionary<long, SKPoint> _touchPointsPixels = new Dictionary<long, SKPoint>();
         protected override ViewTouchResult OnPressedInternal(SkiTouch touch)
         {
+            if (_flingAnimation != null)
+            {
+                UiComponent.AbortAnimation(_flingAnimation);
+                _flingAnimation = null;
+            }
             _secondsSinceLastMove = 0;
             _touchPointsPixels[touch.Id] = touch.PointPixels;
 
@@ -119,18 +126,17 @@ namespace SkiEngine.UI.Layouts
             if (NumPressedTouches == 0 && _secondsSinceLastMove > 0)
             {
                 var velocity = (float) (_lastMoveDelta.Y / _secondsSinceLastMove / 16);
-                UiComponent.Animate(
-                    new SkiAnimation(
-                        value =>
-                        {
-                            Scroll((float) value);
-                            InvalidateSurface();
-                        },
-                        velocity,
-                        0,
-                        TimeSpan.FromSeconds(2)
-                    )
+                _flingAnimation = new SkiAnimation(
+                    value =>
+                    {
+                        Scroll((float) (1 - value) * velocity);
+                        InvalidateSurface();
+                    },
+                    0,
+                    1,
+                    TimeSpan.FromSeconds(1)
                 );
+                UiComponent.StartAnimation(_flingAnimation);
             }
             
             _touchPointsPixels.Remove(touch.Id);

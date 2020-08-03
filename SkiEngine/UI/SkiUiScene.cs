@@ -15,7 +15,7 @@ namespace SkiEngine.UI
         private readonly CameraComponent _camera;
         private readonly Action _invalidateSurface;
 
-        public SkiUiScene(Action invalidateSurface, Action<SkiAnimation> startAnimation)
+        public SkiUiScene(Action invalidateSurface, Func<Node, CameraComponent, Action, SkiUiComponent> createUiComponent)
         {
             _invalidateSurface = invalidateSurface;
 
@@ -28,7 +28,7 @@ namespace SkiEngine.UI
 
             UiComponent = _scene.RootNode
                 .CreateChild()
-                .AddComponent(new SkiUiComponent(_scene.RootNode, _camera, InvalidateSurface, startAnimation))
+                .AddComponent(createUiComponent(_scene.RootNode, _camera, InvalidateSurface))
                 .AddToCamera(_camera);
 
             _scene.Start();

@@ -20,6 +20,7 @@ namespace SkiEngine.UI
             Finished = finished;
         }
 
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public Action<double> Callback { get; }
         public double Start { get; }
         public double End { get; }
