@@ -29,7 +29,7 @@ namespace SkiEngine.UI.Layouts
 
             if (Node != null)
             {
-                CreateChildNode(view, new InitialNodeTransform(new SKPoint(0, Size.Height)));
+                UpdateChildNode(view, new InitialNodeTransform(new SKPoint(0, Size.Height)));
 
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (Size.Width != 0)

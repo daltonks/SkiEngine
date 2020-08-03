@@ -45,7 +45,41 @@ namespace SkiEngine.UI
 
             _listeners.Reverse();
 
-            HandleInProgressTouch(touch, view => view.OnPressed(touch));
+            for (var i = 0; i < _listeners.Count; i++)
+            {
+                var view = _listeners[i];
+
+                var ignoreTouchForView = !view.IsMultiTouchEnabled && view.NumPressedTouches > 0;
+
+                if (ignoreTouchForView)
+                {
+                    _listeners.RemoveAt(i);
+                    i--;
+                }
+
+                var touchResult = ignoreTouchForView
+                    ? view.MultiTouchIgnoredResult
+                    : view.OnPressed(touch);
+
+                if (touchResult == ViewTouchResult.CancelLowerListeners)
+                {
+                    while (i < _listeners.Count - 1)
+                    {
+                        _listeners.RemoveAt(i + 1);
+                    }
+
+                    break;
+                }
+                if (touchResult == ViewTouchResult.CancelOtherListeners)
+                {
+                    _listeners.Clear();
+                    if (!ignoreTouchForView)
+                    {
+                        _listeners.Add(view);
+                    }
+                    break;
+                }
+            }
         }
 
         public void OnMoved(SkiTouch touch)
@@ -70,16 +104,16 @@ namespace SkiEngine.UI
         {
             for (var i = 0; i < _listeners.Count; i++)
             {
-                var listener = _listeners[i];
-
-                var touchResult = viewFunc(listener);
+                var view = _listeners[i];
+                
+                var touchResult = viewFunc(view);
                 if (touchResult == ViewTouchResult.CancelLowerListeners)
                 {
                     while (i < _listeners.Count - 1)
                     {
                         var l = _listeners[i + 1];
-                        l.OnCancelled(touch);
                         _listeners.RemoveAt(i + 1);
+                        l.OnCancelled(touch);
                     }
 
                     break;
@@ -88,14 +122,14 @@ namespace SkiEngine.UI
                 {
                     foreach (var l in _listeners)
                     {
-                        if (l != listener)
+                        if (l != view)
                         {
                             l.OnCancelled(touch);
                         }
                     }
-
+                    
                     _listeners.Clear();
-                    _listeners.Add(listener);
+                    _listeners.Add(view);
                     break;
                 }
             }

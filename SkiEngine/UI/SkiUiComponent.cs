@@ -27,7 +27,8 @@ namespace SkiEngine.UI
             set
             {
                 _view?.Node.Destroy();
-                value.SetNode(this, Node.CreateChild());
+                value.UiComponent = this;
+                value.Node = Node.CreateChild();
                 _view = value;
                 if (Size.Width != 0 && Size.Height != 0)
                 {

@@ -9,9 +9,24 @@ namespace SkiEngine.UI
     public abstract class SkiView
     {
         public event Action<SKSize, SKSize> SizeChanged;
+        public SkiUiComponent UiComponent { get; internal set; }
 
-        public SkiUiComponent UiComponent { get; private set; }
-        public Node Node { get; private set; }
+        private Node _node;
+        public Node Node
+        {
+            get => _node;
+            internal set
+            {
+                if (_node == value)
+                {
+                    return;
+                }
+
+                _node?.Destroy();
+                _node = value;
+                OnNodeChanged();
+            }
+        }
 
         private SKSize _size;
         public SKSize Size
@@ -34,23 +49,16 @@ namespace SkiEngine.UI
 
         public abstract IEnumerable<SkiView> Children { get; }
         public abstract bool ListensForPressedTouches { get; }
+        public virtual bool IsMultiTouchEnabled => false;
+        public virtual ViewTouchResult MultiTouchIgnoredResult => ViewTouchResult.CancelLowerListeners;
+        public int NumPressedTouches { get; private set; }
 
-        public void CreateChildNode(SkiView child, InitialNodeTransform transform = null)
+        public void UpdateChildNode(SkiView child, InitialNodeTransform transform = null)
         {
             if (Node != null)
             {
-                child.SetNode(UiComponent, Node.CreateChild(transform ?? new InitialNodeTransform()));
-            }
-        }
-
-        public void SetNode(SkiUiComponent uiComponent, Node node)
-        {
-            UiComponent = uiComponent;
-            if (Node != node)
-            {
-                Node?.Destroy();
-                Node = node;
-                OnNodeChanged();
+                child.UiComponent = UiComponent;
+                child.Node = Node.CreateChild(transform ?? new InitialNodeTransform());
             }
         }
 
@@ -82,22 +90,45 @@ namespace SkiEngine.UI
             return new SKRect(0, 0, Size.Width, Size.Height).Contains(localPoint);
         }
 
-        public virtual ViewTouchResult OnPressed(SkiTouch touch)
+        public ViewTouchResult OnPressed(SkiTouch touch)
+        {
+            NumPressedTouches++;
+            return OnPressedInternal(touch);
+        }
+
+        public ViewTouchResult OnMoved(SkiTouch touch)
+        {
+            return OnMovedInternal(touch);
+        }
+
+        public ViewTouchResult OnReleased(SkiTouch touch)
+        {
+            NumPressedTouches--;
+            return OnReleasedInternal(touch);
+        }
+
+        public void OnCancelled(SkiTouch touch)
+        {
+            NumPressedTouches--;
+            OnCancelledInternal(touch);
+        }
+
+        protected virtual ViewTouchResult OnPressedInternal(SkiTouch touch)
         {
             return ViewTouchResult.Passthrough;
         }
 
-        public virtual ViewTouchResult OnMoved(SkiTouch touch)
+        protected virtual ViewTouchResult OnMovedInternal(SkiTouch touch)
         {
             return ViewTouchResult.Passthrough;
         }
 
-        public virtual ViewTouchResult OnReleased(SkiTouch touch)
+        protected virtual ViewTouchResult OnReleasedInternal(SkiTouch touch)
         {
             return ViewTouchResult.Passthrough;
         }
 
-        public virtual void OnCancelled(SkiTouch touch)
+        protected virtual void OnCancelledInternal(SkiTouch touch)
         {
             
         }
