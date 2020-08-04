@@ -46,8 +46,7 @@ namespace SkiEngine.UI.Layouts
 
         public void Scroll(float yDelta)
         {
-            Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, Content.Node.RelativePoint.Y + yDelta);
-            AdjustScrollIfOutOfBounds();
+            ScrollTo(Content.Node.RelativePoint.Y + yDelta);
         }
 
         public void ScrollTo(float y)
@@ -89,7 +88,6 @@ namespace SkiEngine.UI.Layouts
             Content.Draw(canvas);
             canvas.Restore();
         }
-
 
         private readonly Dictionary<long, ScrollTouchTracker> _touchTrackers = new Dictionary<long, ScrollTouchTracker>();
         protected override ViewTouchResult OnPressedInternal(SkiTouch touch)
