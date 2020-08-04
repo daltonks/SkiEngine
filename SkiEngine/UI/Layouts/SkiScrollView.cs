@@ -108,9 +108,7 @@ namespace SkiEngine.UI.Layouts
         {
             var previousPointPixels = _touchTrackers[touch.Id].GetLastPointPixels();
 
-            var delta = UiComponent.Camera.PixelToWorldMatrix
-                .PostConcat(Node.WorldToLocalMatrix)
-                .MapVector(touch.PointPixels - previousPointPixels);
+            var delta = PixelToLocalMatrix.MapVector(touch.PointPixels - previousPointPixels);
             Scroll(delta.Y);
 
             _touchTrackers[touch.Id].Add(touch);
@@ -124,22 +122,28 @@ namespace SkiEngine.UI.Layouts
         {
             var touchTracker = _touchTrackers[touch.Id];
 
-            var flingVelocityPixels = touchTracker.FlingVelocityPixels.Y;
+            var flingPixelsPerSecond = touchTracker.FlingPixelsPerSecond;
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (NumPressedTouches == 0 && flingVelocityPixels != 0)
+            if (NumPressedTouches == 0 && flingPixelsPerSecond.Y != 0)
             {
-                var animationSeconds = .5;
+                var flingDpPerSecond = UiComponent.Camera.PixelToDpMatrix.MapVector(flingPixelsPerSecond);
 
-                var startingY = Content.Node.RelativePoint.Y;
-                var finalY = startingY + flingVelocityPixels * animationSeconds;
+                var animationSeconds = Math.Abs(flingDpPerSecond.Y) / 600;
+
+                var flingLocalPerSecond = PixelToLocalMatrix.MapVector(flingPixelsPerSecond);
+
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
                 _flingAnimation = new SkiAnimation(
-                    y =>
+                    velocity =>
                     {
-                        ScrollTo((float) y);
+                        var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+                        stopwatch.Restart();
+                        Scroll((float) (velocity * elapsedSeconds));
                         InvalidateSurface();
                     },
-                    startingY,
-                    finalY,
+                    flingLocalPerSecond.Y,
+                    0,
                     TimeSpan.FromSeconds(animationSeconds)
                 );
                 UiComponent.StartAnimation(_flingAnimation);
@@ -182,7 +186,7 @@ namespace SkiEngine.UI.Layouts
                 _touches.Add(new ScrollTouch(TimeSpan.Zero, pressedTouch.PointPixels));
             }
 
-            public SKPoint FlingVelocityPixels
+            public SKPoint FlingPixelsPerSecond
             {
                 get
                 {

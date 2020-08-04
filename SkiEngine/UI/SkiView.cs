@@ -53,6 +53,8 @@ namespace SkiEngine.UI
         public virtual ViewTouchResult MultiTouchIgnoredResult => ViewTouchResult.CancelLowerListeners;
         public int NumPressedTouches { get; private set; }
 
+        public SKMatrix PixelToLocalMatrix => UiComponent.Camera.PixelToWorldMatrix.PostConcat(Node.WorldToLocalMatrix);
+
         public void UpdateChildNode(SkiView child, InitialNodeTransform transform = null)
         {
             if (Node != null)
