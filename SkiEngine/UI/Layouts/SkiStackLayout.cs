@@ -1,57 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using SkiaSharp;
 
 namespace SkiEngine.UI.Layouts
 {
     public class SkiStackLayout : SkiView
     {
-        private readonly List<SkiView> _children = new List<SkiView>();
-        public override IEnumerable<SkiView> Children => _children;
+        public SkiStackLayout()
+        {
+            Children.CollectionChanged += OnChildrenChanged;
+        }
+
+        public ObservableCollection<SkiView> Children { get; } = new ObservableCollection<SkiView>();
+        public override IEnumerable<SkiView> ChildrenEnumerable => Children;
 
         public override bool ListensForPressedTouches => false;
 
         protected override void OnNodeChanged()
         {
-            var copiedChildren = _children.ToList();
-            _children.Clear();
-            foreach (var child in copiedChildren)
+            foreach (var child in Children)
             {
-                Add(child);
+                UpdateChildNode(child);
             }
         }
 
-        public void Add(SkiView view)
+        private void OnChildrenChanged(object sender, NotifyCollectionChangedEventArgs args)
         {
-            _children.Add(view);
-
-            if (Node != null)
+            switch (args.Action)
             {
-                UpdateChildNode(view, new InitialNodeTransform(new SKPoint(0, Size.Height)));
-
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
-                if (Size.Width != 0)
-                {
-                    view.Layout(Size.Width, float.MaxValue);
-                    Size = new SKSize(
-                        Math.Max(view.Size.Width, Size.Width), 
-                        Size.Height + view.Size.Height
-                    );
-                }
+                case NotifyCollectionChangedAction.Add:
+                    UpdateChildNode((SkiView)args.NewItems[0]);
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    ((SkiView)args.OldItems[0]).Node?.Destroy();
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    ((SkiView)args.OldItems[0]).Node?.Destroy();
+                    UpdateChildNode((SkiView)args.NewItems[0]);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    if (args.OldItems != null)
+                    {
+                        foreach (var oldItem in args.OldItems)
+                        {
+                            ((SkiView) oldItem).Node?.Destroy();
+                        }
+                    }
+                    
+                    break;
             }
+
+            UiComponent?.RequestFullLayout();
+            InvalidateSurface();
         }
 
         public override void Layout(float maxWidth, float maxHeight)
         {
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (maxWidth == Size.Width)
-            {
-                return;
-            }
-
             var height = 0f;
-            foreach (var child in Children)
+            foreach (var child in ChildrenEnumerable)
             {
                 child.Node.RelativePoint = new SKPoint(0, height);
                 child.Layout(maxWidth, float.MaxValue);

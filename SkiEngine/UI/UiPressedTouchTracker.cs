@@ -36,7 +36,7 @@ namespace SkiEngine.UI
                         _listeners.Add(view);
                     }
 
-                    foreach (var child in view.Children)
+                    foreach (var child in view.ChildrenEnumerable)
                     {
                         queue.Enqueue(child);
                     }

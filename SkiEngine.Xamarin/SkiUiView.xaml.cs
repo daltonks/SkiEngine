@@ -1,5 +1,8 @@
-﻿using SkiaSharp.Views.Forms;
+﻿using System.Threading;
+using SkiaSharp.Views.Forms;
 using SkiEngine.UI;
+using Xamarin.Essentials;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 namespace SkiEngine.Xamarin
@@ -14,7 +17,7 @@ namespace SkiEngine.Xamarin
             InitializeComponent();
             
             _skiUiScene = new SkiUiScene(
-                InvalidateSurface, 
+                () => Application.Current.Dispatcher.BeginInvokeOnMainThread(InvalidateSurface), 
                 (node, camera, invalidateSurface) => new SkiXamarinUiComponent(this, node, camera, invalidateSurface)
             );
         }

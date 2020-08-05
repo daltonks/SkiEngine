@@ -13,6 +13,11 @@ namespace SkiEngine.UI.Layouts
     {
         private SkiAnimation _flingAnimation;
 
+        public SkiScrollView()
+        {
+            ScrollY = new LinkedProperty<float>(0, OnScrollYChanged);
+        }
+
         private SkiView _content;
         public SkiView Content
         {
@@ -31,12 +36,9 @@ namespace SkiEngine.UI.Layouts
             }
         }
 
-        private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
-        {
-            AdjustScrollIfOutOfBounds();
-        }
+        public LinkedProperty<float> ScrollY { get; }
 
-        public override IEnumerable<SkiView> Children
+        public override IEnumerable<SkiView> ChildrenEnumerable
         {
             get { yield return Content; }
         }
@@ -46,25 +48,34 @@ namespace SkiEngine.UI.Layouts
 
         public void Scroll(float yDelta)
         {
-            ScrollTo(Content.Node.RelativePoint.Y + yDelta);
+            ScrollY.Value += yDelta;
         }
 
-        public void ScrollTo(float y)
+        private void OnScrollYChanged(float oldValue, float newValue)
         {
-            Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, y);
+            var previousPoint = Content.Node.RelativePoint;
+            Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, newValue);
+            AdjustScrollIfOutOfBounds();
+            if (Content.Node.RelativePoint != previousPoint)
+            {
+                InvalidateSurface();
+            }
+        }
+
+        private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
+        {
             AdjustScrollIfOutOfBounds();
         }
 
         private void AdjustScrollIfOutOfBounds()
         {
-            var point = Content.Node.RelativePoint;
-            if (point.Y > 0 || Content.Size.Height <= Size.Height)
+            if (ScrollY > 0 || Content.Size.Height <= Size.Height)
             {
-                Content.Node.RelativePoint = new SKPoint(point.X, 0);
+                ScrollY.Value = 0;
             }
-            else if (point.Y < -Content.Size.Height + Size.Height)
+            else if (ScrollY < -Content.Size.Height + Size.Height)
             {
-                Content.Node.RelativePoint = new SKPoint(point.X, -Content.Size.Height + Size.Height);
+                ScrollY.Value = -Content.Size.Height + Size.Height;
             }
         }
 

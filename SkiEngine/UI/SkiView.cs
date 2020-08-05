@@ -47,7 +47,7 @@ namespace SkiEngine.UI
 
         public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Width, Size.Height));
 
-        public abstract IEnumerable<SkiView> Children { get; }
+        public abstract IEnumerable<SkiView> ChildrenEnumerable { get; }
         public abstract bool ListensForPressedTouches { get; }
         public virtual bool IsMultiTouchEnabled => false;
         public virtual ViewTouchResult MultiTouchIgnoredResult => ViewTouchResult.CancelLowerListeners;
@@ -83,7 +83,7 @@ namespace SkiEngine.UI
 
         public void InvalidateSurface()
         {
-            UiComponent.InvalidateSurface();
+            UiComponent?.InvalidateSurface();
         }
 
         public bool HitTest(SKPoint pointWorld)

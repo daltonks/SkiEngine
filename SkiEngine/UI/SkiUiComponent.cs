@@ -4,10 +4,11 @@ using SkiaSharp;
 using SkiEngine.Camera;
 using SkiEngine.Drawable;
 using SkiEngine.Input;
+using SkiEngine.Updateable;
 
 namespace SkiEngine.UI
 {
-    public abstract class SkiUiComponent : Component, IDrawableComponent
+    public abstract class SkiUiComponent : Component, IUpdateableComponent, IDrawableComponent
     {
         private readonly Action _invalidateSurface;
         
@@ -20,6 +21,7 @@ namespace SkiEngine.UI
             Node = node;
             Camera = camera;
             _invalidateSurface = invalidateSurface;
+            UpdateablePart = new UpdateableComponentPart(Update);
         }
 
         public CameraComponent Camera { get; }
@@ -57,6 +59,15 @@ namespace SkiEngine.UI
             }
         }
 
+        public bool FullLayoutNeeded { get; private set; }
+
+        public UpdateableComponentPart UpdateablePart { get; }
+
+        public void RequestFullLayout()
+        {
+            FullLayoutNeeded = true;
+        }
+
         public void InvalidateSurface()
         {
             _invalidateSurface();
@@ -64,6 +75,15 @@ namespace SkiEngine.UI
 
         public abstract void StartAnimation(SkiAnimation skiAnimation);
         public abstract void AbortAnimation(SkiAnimation skiAnimation);
+
+        private void Update(UpdateTime updateTime)
+        {
+            if (FullLayoutNeeded)
+            {
+                View.Layout(Size.Width, Size.Height);
+                FullLayoutNeeded = false;
+            }
+        }
 
         public void Draw(SKCanvas canvas, CameraComponent camera)
         {
