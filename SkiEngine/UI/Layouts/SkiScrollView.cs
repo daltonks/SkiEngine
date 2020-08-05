@@ -37,6 +37,7 @@ namespace SkiEngine.UI.Layouts
         }
 
         public LinkedProperty<float> ScrollY { get; }
+        public SKRect ScrollBounds => new SKRect(0, 0, 0, -Content.Size.Height + Size.Height);
 
         public override IEnumerable<SkiView> ChildrenEnumerable
         {
@@ -150,6 +151,16 @@ namespace SkiEngine.UI.Layouts
                         stopwatch.Restart();
                         Scroll((float) (velocity * elapsedSeconds));
                         InvalidateSurface();
+
+                        var scrollBounds = ScrollBounds;
+                        if (ScrollY == scrollBounds.Top || ScrollY == scrollBounds.Bottom)
+                        {
+                            if (_flingAnimation != null)
+                            {
+                                UiComponent.AbortAnimation(_flingAnimation);
+                                _flingAnimation = null;
+                            }
+                        }
                     },
                     flingLocalPerSecond.Y,
                     0,
