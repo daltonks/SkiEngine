@@ -5,9 +5,9 @@ using System.Collections.Specialized;
 
 namespace SkiEngine.UI
 {
-    public static class LinkedCollection
+    public static class LinkedCollectionExtensions
     {
-        public static void ForwardUpdatesTo<TFromItem, TToItem>(
+        public static void SetAndLink<TFromItem, TToItem>(
             this ObservableCollection<TFromItem> collection, 
             IList<TToItem> other,
             Func<TFromItem, TToItem> convert
