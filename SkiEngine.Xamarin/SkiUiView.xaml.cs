@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using SkiaSharp.Views.Forms;
 using SkiEngine.UI;
 using Xamarin.Essentials;
@@ -15,10 +16,18 @@ namespace SkiEngine.Xamarin
         public SkiUiView()
         {
             InitializeComponent();
-            
+
+            // UWP immediately redraws when calling InvalidateSurface,
+            // which breaks logical flow if you make multiple changes
+            // that invalidate the surface.
+            // Because of this, use the dispatcher.
+            var invalidateSurface = Device.RuntimePlatform == Device.UWP
+                ? () => Application.Current.Dispatcher.BeginInvokeOnMainThread(InvalidateSurface)
+                : (Action) InvalidateSurface;
+
             _skiUiScene = new SkiUiScene(
-                () => Application.Current.Dispatcher.BeginInvokeOnMainThread(InvalidateSurface), 
-                (node, camera, invalidateSurface) => new SkiXamarinUiComponent(this, node, camera, invalidateSurface)
+                invalidateSurface, 
+                (node, camera, invalidate) => new SkiXamarinUiComponent(this, node, camera, invalidate)
             );
         }
 

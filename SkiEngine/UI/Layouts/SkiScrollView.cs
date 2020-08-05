@@ -15,7 +15,7 @@ namespace SkiEngine.UI.Layouts
 
         public SkiScrollView()
         {
-            ScrollY = new LinkedProperty<float>(0, OnScrollYChanged);
+            ScrollY = new LinkedProperty<float>(0, valueChanging: OnScrollYChanging, valueChanged: OnScrollYChanged);
         }
 
         private SkiView _content;
@@ -37,7 +37,7 @@ namespace SkiEngine.UI.Layouts
         }
 
         public LinkedProperty<float> ScrollY { get; }
-        public SKRect ScrollBounds => new SKRect(0, 0, 0, -Content.Size.Height + Size.Height);
+        public SKRect ScrollBounds => new SKRect(0, 0, 0, (Content?.Size.Height ?? 0) - Size.Height);
 
         public override IEnumerable<SkiView> ChildrenEnumerable
         {
@@ -47,20 +47,15 @@ namespace SkiEngine.UI.Layouts
         public override bool ListensForPressedTouches => true;
         public override bool IsMultiTouchEnabled => true;
 
-        public void Scroll(float yDelta)
+        private float OnScrollYChanging(float oldY, float newY)
         {
-            ScrollY.Value += yDelta;
+            return AdjustScrollIfOutOfBounds(newY);
         }
 
-        private void OnScrollYChanged(float oldValue, float newValue)
+        private void OnScrollYChanged(float oldY, float newY)
         {
-            var previousPoint = Content.Node.RelativePoint;
-            Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, newValue);
-            AdjustScrollIfOutOfBounds();
-            if (Content.Node.RelativePoint != previousPoint)
-            {
-                InvalidateSurface();
-            }
+            Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, -newY);
+            InvalidateSurface();
         }
 
         private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
@@ -70,14 +65,22 @@ namespace SkiEngine.UI.Layouts
 
         private void AdjustScrollIfOutOfBounds()
         {
-            if (ScrollY > 0 || Content.Size.Height <= Size.Height)
+            ScrollY.Value = AdjustScrollIfOutOfBounds(ScrollY.Value);
+        }
+
+        private float AdjustScrollIfOutOfBounds(float y)
+        {
+            var scrollBounds = ScrollBounds;
+            if (y < scrollBounds.Top || (Content?.Size.Height ?? 0) <= Size.Height)
             {
-                ScrollY.Value = 0;
+                y = scrollBounds.Top;
             }
-            else if (ScrollY < -Content.Size.Height + Size.Height)
+            else if (y > scrollBounds.Bottom)
             {
-                ScrollY.Value = -Content.Size.Height + Size.Height;
+                y = scrollBounds.Bottom;
             }
+
+            return y;
         }
 
         protected override void OnNodeChanged()
@@ -118,12 +121,10 @@ namespace SkiEngine.UI.Layouts
         {
             var previousPointPixels = _touchTrackers[touch.Id].GetLastPointPixels();
 
-            var delta = PixelToLocalMatrix.MapVector(touch.PointPixels - previousPointPixels);
-            Scroll(delta.Y);
+            var delta = PixelToLocalMatrix.MapVector(previousPointPixels - touch.PointPixels);
+            ScrollY.Value += delta.Y;
 
             _touchTrackers[touch.Id].Add(touch);
-
-            InvalidateSurface();
 
             return ViewTouchResult.CancelLowerListeners;
         }
@@ -149,11 +150,10 @@ namespace SkiEngine.UI.Layouts
                     {
                         var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
                         stopwatch.Restart();
-                        Scroll((float) (velocity * elapsedSeconds));
-                        InvalidateSurface();
+                        ScrollY.Value += (float) (velocity * elapsedSeconds);
 
                         var scrollBounds = ScrollBounds;
-                        if (ScrollY == scrollBounds.Top || ScrollY == scrollBounds.Bottom)
+                        if (ScrollY.Value == scrollBounds.Top || ScrollY.Value == scrollBounds.Bottom)
                         {
                             if (_flingAnimation != null)
                             {
@@ -226,8 +226,8 @@ namespace SkiEngine.UI.Layouts
                         return new SKPoint();
                     }
 
-                    return lastTouch.PointPixels
-                        .Subtract(firstConsideredTouch.PointPixels)
+                    return firstConsideredTouch.PointPixels
+                        .Subtract(lastTouch.PointPixels)
                         .Divide((lastTouch.TimeSpan - firstConsideredTouch.TimeSpan).TotalSeconds);
                 }
             }

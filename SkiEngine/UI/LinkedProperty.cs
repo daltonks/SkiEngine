@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SkiEngine.UI
 {
@@ -7,10 +8,12 @@ namespace SkiEngine.UI
     {
         public event Action<T, T> ValueChanged;
 
+        private readonly Func<T, T, T> _valueChanging;
         private readonly List<WeakReference<LinkedProperty<T>>> _links = new List<WeakReference<LinkedProperty<T>>>();
 
-        public LinkedProperty(T startingValue = default, Action<T, T> valueChanged = null)
+        public LinkedProperty(T startingValue = default, Func<T, T, T> valueChanging = null, Action<T, T> valueChanged = null)
         {
+            _valueChanging = valueChanging;
             if (valueChanged != null)
             {
                 ValueChanged += valueChanged;
@@ -25,6 +28,11 @@ namespace SkiEngine.UI
             get => _value;
             set
             {
+                if (_valueChanging != null)
+                {
+                    value = _valueChanging(_value, value);
+                }
+
                 if (EqualityComparer<T>.Default.Equals(_value, value))
                 {
                     return;
@@ -87,11 +95,6 @@ namespace SkiEngine.UI
             }
 
             ValueChanged?.Invoke(Value, _value);
-        }
-
-        public static implicit operator T(LinkedProperty<T> linkedProperty)
-        {
-            return linkedProperty.Value;
         }
     }
 }
