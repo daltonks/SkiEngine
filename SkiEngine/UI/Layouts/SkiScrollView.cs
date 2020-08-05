@@ -15,7 +15,9 @@ namespace SkiEngine.UI.Layouts
 
         public SkiScrollView()
         {
+            ScrollBounds = new LinkedProperty<SKRect>(updateValue: () => new SKRect(0, 0, 0, Math.Max((Content?.Size.Value.Height ?? 0) - Size.Value.Height, 0)));
             ScrollY = new LinkedProperty<float>(0, valueChanging: OnScrollYChanging, valueChanged: OnScrollYChanged);
+            Size.ValueChanged += (size, skSize) => ScrollBounds.UpdateValue();
         }
 
         private SkiView _content;
@@ -27,17 +29,17 @@ namespace SkiEngine.UI.Layouts
                 if (_content != null)
                 {
                     _content.Node.Destroy();
-                    _content.SizeChanged -= OnContentSizeChanged;
+                    _content.Size.ValueChanged -= OnContentSizeChanged;
                 }
                 
                 UpdateChildNode(value);
                 _content = value;
-                _content.SizeChanged += OnContentSizeChanged;
+                _content.Size.ValueChanged += OnContentSizeChanged;
             }
         }
 
         public LinkedProperty<float> ScrollY { get; }
-        public SKRect ScrollBounds => new SKRect(0, 0, 0, (Content?.Size.Height ?? 0) - Size.Height);
+        public LinkedProperty<SKRect> ScrollBounds { get; }
 
         public override IEnumerable<SkiView> ChildrenEnumerable
         {
@@ -60,6 +62,7 @@ namespace SkiEngine.UI.Layouts
 
         private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
         {
+            ScrollBounds.UpdateValue();
             AdjustScrollIfOutOfBounds();
         }
 
@@ -70,8 +73,8 @@ namespace SkiEngine.UI.Layouts
 
         private float AdjustScrollIfOutOfBounds(float y)
         {
-            var scrollBounds = ScrollBounds;
-            if (y < scrollBounds.Top || (Content?.Size.Height ?? 0) <= Size.Height)
+            var scrollBounds = ScrollBounds.Value;
+            if (y < scrollBounds.Top || (Content?.Size.Value.Height ?? 0) <= Size.Value.Height)
             {
                 y = scrollBounds.Top;
             }
@@ -90,15 +93,15 @@ namespace SkiEngine.UI.Layouts
 
         public override void Layout(float maxWidth, float maxHeight)
         {
-            Size = new SKSize(maxWidth, maxHeight);
+            Size.Value = new SKSize(maxWidth, maxHeight);
             Content.Layout(maxWidth, float.MaxValue);
             AdjustScrollIfOutOfBounds();
         }
-
+        
         protected override void DrawInternal(SKCanvas canvas)
         {
             canvas.Save();
-            var skRect = new SKRect(0, 0, Size.Width, Size.Height);
+            var skRect = new SKRect(0, 0, Size.Value.Width, Size.Value.Height);
             canvas.ClipRect(skRect);
             Content.Draw(canvas);
             canvas.Restore();
@@ -152,7 +155,7 @@ namespace SkiEngine.UI.Layouts
                         stopwatch.Restart();
                         ScrollY.Value += (float) (velocity * elapsedSeconds);
 
-                        var scrollBounds = ScrollBounds;
+                        var scrollBounds = ScrollBounds.Value;
                         if (ScrollY.Value == scrollBounds.Top || ScrollY.Value == scrollBounds.Bottom)
                         {
                             if (_flingAnimation != null)

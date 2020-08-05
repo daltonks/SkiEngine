@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using SkiaSharp;
 using SkiEngine.Input;
 using SkiEngine.Util;
@@ -8,7 +9,6 @@ namespace SkiEngine.UI
 {
     public abstract class SkiView
     {
-        public event Action<SKSize, SKSize> SizeChanged;
         public SkiUiComponent UiComponent { get; internal set; }
 
         private Node _node;
@@ -28,24 +28,9 @@ namespace SkiEngine.UI
             }
         }
 
-        private SKSize _size;
-        public SKSize Size
-        {
-            get => _size;
-            protected set
-            {
-                if (_size == value)
-                {
-                    return;
-                }
+        public LinkedProperty<SKSize> Size { get; } = new LinkedProperty<SKSize>();
 
-                var previous = _size;
-                _size = value;
-                SizeChanged?.Invoke(previous, value);
-            }
-        }
-
-        public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Width, Size.Height));
+        public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Value.Width, Size.Value.Height));
 
         public abstract IEnumerable<SkiView> ChildrenEnumerable { get; }
         public abstract bool ListensForPressedTouches { get; }
@@ -73,7 +58,7 @@ namespace SkiEngine.UI
             var drawMatrix = Node.LocalToWorldMatrix.PostConcat(UiComponent.Camera.WorldToPixelMatrix);
             canvas.SetMatrix(drawMatrix);
 
-            if (canvas.QuickReject(new SKRect(0, 0, Size.Width, Size.Height)))
+            if (canvas.QuickReject(new SKRect(0, 0, Size.Value.Width, Size.Value.Height)))
             {
                 return;
             }
@@ -89,7 +74,7 @@ namespace SkiEngine.UI
         public bool HitTest(SKPoint pointWorld)
         {
             var localPoint = Node.WorldToLocalMatrix.MapPoint(pointWorld);
-            return new SKRect(0, 0, Size.Width, Size.Height).Contains(localPoint);
+            return new SKRect(0, 0, Size.Value.Width, Size.Value.Height).Contains(localPoint);
         }
 
         public ViewTouchResult OnPressed(SkiTouch touch)

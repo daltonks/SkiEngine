@@ -7,7 +7,7 @@ namespace SkiEngine.UI
 {
     public static class LinkedCollectionExtensions
     {
-        public static void SetAndLink<TFromItem, TToItem>(
+        public static void Link<TFromItem, TToItem>(
             this ObservableCollection<TFromItem> collection, 
             IList<TToItem> other,
             Func<TFromItem, TToItem> convert

@@ -30,7 +30,20 @@ namespace SkiEngine.UI.Layouts
             switch (args.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    UpdateChildNode((SkiView)args.NewItems[0]);
+                    if (args.NewStartingIndex == Children.Count - 1)
+                    {
+                        // Happy, easy path. Don't need full layout.
+                        var childView = (SkiView)args.NewItems[0];
+                        UpdateChildNode(childView, new InitialNodeTransform(new SKPoint(0, Size.Value.Height)));
+                        childView.Layout(Size.Value.Width, float.MaxValue);
+                        Size.Value = new SKSize(Size.Value.Width, Size.Value.Height + childView.Size.Value.Height);
+                        InvalidateSurface();
+                        return;
+                    }
+                    else
+                    {
+                        UpdateChildNode((SkiView)args.NewItems[0]);
+                    }
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;
@@ -64,9 +77,9 @@ namespace SkiEngine.UI.Layouts
             {
                 child.Node.RelativePoint = new SKPoint(0, height);
                 child.Layout(maxWidth, float.MaxValue);
-                height += child.Size.Height;
+                height += child.Size.Value.Height;
             }
-            Size = new SKSize(maxWidth, height);
+            Size.Value = new SKSize(maxWidth, height);
         }
 
         protected override void DrawInternal(SKCanvas canvas)

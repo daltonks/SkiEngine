@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 
 namespace SkiEngine.UI
 {
@@ -9,11 +9,18 @@ namespace SkiEngine.UI
         public event Action<T, T> ValueChanged;
 
         private readonly Func<T, T, T> _valueChanging;
+        private readonly Func<T> _updateValue;
         private readonly List<WeakReference<LinkedProperty<T>>> _links = new List<WeakReference<LinkedProperty<T>>>();
 
-        public LinkedProperty(T startingValue = default, Func<T, T, T> valueChanging = null, Action<T, T> valueChanged = null)
+        public LinkedProperty(
+            T startingValue = default, 
+            Func<T, T, T> valueChanging = null, 
+            Action<T, T> valueChanged = null,
+            Func<T> updateValue = null
+        )
         {
             _valueChanging = valueChanging;
+            _updateValue = updateValue;
             if (valueChanged != null)
             {
                 ValueChanged += valueChanged;
@@ -62,20 +69,52 @@ namespace SkiEngine.UI
             }
         }
 
-        public void SetAndLink(LinkedProperty<T> otherProperty)
+        public void UpdateValue()
         {
-            lock (_links)
+            if (_updateValue != null)
             {
-                _links.Add(new WeakReference<LinkedProperty<T>>(otherProperty));
+                Value = _updateValue();
             }
-            lock (otherProperty._links)
-            {
-                otherProperty._links.Add(new WeakReference<LinkedProperty<T>>(this));
-            }
+        }
+
+        public void Link(LinkedProperty<T> otherProperty)
+        {
+            AddLinkInternal(otherProperty);
+            otherProperty.AddLinkInternal(this);
             otherProperty.Value = Value;
         }
 
-        public void RaiseChanged()
+        private void AddLinkInternal(LinkedProperty<T> linkToAdd)
+        {
+            lock (_links)
+            {
+                _links.Add(new WeakReference<LinkedProperty<T>>(linkToAdd));
+            }
+        }
+
+        public void Unlink(LinkedProperty<T> otherProperty)
+        {
+            RemoveLinkInternal(otherProperty);
+            otherProperty.RemoveLinkInternal(this);
+        }
+
+        public void UnlinkAll()
+        {
+            lock (_links)
+            {
+                foreach (var weakLink in _links.ToList())
+                {
+                    if (weakLink.TryGetTarget(out var link))
+                    {
+                        link.RemoveLinkInternal(this);
+                    }
+                }
+
+                _links.Clear();
+            }
+        }
+
+        private void RemoveLinkInternal(LinkedProperty<T> linkToRemove)
         {
             lock (_links)
             {
@@ -84,7 +123,11 @@ namespace SkiEngine.UI
                     var weakLink = _links[i];
                     if (weakLink.TryGetTarget(out var link))
                     {
-                        link.RaiseChanged();
+                        if (link == linkToRemove)
+                        {
+                            _links.RemoveAt(i);
+                            break;
+                        }
                     }
                     else
                     {
@@ -93,8 +136,46 @@ namespace SkiEngine.UI
                     }
                 }
             }
+        }
 
+        public void RaiseValueChanged()
+        {
+            RaiseValueChanged(true);
+        }
+
+        private void RaiseValueChanged(bool forwardToLinks)
+        {
+            if (forwardToLinks)
+            {
+                lock (_links)
+                {
+                    for (var i = 0; i < _links.Count; i++)
+                    {
+                        var weakLink = _links[i];
+                        if (weakLink.TryGetTarget(out var link))
+                        {
+                            link.RaiseValueChanged(false);
+                        }
+                        else
+                        {
+                            _links.RemoveAt(i);
+                            i--;
+                        }
+                    }
+                }
+            }
+            
             ValueChanged?.Invoke(Value, _value);
+        }
+
+        public override string ToString()
+        {
+            return Value?.ToString();
+        }
+
+        ~LinkedProperty()
+        {
+            UnlinkAll();
         }
     }
 }
