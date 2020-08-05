@@ -135,4 +135,13 @@ namespace SkiEngine.UI
             
         }
     }
+
+    public static class SkiViewExtensions
+    {
+        public static T Run<T>(this T view, Action<T> action) where T : SkiView
+        {
+            action(view);
+            return view;
+        }
+    }
 }
