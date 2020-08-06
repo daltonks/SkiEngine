@@ -28,9 +28,14 @@ namespace SkiEngine.UI
             }
         }
 
-        public LinkedProperty<SKSize> Size { get; } = new LinkedProperty<SKSize>();
+        public LinkedProperty<SKSize> SizeProp { get; } = new LinkedProperty<SKSize>();
+        public SKSize Size
+        {
+            get => SizeProp.Value;
+            protected set => SizeProp.Value = value;
+        }
 
-        public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Value.Width, Size.Value.Height));
+        public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Width, Size.Height));
 
         public abstract IEnumerable<SkiView> ChildrenEnumerable { get; }
         public abstract bool ListensForPressedTouches { get; }
@@ -58,7 +63,7 @@ namespace SkiEngine.UI
             var drawMatrix = Node.LocalToWorldMatrix.PostConcat(UiComponent.Camera.WorldToPixelMatrix);
             canvas.SetMatrix(drawMatrix);
 
-            if (canvas.QuickReject(new SKRect(0, 0, Size.Value.Width, Size.Value.Height)))
+            if (canvas.QuickReject(new SKRect(0, 0, Size.Width, Size.Height)))
             {
                 return;
             }
@@ -74,7 +79,7 @@ namespace SkiEngine.UI
         public bool HitTest(SKPoint pointWorld)
         {
             var localPoint = Node.WorldToLocalMatrix.MapPoint(pointWorld);
-            return new SKRect(0, 0, Size.Value.Width, Size.Value.Height).Contains(localPoint);
+            return new SKRect(0, 0, Size.Width, Size.Height).Contains(localPoint);
         }
 
         public ViewTouchResult OnPressed(SkiTouch touch)

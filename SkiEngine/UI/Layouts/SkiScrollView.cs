@@ -15,9 +15,9 @@ namespace SkiEngine.UI.Layouts
 
         public SkiScrollView()
         {
-            ScrollBounds = new LinkedProperty<SKRect>(updateValue: () => new SKRect(0, 0, 0, Math.Max((Content?.Size.Value.Height ?? 0) - Size.Value.Height, 0)));
-            ScrollY = new LinkedProperty<float>(0, valueChanging: OnScrollYChanging, valueChanged: OnScrollYChanged);
-            Size.ValueChanged += (size, skSize) => ScrollBounds.UpdateValue();
+            ScrollBoundsProp = new LinkedProperty<SKRect>(updateValue: () => new SKRect(0, 0, 0, Math.Max((Content?.Size.Height ?? 0) - Size.Height, 0)));
+            ScrollYProp = new LinkedProperty<float>(0, valueChanging: OnScrollYChanging, valueChanged: OnScrollYChanged);
+            SizeProp.ValueChanged += (size, skSize) => ScrollBoundsProp.UpdateValue();
         }
 
         private SkiView _content;
@@ -29,17 +29,24 @@ namespace SkiEngine.UI.Layouts
                 if (_content != null)
                 {
                     _content.Node.Destroy();
-                    _content.Size.ValueChanged -= OnContentSizeChanged;
+                    _content.SizeProp.ValueChanged -= OnContentSizeChanged;
                 }
                 
                 UpdateChildNode(value);
                 _content = value;
-                _content.Size.ValueChanged += OnContentSizeChanged;
+                _content.SizeProp.ValueChanged += OnContentSizeChanged;
             }
         }
 
-        public LinkedProperty<float> ScrollY { get; }
-        public LinkedProperty<SKRect> ScrollBounds { get; }
+        public LinkedProperty<float> ScrollYProp { get; }
+        public float ScrollY
+        {
+            get => ScrollYProp.Value;
+            set => ScrollYProp.Value = value;
+        }
+        
+        public LinkedProperty<SKRect> ScrollBoundsProp { get; }
+        public SKRect ScrollBounds => ScrollBoundsProp.Value;
 
         public override IEnumerable<SkiView> ChildrenEnumerable
         {
@@ -62,19 +69,19 @@ namespace SkiEngine.UI.Layouts
 
         private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
         {
-            ScrollBounds.UpdateValue();
+            ScrollBoundsProp.UpdateValue();
             AdjustScrollIfOutOfBounds();
         }
 
         private void AdjustScrollIfOutOfBounds()
         {
-            ScrollY.Value = AdjustScrollIfOutOfBounds(ScrollY.Value);
+            ScrollY = AdjustScrollIfOutOfBounds(ScrollY);
         }
 
         private float AdjustScrollIfOutOfBounds(float y)
         {
-            var scrollBounds = ScrollBounds.Value;
-            if (y < scrollBounds.Top || (Content?.Size.Value.Height ?? 0) <= Size.Value.Height)
+            var scrollBounds = ScrollBounds;
+            if (y < scrollBounds.Top || (Content?.Size.Height ?? 0) <= Size.Height)
             {
                 y = scrollBounds.Top;
             }
@@ -93,7 +100,7 @@ namespace SkiEngine.UI.Layouts
 
         public override void Layout(float maxWidth, float maxHeight)
         {
-            Size.Value = new SKSize(maxWidth, maxHeight);
+            Size = new SKSize(maxWidth, maxHeight);
             Content.Layout(maxWidth, float.MaxValue);
             AdjustScrollIfOutOfBounds();
         }
@@ -101,7 +108,7 @@ namespace SkiEngine.UI.Layouts
         protected override void DrawInternal(SKCanvas canvas)
         {
             canvas.Save();
-            var skRect = new SKRect(0, 0, Size.Value.Width, Size.Value.Height);
+            var skRect = new SKRect(0, 0, Size.Width, Size.Height);
             canvas.ClipRect(skRect);
             Content.Draw(canvas);
             canvas.Restore();
@@ -125,7 +132,7 @@ namespace SkiEngine.UI.Layouts
             var previousPointPixels = _touchTrackers[touch.Id].GetLastPointPixels();
 
             var delta = PixelToLocalMatrix.MapVector(previousPointPixels - touch.PointPixels);
-            ScrollY.Value += delta.Y;
+            ScrollY += delta.Y;
 
             _touchTrackers[touch.Id].Add(touch);
 
@@ -153,10 +160,10 @@ namespace SkiEngine.UI.Layouts
                     {
                         var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
                         stopwatch.Restart();
-                        ScrollY.Value += (float) (velocity * elapsedSeconds);
+                        ScrollY += (float) (velocity * elapsedSeconds);
 
-                        var scrollBounds = ScrollBounds.Value;
-                        if (ScrollY.Value == scrollBounds.Top || ScrollY.Value == scrollBounds.Bottom)
+                        var scrollBounds = ScrollBounds;
+                        if (ScrollY == scrollBounds.Top || ScrollY == scrollBounds.Bottom)
                         {
                             if (_flingAnimation != null)
                             {

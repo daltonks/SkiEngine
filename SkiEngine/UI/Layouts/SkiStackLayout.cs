@@ -34,9 +34,9 @@ namespace SkiEngine.UI.Layouts
                     {
                         // Happy, easy path. Don't need full layout.
                         var childView = (SkiView)args.NewItems[0];
-                        UpdateChildNode(childView, new InitialNodeTransform(new SKPoint(0, Size.Value.Height)));
-                        childView.Layout(Size.Value.Width, float.MaxValue);
-                        Size.Value = new SKSize(Size.Value.Width, Size.Value.Height + childView.Size.Value.Height);
+                        UpdateChildNode(childView, new InitialNodeTransform(new SKPoint(0, Size.Height)));
+                        childView.Layout(Size.Width, float.MaxValue);
+                        Size = new SKSize(Size.Width, Size.Height + childView.Size.Height);
                         InvalidateSurface();
                         return;
                     }
@@ -77,9 +77,9 @@ namespace SkiEngine.UI.Layouts
             {
                 child.Node.RelativePoint = new SKPoint(0, height);
                 child.Layout(maxWidth, float.MaxValue);
-                height += child.Size.Value.Height;
+                height += child.Size.Height;
             }
-            Size.Value = new SKSize(maxWidth, height);
+            Size = new SKSize(maxWidth, height);
         }
 
         protected override void DrawInternal(SKCanvas canvas)
