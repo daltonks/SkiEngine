@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Threading;
 using SkiaSharp.Views.Forms;
 using SkiEngine.UI;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 namespace SkiEngine.Xamarin
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class SkiUiView : SKCanvasView
+    public partial class SkiUiView : AbsoluteLayout
     {
         private readonly SkiUiScene _skiUiScene;
 
@@ -22,12 +20,12 @@ namespace SkiEngine.Xamarin
             // that invalidate the surface.
             // Because of this, use the dispatcher.
             var invalidateSurface = Device.RuntimePlatform == Device.UWP
-                ? () => Application.Current.Dispatcher.BeginInvokeOnMainThread(InvalidateSurface)
-                : (Action) InvalidateSurface;
+                ? () => Application.Current.Dispatcher.BeginInvokeOnMainThread(CanvasView.InvalidateSurface)
+                : (Action) CanvasView.InvalidateSurface;
 
             _skiUiScene = new SkiUiScene(
                 invalidateSurface, 
-                (node, camera, invalidate) => new SkiXamarinUiComponent(this, node, camera, invalidate)
+                (node, camera, invalidate) => new SkiXamarinUiComponent(CanvasView, HiddenEntry, node, camera, invalidate)
             );
         }
 
@@ -38,20 +36,16 @@ namespace SkiEngine.Xamarin
             _skiUiScene.UiComponent.View = (SkiView) BindingContext;
         }
 
-        protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
+        private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
             _skiUiScene.OnPaintSurface(e.Surface.Canvas, Width, Height);
-
-            base.OnPaintSurface(e);
         }
 
-        protected override void OnTouch(SKTouchEventArgs e)
+        private void OnTouch(object sender, SKTouchEventArgs e)
         {
             e.Handled = true;
 
             _skiUiScene.OnTouch(e.ToSkiTouch());
-
-            base.OnTouch(e);
         }
     }
 }

@@ -2,9 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.Input;
+using SkiEngine.UI.Gestures;
 using SkiEngine.Util.Extensions.SkiaSharp;
 
 namespace SkiEngine.UI.Layouts
@@ -15,9 +17,37 @@ namespace SkiEngine.UI.Layouts
 
         public SkiScrollView()
         {
-            ScrollBoundsProp = new LinkedProperty<SKRect>(updateValue: () => new SKRect(0, 0, 0, Math.Max((Content?.Size.Height ?? 0) - Size.Height, 0)));
-            ScrollYProp = new LinkedProperty<float>(0, valueChanging: OnScrollYChanging, valueChanged: OnScrollYChanged);
-            SizeProp.ValueChanged += (size, skSize) => ScrollBoundsProp.UpdateValue();
+            CanScrollHorizontallyProp = new LinkedProperty<bool>(
+                valueChanged: (oldValue, newValue) =>
+                {
+                    LayoutContent();
+                    ScrollMaxProp.UpdateValue();
+                }
+            );
+            CanScrollVerticallyProp = new LinkedProperty<bool>(
+                true, 
+                valueChanged: (oldValue, newValue) =>
+                {
+                    LayoutContent();
+                    ScrollMaxProp.UpdateValue();
+                }
+            );
+            ScrollMaxProp = new LinkedProperty<SKPoint>(
+                updateValue: () => new SKPoint(
+                    CanScrollHorizontally ? Math.Max((Content?.Size.Width ?? 0) - Size.Width, 0) : 0, 
+                    CanScrollVertically ? Math.Max((Content?.Size.Height ?? 0) - Size.Height, 0) : 0
+                ),
+                valueChanged: (oldValue, newValue) => AdjustScrollIfOutOfBounds()
+            );
+            ScrollProp = new LinkedProperty<SKPoint>(
+                valueChanging: (oldValue, newValue) => AdjustScrollIfOutOfBounds(newValue), 
+                valueChanged: (oldValue, newValue) =>
+                {
+                    Content.Node.RelativePoint = new SKPoint(-newValue.X, -newValue.Y);
+                    InvalidateSurface();
+                }
+            );
+            SizeProp.ValueChanged += (size, skSize) => ScrollMaxProp.UpdateValue();
         }
 
         private SkiView _content;
@@ -38,15 +68,29 @@ namespace SkiEngine.UI.Layouts
             }
         }
 
-        public LinkedProperty<float> ScrollYProp { get; }
-        public float ScrollY
+        public LinkedProperty<bool> CanScrollHorizontallyProp { get; }
+        public bool CanScrollHorizontally
         {
-            get => ScrollYProp.Value;
-            set => ScrollYProp.Value = value;
+            get => CanScrollHorizontallyProp.Value;
+            set => CanScrollHorizontallyProp.Value = value;
+        }
+
+        public LinkedProperty<bool> CanScrollVerticallyProp { get; }
+        public bool CanScrollVertically
+        {
+            get => CanScrollVerticallyProp.Value;
+            set => CanScrollVerticallyProp.Value = value;
+        }
+
+        public LinkedProperty<SKPoint> ScrollProp { get; }
+        public SKPoint Scroll
+        {
+            get => ScrollProp.Value;
+            set => ScrollProp.Value = value;
         }
         
-        public LinkedProperty<SKRect> ScrollBoundsProp { get; }
-        public SKRect ScrollBounds => ScrollBoundsProp.Value;
+        public LinkedProperty<SKPoint> ScrollMaxProp { get; }
+        public SKPoint ScrollMax => ScrollMaxProp.Value;
 
         public override IEnumerable<SkiView> ChildrenEnumerable
         {
@@ -54,43 +98,40 @@ namespace SkiEngine.UI.Layouts
         }
 
         public override bool ListensForPressedTouches => true;
-        public override bool IsMultiTouchEnabled => true;
-
-        private float OnScrollYChanging(float oldY, float newY)
-        {
-            return AdjustScrollIfOutOfBounds(newY);
-        }
-
-        private void OnScrollYChanged(float oldY, float newY)
-        {
-            Content.Node.RelativePoint = new SKPoint(Content.Node.RelativePoint.X, -newY);
-            InvalidateSurface();
-        }
 
         private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
         {
-            ScrollBoundsProp.UpdateValue();
-            AdjustScrollIfOutOfBounds();
+            ScrollMaxProp.UpdateValue();
         }
 
         private void AdjustScrollIfOutOfBounds()
         {
-            ScrollY = AdjustScrollIfOutOfBounds(ScrollY);
+            Scroll = AdjustScrollIfOutOfBounds(Scroll);
         }
 
-        private float AdjustScrollIfOutOfBounds(float y)
+        private SKPoint AdjustScrollIfOutOfBounds(SKPoint scroll)
         {
-            var scrollBounds = ScrollBounds;
-            if (y < scrollBounds.Top || (Content?.Size.Height ?? 0) <= Size.Height)
+            var scrollMax = ScrollMax;
+
+            if (scroll.X < 0 || (Content?.Size.Width ?? 0) <= Size.Width)
             {
-                y = scrollBounds.Top;
+                scroll.X = 0;
             }
-            else if (y > scrollBounds.Bottom)
+            else if (scroll.X > scrollMax.X)
             {
-                y = scrollBounds.Bottom;
+                scroll.X = scrollMax.X;
             }
 
-            return y;
+            if (scroll.Y < 0 || (Content?.Size.Height ?? 0) <= Size.Height)
+            {
+                scroll.Y = 0;
+            }
+            else if (scroll.Y > scrollMax.Y)
+            {
+                scroll.Y = scrollMax.Y;
+            }
+
+            return scroll;
         }
 
         protected override void OnNodeChanged()
@@ -101,8 +142,14 @@ namespace SkiEngine.UI.Layouts
         public override void Layout(float maxWidth, float maxHeight)
         {
             Size = new SKSize(maxWidth, maxHeight);
-            Content.Layout(maxWidth, float.MaxValue);
-            AdjustScrollIfOutOfBounds();
+            LayoutContent();
+        }
+
+        private void LayoutContent()
+        {
+            var contentWidth = CanScrollHorizontally ? float.MaxValue : Size.Width;
+            var contentHeight = CanScrollVertically ? float.MaxValue : Size.Height;
+            Content?.Layout(contentWidth, contentHeight);
         }
         
         protected override void DrawInternal(SKCanvas canvas)
@@ -115,7 +162,7 @@ namespace SkiEngine.UI.Layouts
         }
 
         private readonly Dictionary<long, ScrollTouchTracker> _touchTrackers = new Dictionary<long, ScrollTouchTracker>();
-        protected override ViewTouchResult OnPressedInternal(SkiTouch touch)
+        protected override GestureTouchResult OnPressedInternal(SkiTouch touch)
         {
             if (_flingAnimation != null)
             {
@@ -124,55 +171,61 @@ namespace SkiEngine.UI.Layouts
             }
             _touchTrackers[touch.Id] = ScrollTouchTracker.Get(touch);
 
-            return ViewTouchResult.CancelLowerListeners;
+            return GestureTouchResult.CancelLowerListeners;
         }
 
-        protected override ViewTouchResult OnMovedInternal(SkiTouch touch)
+        protected override GestureTouchResult OnMovedInternal(SkiTouch touch)
         {
             var previousPointPixels = _touchTrackers[touch.Id].GetLastPointPixels();
 
-            var delta = PixelToLocalMatrix.MapVector(previousPointPixels - touch.PointPixels);
-            ScrollY += delta.Y;
+            Scroll += PixelToLocalMatrix.MapVector(previousPointPixels - touch.PointPixels);
 
             _touchTrackers[touch.Id].Add(touch);
 
-            return ViewTouchResult.CancelLowerListeners;
+            return GestureTouchResult.CancelLowerListeners;
         }
 
-        protected override ViewTouchResult OnReleasedInternal(SkiTouch touch)
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
+        protected override GestureTouchResult OnReleasedInternal(SkiTouch touch)
         {
             var touchTracker = _touchTrackers[touch.Id];
 
             var flingPixelsPerSecond = touchTracker.FlingPixelsPerSecond;
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (NumPressedTouches == 0 && flingPixelsPerSecond.Y != 0)
+            if (!CanScrollHorizontally)
+            {
+                flingPixelsPerSecond.X = 0;
+            }
+            if (!CanScrollVertically)
+            {
+                flingPixelsPerSecond.Y = 0;
+            }
+            var shouldAnimate = 
+                NumPressedTouches == 0
+                && (flingPixelsPerSecond.X > 5 || flingPixelsPerSecond.Y > 5);
+            if (shouldAnimate)
             {
                 var flingDpPerSecond = UiComponent.Camera.PixelToDpMatrix.MapVector(flingPixelsPerSecond);
-
-                var animationSeconds = Math.Abs(flingDpPerSecond.Y) / 600;
-
+                var animationSeconds = flingDpPerSecond.Length / 600;
                 var flingLocalPerSecond = PixelToLocalMatrix.MapVector(flingPixelsPerSecond);
 
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
                 _flingAnimation = new SkiAnimation(
-                    velocity =>
+                    multiplier =>
                     {
                         var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
                         stopwatch.Restart();
-                        ScrollY += (float) (velocity * elapsedSeconds);
+                        var previousScroll = Scroll;
+                        Scroll += flingLocalPerSecond.Multiply(elapsedSeconds * multiplier);
+                        var scrollChanged = Scroll != previousScroll;
 
-                        var scrollBounds = ScrollBounds;
-                        if (ScrollY == scrollBounds.Top || ScrollY == scrollBounds.Bottom)
+                        if (!scrollChanged && _flingAnimation != null)
                         {
-                            if (_flingAnimation != null)
-                            {
-                                UiComponent.AbortAnimation(_flingAnimation);
-                                _flingAnimation = null;
-                            }
+                            UiComponent.AbortAnimation(_flingAnimation);
+                            _flingAnimation = null;
                         }
                     },
-                    flingLocalPerSecond.Y,
+                    1,
                     0,
                     TimeSpan.FromSeconds(animationSeconds)
                 );
@@ -182,7 +235,7 @@ namespace SkiEngine.UI.Layouts
             touchTracker.Recycle();
             _touchTrackers.Remove(touch.Id);
 
-            return ViewTouchResult.CancelLowerListeners;
+            return GestureTouchResult.CancelLowerListeners;
         }
 
         protected override void OnCancelledInternal(SkiTouch touch)

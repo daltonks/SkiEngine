@@ -26,7 +26,7 @@ namespace SkiEngine.UI
                 ValueChanged += valueChanged;
             }
 
-            Value = startingValue;
+            _value = startingValue;
         }
 
         private T _value;

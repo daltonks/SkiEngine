@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using SkiEngine.Input;
+using SkiEngine.UI.Gestures;
 
 namespace SkiEngine.UI
 {
@@ -18,7 +19,7 @@ namespace SkiEngine.UI
 
         private UiPressedTouchTracker() { }
 
-        private readonly List<SkiView> _listeners = new List<SkiView>();
+        private readonly List<SkiGestureRecognizer> _recognizers = new List<SkiGestureRecognizer>();
 
         public void OnPressed(SkiView rootView, SkiTouch touch)
         {
@@ -33,7 +34,13 @@ namespace SkiEngine.UI
                 {
                     if (view.ListensForPressedTouches)
                     {
-                        _listeners.Add(view);
+                        // Add recognizers in reverse-order, because all 
+                        // eligible recognizers will be reversed
+                        for (var i = view.GestureRecognizers.Count - 1; i >= 0; i--)
+                        {
+                            var recognizer = view.GestureRecognizers[i];
+                            _recognizers.Add(recognizer);
+                        }
                     }
 
                     foreach (var child in view.ChildrenEnumerable)
@@ -43,17 +50,18 @@ namespace SkiEngine.UI
                 }
             }
 
-            _listeners.Reverse();
+            // Reverse the recognizers so that higher views are processed first
+            _recognizers.Reverse();
 
-            for (var i = 0; i < _listeners.Count; i++)
+            for (var i = 0; i < _recognizers.Count; i++)
             {
-                var view = _listeners[i];
+                var view = _recognizers[i];
 
                 var ignoreTouchForView = !view.IsMultiTouchEnabled && view.NumPressedTouches > 0;
 
                 if (ignoreTouchForView)
                 {
-                    _listeners.RemoveAt(i);
+                    _recognizers.RemoveAt(i);
                     i--;
                 }
 
@@ -61,21 +69,21 @@ namespace SkiEngine.UI
                     ? view.MultiTouchIgnoredResult
                     : view.OnPressed(touch);
 
-                if (touchResult == ViewTouchResult.CancelLowerListeners)
+                if (touchResult == GestureTouchResult.CancelLowerListeners)
                 {
-                    while (i < _listeners.Count - 1)
+                    while (i < _recognizers.Count - 1)
                     {
-                        _listeners.RemoveAt(i + 1);
+                        _recognizers.RemoveAt(i + 1);
                     }
 
                     break;
                 }
-                if (touchResult == ViewTouchResult.CancelOtherListeners)
+                if (touchResult == GestureTouchResult.CancelOtherListeners)
                 {
-                    _listeners.Clear();
+                    _recognizers.Clear();
                     if (!ignoreTouchForView)
                     {
-                        _listeners.Add(view);
+                        _recognizers.Add(view);
                     }
                     break;
                 }
@@ -94,33 +102,33 @@ namespace SkiEngine.UI
 
         public void OnCancelled(SkiTouch touch)
         {
-            foreach (var listener in _listeners)
+            foreach (var listener in _recognizers)
             {
                 listener.OnCancelled(touch);
             }
         }
 
-        private void HandleInProgressTouch(SkiTouch touch, Func<SkiView, ViewTouchResult> viewFunc)
+        private void HandleInProgressTouch(SkiTouch touch, Func<SkiGestureRecognizer, GestureTouchResult> viewFunc)
         {
-            for (var i = 0; i < _listeners.Count; i++)
+            for (var i = 0; i < _recognizers.Count; i++)
             {
-                var view = _listeners[i];
+                var view = _recognizers[i];
                 
                 var touchResult = viewFunc(view);
-                if (touchResult == ViewTouchResult.CancelLowerListeners)
+                if (touchResult == GestureTouchResult.CancelLowerListeners)
                 {
-                    while (i < _listeners.Count - 1)
+                    while (i < _recognizers.Count - 1)
                     {
-                        var l = _listeners[i + 1];
-                        _listeners.RemoveAt(i + 1);
+                        var l = _recognizers[i + 1];
+                        _recognizers.RemoveAt(i + 1);
                         l.OnCancelled(touch);
                     }
 
                     break;
                 }
-                if (touchResult == ViewTouchResult.CancelOtherListeners)
+                if (touchResult == GestureTouchResult.CancelOtherListeners)
                 {
-                    foreach (var l in _listeners)
+                    foreach (var l in _recognizers)
                     {
                         if (l != view)
                         {
@@ -128,8 +136,8 @@ namespace SkiEngine.UI
                         }
                     }
                     
-                    _listeners.Clear();
-                    _listeners.Add(view);
+                    _recognizers.Clear();
+                    _recognizers.Add(view);
                     break;
                 }
             }
@@ -137,15 +145,8 @@ namespace SkiEngine.UI
 
         public void Recycle()
         {
-            _listeners.Clear();
+            _recognizers.Clear();
             Cached.Add(this);
         }
-    }
-
-    public enum ViewTouchResult
-    {
-        Passthrough,
-        CancelLowerListeners,
-        CancelOtherListeners
     }
 }

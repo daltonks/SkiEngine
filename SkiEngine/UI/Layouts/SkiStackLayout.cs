@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using SkiaSharp;
@@ -7,6 +8,8 @@ namespace SkiEngine.UI.Layouts
 {
     public class SkiStackLayout : SkiView
     {
+        private SKSize _maxSize;
+
         public SkiStackLayout()
         {
             Children.CollectionChanged += OnChildrenChanged;
@@ -35,8 +38,8 @@ namespace SkiEngine.UI.Layouts
                         // Happy, easy path. Don't need full layout.
                         var childView = (SkiView)args.NewItems[0];
                         UpdateChildNode(childView, new InitialNodeTransform(new SKPoint(0, Size.Height)));
-                        childView.Layout(Size.Width, float.MaxValue);
-                        Size = new SKSize(Size.Width, Size.Height + childView.Size.Height);
+                        childView.Layout(_maxSize.Width, float.MaxValue);
+                        Size = new SKSize(Math.Max(Size.Width, childView.Size.Width), Size.Height + childView.Size.Height);
                         InvalidateSurface();
                         return;
                     }
@@ -70,16 +73,21 @@ namespace SkiEngine.UI.Layouts
             InvalidateSurface();
         }
 
+        
         public override void Layout(float maxWidth, float maxHeight)
         {
-            var height = 0f;
+            _maxSize = new SKSize(maxWidth, maxHeight);
+
+            var size = new SKSize();
             foreach (var child in ChildrenEnumerable)
             {
-                child.Node.RelativePoint = new SKPoint(0, height);
+                child.Node.RelativePoint = new SKPoint(0, size.Height);
                 child.Layout(maxWidth, float.MaxValue);
-                height += child.Size.Height;
+                var childSize = child.Size;
+                size.Height += childSize.Height;
+                size.Width = Math.Max(size.Width, childSize.Width);
             }
-            Size = new SKSize(maxWidth, height);
+            Size = size;
         }
 
         protected override void DrawInternal(SKCanvas canvas)

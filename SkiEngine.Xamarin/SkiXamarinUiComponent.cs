@@ -8,11 +8,42 @@ namespace SkiEngine.Xamarin
 {
     public class SkiXamarinUiComponent : SkiUiComponent
     {
-        private readonly SKCanvasView _canvasView;
+        protected override event Action<string> HiddenEntryTextChanged;
+        protected override event Action HiddenEntryUnfocused;
 
-        public SkiXamarinUiComponent(SKCanvasView canvasView, Node node, CameraComponent camera, Action invalidateSurface) : base(node, camera, invalidateSurface)
+        private readonly SKCanvasView _canvasView;
+        private readonly Entry _hiddenEntry;
+
+        public SkiXamarinUiComponent(
+            SKCanvasView canvasView, 
+            Entry hiddenEntry,
+            Node node, 
+            CameraComponent camera, 
+            Action invalidateSurface
+        ) : base(node, camera, invalidateSurface)
         {
             _canvasView = canvasView;
+            _hiddenEntry = hiddenEntry;
+
+            _hiddenEntry.TextChanged += (sender, args) =>
+            {
+                HiddenEntryTextChanged?.Invoke(args.NewTextValue);
+            };
+
+            _hiddenEntry.Unfocused += (sender, args) =>
+            {
+                HiddenEntryUnfocused?.Invoke();
+            };
+        }
+
+        protected override void FocusHiddenEntry()
+        {
+            _hiddenEntry.Focus();
+        }
+
+        protected override void SetHiddenEntryText(string text)
+        {
+            _hiddenEntry.Text = text;
         }
 
         public override void StartAnimation(SkiAnimation skiAnimation)

@@ -36,7 +36,7 @@ namespace SkiEngine.UI
         }
 
         public SkiUiComponent UiComponent { get; }
-        public SKColor BackgroundColor { get; set; }
+        public SKColor BackgroundColor { get; set; } = SKColors.White;
 
         private bool _drawPending;
         public void InvalidateSurface()
