@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SkiaSharp;
 using SkiEngine.Camera;
 using SkiEngine.Drawable;
@@ -14,7 +15,7 @@ namespace SkiEngine.UI
         protected abstract event Action<string> HiddenEntryTextChanged;
         protected abstract event Action HiddenEntryUnfocused;
 
-        private readonly List<Action> _updateActions = new List<Action>();
+        private readonly Queue<Action> _updateActions = new Queue<Action>();
         private readonly Action _invalidateSurface;
         
         public SkiUiComponent(
@@ -98,16 +99,15 @@ namespace SkiEngine.UI
 
         public void RunNextUpdate(Action action)
         {
-            _updateActions.Add(action);
+            _updateActions.Enqueue(action);
         }
 
         private void Update(UpdateTime updateTime)
         {
-            foreach (var action in _updateActions)
+            while (_updateActions.Count > 0)
             {
-                action();
+                _updateActions.Dequeue().Invoke();
             }
-            _updateActions.Clear();
         }
 
         public void Draw(SKCanvas canvas, CameraComponent camera)

@@ -2,17 +2,19 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using SkiaSharp;
 using SkiEngine.UI.Views;
 using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI.Layouts
 {
-    public class SkiStackLayout : SkiView
+    public class SkiVStack : SkiView
     {
         private SKSize _maxSize;
+        private bool _layoutChildrenQueued;
 
-        public SkiStackLayout()
+        public SkiVStack()
         {
             Children.CollectionChanged += OnChildrenChanged;
         }
@@ -55,8 +57,7 @@ namespace SkiEngine.UI.Layouts
                     break;
             }
 
-            UiComponent?.RunNextUpdate(LayoutChildren);
-            InvalidateSurface();
+            QueueLayoutChildren();
 
             void OnChildAdded(SkiView child)
             {
@@ -75,8 +76,7 @@ namespace SkiEngine.UI.Layouts
 
         private void OnChildSizeRequestChanged(object sender, SKSize oldValue, SKSize newValue)
         {
-            UiComponent?.RunNextUpdate(LayoutChildren);
-            InvalidateSurface();
+            QueueLayoutChildren();
         }
 
         private void OnChildHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
@@ -88,17 +88,34 @@ namespace SkiEngine.UI.Layouts
         public override void Layout(float maxWidth, float maxHeight)
         {
             _maxSize = new SKSize(maxWidth, maxHeight);
-
             LayoutChildren();
         }
 
+        private void QueueLayoutChildren()
+        {
+            if (_layoutChildrenQueued || UiComponent == null)
+            {
+                return;
+            }
+
+            _layoutChildrenQueued = true;
+            UiComponent.RunNextUpdate(() => {
+                LayoutChildren();
+                _layoutChildrenQueued = false;
+            });
+
+            InvalidateSurface();
+        }
+
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         private void LayoutChildren()
         {
             var size = new SKSize();
 
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (_maxSize.Height == float.MaxValue)
             {
+                // There is no height limit
+
                 foreach (var child in Children)
                 {
                     child.Layout(_maxSize.Width, float.MaxValue);
@@ -109,6 +126,8 @@ namespace SkiEngine.UI.Layouts
             }
             else
             {
+                // There is a height limit
+
                 var totalHeightRequests = 0f;
                 var numNoHeightRequest = 0;
                 foreach (var child in Children)
@@ -124,15 +143,31 @@ namespace SkiEngine.UI.Layouts
                     }
                 }
 
-                var childrenMaxSizes = new SKSize[Children.Count];
+                float heightOfNoHeightRequestChildren;
+                float scaleOfHeightRequestChildren;
 
-                for (var i = 0; i < Children.Count; i++)
+                if (totalHeightRequests < _maxSize.Height)
                 {
-                    var child = Children[i];
-                    var childMaxSize = childrenMaxSizes[i];
-                    child.Layout(childMaxSize.Width, childMaxSize.Height);
-                    size.Height += childMaxSize.Height;
-                    size.Width = Math.Max(size.Width, childMaxSize.Width);
+                    // All height requests can be honored
+                    heightOfNoHeightRequestChildren = (_maxSize.Height - totalHeightRequests) / numNoHeightRequest;
+                    scaleOfHeightRequestChildren = 1;
+                }
+                else
+                {
+                    // Height requests are out-of-bounds, so they need to be shrunk
+                    heightOfNoHeightRequestChildren = 0;
+                    scaleOfHeightRequestChildren = _maxSize.Height / totalHeightRequests;
+                }
+
+                foreach (var child in Children)
+                {
+                    var childMaxHeight = child.SizeRequest.Height == -1 
+                        ? heightOfNoHeightRequestChildren 
+                        : child.SizeRequest.Height * scaleOfHeightRequestChildren;
+
+                    child.Layout(_maxSize.Width, childMaxHeight);
+                    size.Height += childMaxHeight;
+                    size.Width = Math.Max(size.Width, child.Size.Width);
                 }
             }
 
