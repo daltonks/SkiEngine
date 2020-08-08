@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using SkiaSharp;
 using SkiEngine.Input;
 using SkiEngine.UI.Gestures;
+using SkiEngine.UI.Views;
 using SkiEngine.Util;
 
 namespace SkiEngine.UI
@@ -34,6 +35,20 @@ namespace SkiEngine.UI
         {
             get => SizeProp.Value;
             protected set => SizeProp.Value = value;
+        }
+
+        public LinkedProperty<SkiLayoutOptions> HorizontalOptionsProp { get; } = new LinkedProperty<SkiLayoutOptions>();
+        public SkiLayoutOptions HorizontalOptions
+        {
+            get => HorizontalOptionsProp.Value;
+            set => HorizontalOptionsProp.Value = value;
+        }
+
+        public LinkedProperty<SkiLayoutOptions> VerticalOptionsProp { get; } = new LinkedProperty<SkiLayoutOptions>();
+        public SkiLayoutOptions VerticalOptions
+        {
+            get => VerticalOptionsProp.Value;
+            set => VerticalOptionsProp.Value = value;
         }
 
         public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Width, Size.Height));

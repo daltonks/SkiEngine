@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using SkiaSharp;
+using SkiEngine.UI.Views;
 
 namespace SkiEngine.UI.Layouts
 {
@@ -31,61 +32,77 @@ namespace SkiEngine.UI.Layouts
             switch (args.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (args.NewStartingIndex == Children.Count - 1)
-                    {
-                        // Happy, easy path. Don't need full layout.
-                        var childView = (SkiView)args.NewItems[0];
-                        UpdateChildNode(childView, new InitialNodeTransform(new SKPoint(0, Size.Height)));
-                        childView.Layout(_maxSize.Width, float.MaxValue);
-                        Size = new SKSize(Math.Max(Size.Width, childView.Size.Width), Size.Height + childView.Size.Height);
-                        InvalidateSurface();
-                        return;
-                    }
-                    else
-                    {
-                        UpdateChildNode((SkiView)args.NewItems[0]);
-                    }
+                    OnChildAdded((SkiView)args.NewItems[0]);
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    ((SkiView)args.OldItems[0]).Node?.Destroy();
+                    OnChildRemoved((SkiView)args.OldItems[0]);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    ((SkiView)args.OldItems[0]).Node?.Destroy();
-                    UpdateChildNode((SkiView)args.NewItems[0]);
+                    OnChildRemoved((SkiView)args.OldItems[0]);
+                    OnChildAdded((SkiView)args.NewItems[0]);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     if (args.OldItems != null)
                     {
                         foreach (var oldItem in args.OldItems)
                         {
-                            ((SkiView) oldItem).Node?.Destroy();
+                            OnChildRemoved((SkiView)oldItem);
                         }
                     }
-                    
                     break;
             }
 
-            UiComponent?.RequestFullLayout();
+            UiComponent?.RunNextUpdate(LayoutChildren);
             InvalidateSurface();
+
+            void OnChildAdded(SkiView child)
+            {
+                UpdateChildNode(child);
+            }
+
+            void OnChildRemoved(SkiView child)
+            {
+                child.Node?.Destroy();
+            }
         }
 
-        
         public override void Layout(float maxWidth, float maxHeight)
         {
             _maxSize = new SKSize(maxWidth, maxHeight);
 
+            LayoutChildren();
+        }
+
+        private void LayoutChildren()
+        {
             var size = new SKSize();
-            foreach (var child in ChildrenEnumerable)
+            foreach (var child in Children)
             {
-                child.Node.RelativePoint = new SKPoint(0, size.Height);
-                child.Layout(maxWidth, float.MaxValue);
+                child.Layout(_maxSize.Width, float.MaxValue);
+
                 var childSize = child.Size;
                 size.Height += childSize.Height;
                 size.Width = Math.Max(size.Width, childSize.Width);
             }
+
             Size = size;
+
+            var childY = 0f;
+            foreach (var child in Children)
+            {
+                var childX = child.HorizontalOptions switch
+                {
+                    SkiLayoutOptions.Start => 0,
+                    SkiLayoutOptions.Center => _maxSize.Width / 2 - child.Size.Width / 2,
+                    SkiLayoutOptions.End => _maxSize.Width - child.Size.Width,
+                    SkiLayoutOptions.Fill => 0,
+                    _ => 0f
+                };
+                child.Node.RelativePoint = new SKPoint(childX, childY);
+                childY += child.Size.Height;
+            }
         }
 
         protected override void DrawInternal(SKCanvas canvas)

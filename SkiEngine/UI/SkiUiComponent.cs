@@ -13,6 +13,7 @@ namespace SkiEngine.UI
         protected abstract event Action<string> HiddenEntryTextChanged;
         protected abstract event Action HiddenEntryUnfocused;
 
+        private readonly List<Action> _updateActions = new List<Action>();
         private readonly Action _invalidateSurface;
         
         public SkiUiComponent(
@@ -62,14 +63,7 @@ namespace SkiEngine.UI
             }
         }
 
-        public bool FullLayoutNeeded { get; private set; }
-
         public UpdateableComponentPart UpdateablePart { get; }
-
-        public void RequestFullLayout()
-        {
-            FullLayoutNeeded = true;
-        }
 
         public void InvalidateSurface()
         {
@@ -101,13 +95,18 @@ namespace SkiEngine.UI
         public abstract void StartAnimation(SkiAnimation skiAnimation);
         public abstract void AbortAnimation(SkiAnimation skiAnimation);
 
+        public void RunNextUpdate(Action action)
+        {
+            _updateActions.Add(action);
+        }
+
         private void Update(UpdateTime updateTime)
         {
-            if (FullLayoutNeeded)
+            foreach (var action in _updateActions)
             {
-                View.Layout(Size.Width, Size.Height);
-                FullLayoutNeeded = false;
+                action();
             }
+            _updateActions.Clear();
         }
 
         public void Draw(SKCanvas canvas, CameraComponent camera)
