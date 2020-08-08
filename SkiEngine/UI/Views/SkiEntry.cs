@@ -1,5 +1,5 @@
-﻿using SkiEngine.UI.Layouts;
-using Topten.RichTextKit;
+﻿using SkiaSharp;
+using SkiEngine.UI.Layouts;
 
 namespace SkiEngine.UI.Views
 {
@@ -9,6 +9,7 @@ namespace SkiEngine.UI.Views
         {
             CanScrollHorizontally = true;
             CanScrollVertically = false;
+            SizeRequest = new SKSize(-1, 40);
         }
     }
 }

@@ -9,6 +9,7 @@ namespace SkiEngine.UI.Views.Base
     {
         public SkiView()
         {
+            SizeRequestProp = new LinkedProperty<SKSize>(this, new SKSize(-1, -1));
             SizeProp = new LinkedProperty<SKSize>(this);
             HorizontalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
             VerticalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
@@ -31,6 +32,13 @@ namespace SkiEngine.UI.Views.Base
                 _node = value;
                 OnNodeChanged();
             }
+        }
+
+        public LinkedProperty<SKSize> SizeRequestProp { get; }
+        public SKSize SizeRequest
+        {
+            get => SizeRequestProp.Value;
+            protected set => SizeRequestProp.Value = value;
         }
 
         public LinkedProperty<SKSize> SizeProp { get; }

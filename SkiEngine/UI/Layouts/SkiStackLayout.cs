@@ -61,14 +61,22 @@ namespace SkiEngine.UI.Layouts
             void OnChildAdded(SkiView child)
             {
                 UpdateChildNode(child);
+                child.SizeRequestProp.ValueChanged += OnChildSizeRequestChanged;
                 child.HorizontalOptionsProp.ValueChanged += OnChildHorizontalOptionsChanged;
             }
 
             void OnChildRemoved(SkiView child)
             {
                 child.Node?.Destroy();
+                child.SizeRequestProp.ValueChanged -= OnChildSizeRequestChanged;
                 child.HorizontalOptionsProp.ValueChanged -= OnChildHorizontalOptionsChanged;
             }
+        }
+
+        private void OnChildSizeRequestChanged(object sender, SKSize oldValue, SKSize newValue)
+        {
+            UiComponent?.RunNextUpdate(LayoutChildren);
+            InvalidateSurface();
         }
 
         private void OnChildHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
@@ -87,22 +95,53 @@ namespace SkiEngine.UI.Layouts
         private void LayoutChildren()
         {
             var size = new SKSize();
-            foreach (var child in Children)
-            {
-                child.Layout(_maxSize.Width, float.MaxValue);
 
-                var childSize = child.Size;
-                size.Height += childSize.Height;
-                size.Width = Math.Max(size.Width, childSize.Width);
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (_maxSize.Height == float.MaxValue)
+            {
+                foreach (var child in Children)
+                {
+                    child.Layout(_maxSize.Width, float.MaxValue);
+                    child.Node.RelativePoint = new SKPoint(0, size.Height);
+                    size.Height += child.Size.Height;
+                    size.Width = Math.Max(size.Width, child.Size.Width);
+                }
+            }
+            else
+            {
+                var totalHeightRequests = 0f;
+                var numNoHeightRequest = 0;
+                foreach (var child in Children)
+                {
+                    var childHeightRequest = child.SizeRequest.Height;
+                    if (childHeightRequest == -1)
+                    {
+                        numNoHeightRequest++;
+                    }
+                    else
+                    {
+                        totalHeightRequests += childHeightRequest;
+                    }
+                }
+
+                var childrenMaxSizes = new SKSize[Children.Count];
+
+                for (var i = 0; i < Children.Count; i++)
+                {
+                    var child = Children[i];
+                    var childMaxSize = childrenMaxSizes[i];
+                    child.Layout(childMaxSize.Width, childMaxSize.Height);
+                    size.Height += childMaxSize.Height;
+                    size.Width = Math.Max(size.Width, childMaxSize.Width);
+                }
             }
 
             Size = size;
 
-            var childY = 0f;
+            // Update children X values
             foreach (var child in Children)
             {
-                child.Node.RelativePoint = new SKPoint(GetChildX(child), childY);
-                childY += child.Size.Height;
+                child.Node.RelativePoint = new SKPoint(GetChildX(child), child.Node.RelativePoint.Y);
             }
         }
 
@@ -111,8 +150,8 @@ namespace SkiEngine.UI.Layouts
             return child.HorizontalOptions switch
             {
                 SkiLayoutOptions.Start => 0,
-                SkiLayoutOptions.Center => _maxSize.Width / 2 - child.Size.Width / 2,
-                SkiLayoutOptions.End => _maxSize.Width - child.Size.Width,
+                SkiLayoutOptions.Center => Size.Width / 2 - child.Size.Width / 2,
+                SkiLayoutOptions.End => Size.Width - child.Size.Width,
                 SkiLayoutOptions.Fill => 0,
                 _ => 0f
             };

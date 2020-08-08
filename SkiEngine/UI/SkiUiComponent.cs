@@ -52,7 +52,7 @@ namespace SkiEngine.UI
         public SKSize Size
         {
             get => _size;
-            set
+            internal set
             {
                 if (_size == value)
                 {
