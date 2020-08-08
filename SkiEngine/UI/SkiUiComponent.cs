@@ -4,6 +4,7 @@ using SkiaSharp;
 using SkiEngine.Camera;
 using SkiEngine.Drawable;
 using SkiEngine.Input;
+using SkiEngine.UI.Views.Base;
 using SkiEngine.Updateable;
 
 namespace SkiEngine.UI

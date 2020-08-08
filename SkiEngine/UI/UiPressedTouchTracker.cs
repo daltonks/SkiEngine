@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using SkiEngine.Input;
 using SkiEngine.UI.Gestures;
+using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI
 {

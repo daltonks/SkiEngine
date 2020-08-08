@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using SkiaSharp;
-using SkiEngine.Input;
 using SkiEngine.UI.Gestures;
-using SkiEngine.UI.Views;
-using SkiEngine.Util;
 
-namespace SkiEngine.UI
+namespace SkiEngine.UI.Views.Base
 {
     public abstract class SkiView
     {
+        public SkiView()
+        {
+            SizeProp = new LinkedProperty<SKSize>(this);
+            HorizontalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
+            VerticalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
+        }
+
         public SkiUiComponent UiComponent { get; internal set; }
 
         private Node _node;
@@ -30,21 +33,21 @@ namespace SkiEngine.UI
             }
         }
 
-        public LinkedProperty<SKSize> SizeProp { get; } = new LinkedProperty<SKSize>();
+        public LinkedProperty<SKSize> SizeProp { get; }
         public SKSize Size
         {
             get => SizeProp.Value;
             protected set => SizeProp.Value = value;
         }
 
-        public LinkedProperty<SkiLayoutOptions> HorizontalOptionsProp { get; } = new LinkedProperty<SkiLayoutOptions>();
+        public LinkedProperty<SkiLayoutOptions> HorizontalOptionsProp { get; }
         public SkiLayoutOptions HorizontalOptions
         {
             get => HorizontalOptionsProp.Value;
             set => HorizontalOptionsProp.Value = value;
         }
 
-        public LinkedProperty<SkiLayoutOptions> VerticalOptionsProp { get; } = new LinkedProperty<SkiLayoutOptions>();
+        public LinkedProperty<SkiLayoutOptions> VerticalOptionsProp { get; }
         public SkiLayoutOptions VerticalOptions
         {
             get => VerticalOptionsProp.Value;

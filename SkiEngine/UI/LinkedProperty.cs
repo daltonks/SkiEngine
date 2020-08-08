@@ -6,19 +6,24 @@ namespace SkiEngine.UI
 {
     public class LinkedProperty<T>
     {
-        public event Action<T, T> ValueChanged;
+        public delegate void ValueChangedDelegate(object sender, T oldValue, T newValue);
 
+        public event ValueChangedDelegate ValueChanged;
+
+        private readonly object _owner;
         private readonly Func<T, T, T> _valueChanging;
         private readonly Func<T> _updateValue;
         private readonly List<WeakReference<LinkedProperty<T>>> _links = new List<WeakReference<LinkedProperty<T>>>();
 
         public LinkedProperty(
+            object owner,
             T startingValue = default, 
             Func<T, T, T> valueChanging = null, 
-            Action<T, T> valueChanged = null,
+            ValueChangedDelegate valueChanged = null,
             Func<T> updateValue = null
         )
         {
+            _owner = owner;
             _valueChanging = valueChanging;
             _updateValue = updateValue;
             if (valueChanged != null)
@@ -65,7 +70,7 @@ namespace SkiEngine.UI
                     }
                 }
 
-                ValueChanged?.Invoke(previousValue, _value);
+                ValueChanged?.Invoke(_owner, previousValue, _value);
             }
         }
 
@@ -165,7 +170,7 @@ namespace SkiEngine.UI
                 }
             }
             
-            ValueChanged?.Invoke(Value, _value);
+            ValueChanged?.Invoke(_owner, Value, _value);
         }
 
         public override string ToString()

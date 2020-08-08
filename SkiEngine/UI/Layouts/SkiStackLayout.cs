@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using SkiaSharp;
 using SkiEngine.UI.Views;
+using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI.Layouts
 {
@@ -60,12 +61,20 @@ namespace SkiEngine.UI.Layouts
             void OnChildAdded(SkiView child)
             {
                 UpdateChildNode(child);
+                child.HorizontalOptionsProp.ValueChanged += OnChildHorizontalOptionsChanged;
             }
 
             void OnChildRemoved(SkiView child)
             {
                 child.Node?.Destroy();
+                child.HorizontalOptionsProp.ValueChanged -= OnChildHorizontalOptionsChanged;
             }
+        }
+
+        private void OnChildHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        {
+            var child = (SkiView) sender;
+            child.Node.RelativePoint = new SKPoint(GetChildX(child), child.Node.RelativePoint.Y);
         }
 
         public override void Layout(float maxWidth, float maxHeight)
@@ -92,17 +101,21 @@ namespace SkiEngine.UI.Layouts
             var childY = 0f;
             foreach (var child in Children)
             {
-                var childX = child.HorizontalOptions switch
-                {
-                    SkiLayoutOptions.Start => 0,
-                    SkiLayoutOptions.Center => _maxSize.Width / 2 - child.Size.Width / 2,
-                    SkiLayoutOptions.End => _maxSize.Width - child.Size.Width,
-                    SkiLayoutOptions.Fill => 0,
-                    _ => 0f
-                };
-                child.Node.RelativePoint = new SKPoint(childX, childY);
+                child.Node.RelativePoint = new SKPoint(GetChildX(child), childY);
                 childY += child.Size.Height;
             }
+        }
+
+        private float GetChildX(SkiView child)
+        {
+            return child.HorizontalOptions switch
+            {
+                SkiLayoutOptions.Start => 0,
+                SkiLayoutOptions.Center => _maxSize.Width / 2 - child.Size.Width / 2,
+                SkiLayoutOptions.End => _maxSize.Width - child.Size.Width,
+                SkiLayoutOptions.Fill => 0,
+                _ => 0f
+            };
         }
 
         protected override void DrawInternal(SKCanvas canvas)

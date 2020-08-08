@@ -7,6 +7,7 @@ using System.Linq;
 using SkiaSharp;
 using SkiEngine.Input;
 using SkiEngine.UI.Gestures;
+using SkiEngine.UI.Views.Base;
 using SkiEngine.Util.Extensions.SkiaSharp;
 
 namespace SkiEngine.UI.Layouts
@@ -16,36 +17,40 @@ namespace SkiEngine.UI.Layouts
         public SkiScrollView()
         {
             CanScrollHorizontallyProp = new LinkedProperty<bool>(
-                valueChanged: (oldValue, newValue) =>
+                this,
+                valueChanged: (sender, oldValue, newValue) =>
                 {
                     LayoutContent();
                     ScrollMaxProp.UpdateValue();
                 }
             );
             CanScrollVerticallyProp = new LinkedProperty<bool>(
+                this,
                 true, 
-                valueChanged: (oldValue, newValue) =>
+                valueChanged: (sender, oldValue, newValue) =>
                 {
                     LayoutContent();
                     ScrollMaxProp.UpdateValue();
                 }
             );
             ScrollMaxProp = new LinkedProperty<SKPoint>(
+                this,
                 updateValue: () => new SKPoint(
                     CanScrollHorizontally ? Math.Max((Content?.Size.Width ?? 0) - Size.Width, 0) : 0, 
                     CanScrollVertically ? Math.Max((Content?.Size.Height ?? 0) - Size.Height, 0) : 0
                 ),
-                valueChanged: (oldValue, newValue) => AdjustScrollIfOutOfBounds()
+                valueChanged: (sender, oldValue, newValue) => AdjustScrollIfOutOfBounds()
             );
             ScrollProp = new LinkedProperty<SKPoint>(
+                this,
                 valueChanging: (oldValue, newValue) => AdjustScrollIfOutOfBounds(newValue), 
-                valueChanged: (oldValue, newValue) =>
+                valueChanged: (sender, oldValue, newValue) =>
                 {
                     Content.Node.RelativePoint = new SKPoint(-newValue.X, -newValue.Y);
                     InvalidateSurface();
                 }
             );
-            SizeProp.ValueChanged += (size, skSize) => ScrollMaxProp.UpdateValue();
+            SizeProp.ValueChanged += (sender, size, skSize) => ScrollMaxProp.UpdateValue();
 
             var flingGestureRecognizer = new FlingGestureRecognizer(
                 this,
@@ -109,7 +114,7 @@ namespace SkiEngine.UI.Layouts
             get { yield return Content; }
         }
 
-        private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
+        private void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)
         {
             ScrollMaxProp.UpdateValue();
         }

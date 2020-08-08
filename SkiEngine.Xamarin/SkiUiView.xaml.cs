@@ -1,6 +1,7 @@
 ﻿using System;
 using SkiaSharp.Views.Forms;
 using SkiEngine.UI;
+using SkiEngine.UI.Views.Base;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 

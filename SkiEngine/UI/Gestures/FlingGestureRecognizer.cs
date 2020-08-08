@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.Input;
+using SkiEngine.UI.Views.Base;
 using SkiEngine.Util.Extensions.SkiaSharp;
 
 namespace SkiEngine.UI.Gestures
