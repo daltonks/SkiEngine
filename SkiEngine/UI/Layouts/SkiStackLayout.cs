@@ -18,8 +18,6 @@ namespace SkiEngine.UI.Layouts
         public ObservableCollection<SkiView> Children { get; } = new ObservableCollection<SkiView>();
         public override IEnumerable<SkiView> ChildrenEnumerable => Children;
 
-        public override bool ListensForPressedTouches => false;
-
         protected override void OnNodeChanged()
         {
             foreach (var child in Children)

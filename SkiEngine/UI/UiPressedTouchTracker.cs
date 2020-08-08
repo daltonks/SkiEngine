@@ -32,15 +32,12 @@ namespace SkiEngine.UI
                 var view = queue.Dequeue();
                 if (view.HitTest(pointWorld))
                 {
-                    if (view.ListensForPressedTouches)
+                    // Add recognizers in reverse-order, because all 
+                    // eligible recognizers will be reversed
+                    for (var i = view.GestureRecognizers.Count - 1; i >= 0; i--)
                     {
-                        // Add recognizers in reverse-order, because all 
-                        // eligible recognizers will be reversed
-                        for (var i = view.GestureRecognizers.Count - 1; i >= 0; i--)
-                        {
-                            var recognizer = view.GestureRecognizers[i];
-                            _recognizers.Add(recognizer);
-                        }
+                        var recognizer = view.GestureRecognizers[i];
+                        _recognizers.Add(recognizer);
                     }
 
                     foreach (var child in view.ChildrenEnumerable)

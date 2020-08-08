@@ -39,7 +39,6 @@ namespace SkiEngine.UI
         public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Width, Size.Height));
         public abstract IEnumerable<SkiView> ChildrenEnumerable { get; }
 
-        public abstract bool ListensForPressedTouches { get; }
         public List<SkiGestureRecognizer> GestureRecognizers { get; } = new List<SkiGestureRecognizer>();
 
         public SKMatrix PixelToLocalMatrix => UiComponent.Camera.PixelToWorldMatrix.PostConcat(Node.WorldToLocalMatrix);

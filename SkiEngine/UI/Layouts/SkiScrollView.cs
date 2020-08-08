@@ -56,7 +56,8 @@ namespace SkiEngine.UI.Layouts
                     var previousScroll = Scroll;
                     Scroll -= PixelToLocalMatrix.MapVector(deltaPixels);
                     return Scroll != previousScroll;
-                });
+                }
+            );
 
             GestureRecognizers.Add(flingGestureRecognizer);
         }
@@ -107,8 +108,6 @@ namespace SkiEngine.UI.Layouts
         {
             get { yield return Content; }
         }
-
-        public override bool ListensForPressedTouches => true;
 
         private void OnContentSizeChanged(SKSize oldSize, SKSize newSize)
         {
