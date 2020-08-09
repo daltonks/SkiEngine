@@ -7,12 +7,13 @@ using System.Linq;
 using SkiaSharp;
 using SkiEngine.Input;
 using SkiEngine.UI.Gestures;
+using SkiEngine.UI.Layouts.Base;
 using SkiEngine.UI.Views.Base;
 using SkiEngine.Util.Extensions.SkiaSharp;
 
 namespace SkiEngine.UI.Layouts
 {
-    public class SkiScrollView : SkiView
+    public class SkiScrollView : SkiSingleChildLayout
     {
         public SkiScrollView()
         {
@@ -20,7 +21,7 @@ namespace SkiEngine.UI.Layouts
                 this,
                 valueChanged: (sender, oldValue, newValue) =>
                 {
-                    LayoutContent();
+                    LayoutInternal();
                     ScrollMaxProp.UpdateValue();
                 }
             );
@@ -29,7 +30,7 @@ namespace SkiEngine.UI.Layouts
                 true, 
                 valueChanged: (sender, oldValue, newValue) =>
                 {
-                    LayoutContent();
+                    LayoutInternal();
                     ScrollMaxProp.UpdateValue();
                 }
             );
@@ -67,28 +68,6 @@ namespace SkiEngine.UI.Layouts
             GestureRecognizers.Add(flingGestureRecognizer);
         }
 
-        private SkiView _content;
-        public SkiView Content
-        {
-            get => _content;
-            set
-            {
-                if (_content != null)
-                {
-                    _content.Node.Destroy();
-                    _content.WidthRequestProp.ValueChanged -= OnContentWidthRequestChanged;
-                    _content.HeightRequestProp.ValueChanged -= OnContentHeightRequestChanged;
-                    _content.SizeProp.ValueChanged -= OnContentSizeChanged;
-                }
-                
-                UpdateChildNode(value);
-                _content = value;
-                _content.WidthRequestProp.ValueChanged += OnContentWidthRequestChanged;
-                _content.HeightRequestProp.ValueChanged += OnContentHeightRequestChanged;
-                _content.SizeProp.ValueChanged += OnContentSizeChanged;
-            }
-        }
-
         public LinkedProperty<bool> CanScrollHorizontallyProp { get; }
         public bool CanScrollHorizontally
         {
@@ -113,22 +92,7 @@ namespace SkiEngine.UI.Layouts
         public LinkedProperty<SKPoint> ScrollMaxProp { get; }
         public SKPoint ScrollMax => ScrollMaxProp.Value;
 
-        public override IEnumerable<SkiView> ChildrenEnumerable
-        {
-            get { yield return Content; }
-        }
-
-        private void OnContentWidthRequestChanged(object sender, float? oldValue, float? newValue)
-        {
-            ViewPreferredWidth = newValue;
-        }
-
-        private void OnContentHeightRequestChanged(object sender, float? oldValue, float? newValue)
-        {
-            ViewPreferredHeight = newValue;
-        }
-
-        private void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)
+        protected override void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)
         {
             ScrollMaxProp.UpdateValue();
         }
@@ -163,18 +127,7 @@ namespace SkiEngine.UI.Layouts
             return scroll;
         }
 
-        protected override void OnNodeChanged()
-        {
-            UpdateChildNode(Content);
-        }
-
-        public override void Layout(float maxWidth, float maxHeight)
-        {
-            Size = new SKSize(maxWidth, maxHeight);
-            LayoutContent();
-        }
-
-        private void LayoutContent()
+        protected override void LayoutInternal()
         {
             var contentWidth = CanScrollHorizontally ? float.MaxValue : Size.Width;
             var contentHeight = CanScrollVertically ? float.MaxValue : Size.Height;

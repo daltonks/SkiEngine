@@ -37,6 +37,25 @@ namespace SkiEngine.UI.Views.Base
             SizeProp = new LinkedProperty<SKSize>(this);
             HorizontalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
             VerticalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
+            IsFocusedProp = new LinkedProperty<bool>(
+                this, 
+                valueChanged: (sender, oldValue, newValue) =>
+                {
+                    var previousFocusedView = UiComponent.FocusedView;
+                    if (newValue)
+                    {
+                        if (previousFocusedView != null)
+                        {
+                            previousFocusedView.IsFocused = false;
+                        }
+                        UiComponent.FocusedView = this;
+                    }
+                    else if (previousFocusedView == this)
+                    {
+                        UiComponent.FocusedView = null;
+                    }
+                }
+            );
         }
 
         public SkiUiComponent UiComponent { get; internal set; }
@@ -121,6 +140,13 @@ namespace SkiEngine.UI.Views.Base
         {
             get => VerticalOptionsProp.Value;
             set => VerticalOptionsProp.Value = value;
+        }
+
+        public LinkedProperty<bool> IsFocusedProp { get; }
+        public bool IsFocused
+        {
+            get => IsFocusedProp.Value;
+            set => IsFocusedProp.Value = value;
         }
 
         public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Width, Size.Height));

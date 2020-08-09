@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.UI.Views.Base;
@@ -17,6 +18,11 @@ namespace SkiEngine.UI.Views
                 "",
                 valueChanged: (sender, oldValue, newValue) => UpdateRichString()
             );
+            FontSizeProp = new LinkedProperty<float>(
+                this, 
+                12,
+                valueChanged: (sender, oldValue, newValue) => UpdateRichString()
+            );
         }
 
         public LinkedProperty<string> TextProp { get; }
@@ -24,6 +30,13 @@ namespace SkiEngine.UI.Views
         {
             get => TextProp.Value;
             set => TextProp.Value = value;
+        }
+
+        public LinkedProperty<float> FontSizeProp { get; }
+        public float FontSize
+        {
+            get => FontSizeProp.Value;
+            set => FontSizeProp.Value = value;
         }
 
         public override IEnumerable<SkiView> ChildrenEnumerable => Enumerable.Empty<SkiView>();
@@ -36,7 +49,9 @@ namespace SkiEngine.UI.Views
             {
                 MaxWidth = _richString.MaxWidth,
                 MaxHeight = _richString.MaxHeight
-            }.Add(Text);
+            }
+                .FontSize(FontSize)
+                .Add(Text);
 
             OnSizeChanged();
 
@@ -51,6 +66,7 @@ namespace SkiEngine.UI.Views
             OnSizeChanged();
         }
 
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         private void OnSizeChanged()
         {
             var width = _richString.MeasuredWidth;

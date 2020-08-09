@@ -22,17 +22,23 @@ namespace SkiEngine.UI
 
         private readonly List<SkiGestureRecognizer> _recognizers = new List<SkiGestureRecognizer>();
 
-        public void OnPressed(SkiView rootView, SkiTouch touch)
+        public void OnPressed(SkiUiComponent uiComponent, SkiTouch touch)
         {
             var queue = new Queue<SkiView>();
-            queue.Enqueue(rootView);
+            queue.Enqueue(uiComponent.View);
 
+            var pressedOnFocusedView = false;
             var pointWorld = touch.PointWorld;
             while (queue.Count > 0)
             {
                 var view = queue.Dequeue();
                 if (view.HitTest(pointWorld))
                 {
+                    if (view == uiComponent.FocusedView)
+                    {
+                        pressedOnFocusedView = true;
+                    }
+
                     // Add recognizers in reverse-order, because all 
                     // eligible recognizers will be reversed
                     for (var i = view.GestureRecognizers.Count - 1; i >= 0; i--)
@@ -46,6 +52,11 @@ namespace SkiEngine.UI
                         queue.Enqueue(child);
                     }
                 }
+            }
+
+            if (!pressedOnFocusedView && uiComponent.FocusedView != null)
+            {
+                uiComponent.FocusedView.IsFocused = false;
             }
 
             // Reverse the recognizers so that higher views are processed first

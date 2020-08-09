@@ -9,14 +9,13 @@ namespace SkiEngine.UI.Layouts.Base
 {
     public abstract class SkiMultiChildLayout : SkiView
     {
-        private bool _layoutChildrenQueued;
+        private SKSize _maxSize;
+        private bool _layoutQueued;
 
         public SkiMultiChildLayout()
         {
             Children.CollectionChanged += OnChildrenChanged;
         }
-
-        protected SKSize MaxSize { get; private set; }
 
         public ObservableCollection<SkiView> Children { get; } = new ObservableCollection<SkiView>();
         public override IEnumerable<SkiView> ChildrenEnumerable => Children;
@@ -56,7 +55,7 @@ namespace SkiEngine.UI.Layouts.Base
                     break;
             }
 
-            QueueLayoutChildren();
+            QueueLayout();
 
             void OnChildAdded(SkiView child)
             {
@@ -72,29 +71,30 @@ namespace SkiEngine.UI.Layouts.Base
                 child.Node?.Destroy();
                 child.WidthRequestProp.ValueChanged -= OnChildSizeRequestChanged;
                 child.HeightRequestProp.ValueChanged -= OnChildSizeRequestChanged;
+                child.HorizontalOptionsProp.ValueChanged -= OnChildHorizontalOptionsChanged;
                 child.VerticalOptionsProp.ValueChanged -= OnChildVerticalOptionsChanged;
             }
         }
 
         private void OnChildSizeRequestChanged(object sender, float? oldValue, float? newValue)
         {
-            QueueLayoutChildren();
+            QueueLayout();
         }
 
         protected abstract void OnChildHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
         protected abstract void OnChildVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
 
-        protected void QueueLayoutChildren()
+        protected void QueueLayout()
         {
-            if (_layoutChildrenQueued || UiComponent == null)
+            if (_layoutQueued || UiComponent == null)
             {
                 return;
             }
 
-            _layoutChildrenQueued = true;
+            _layoutQueued = true;
             UiComponent.RunNextUpdate(() => {
-                LayoutChildren();
-                _layoutChildrenQueued = false;
+                LayoutInternal(_maxSize.Width, _maxSize.Height);
+                _layoutQueued = false;
             });
 
             InvalidateSurface();
@@ -102,11 +102,11 @@ namespace SkiEngine.UI.Layouts.Base
 
         public override void Layout(float maxWidth, float maxHeight)
         {
-            MaxSize = new SKSize(maxWidth, maxHeight);
-            LayoutChildren();
+            _maxSize = new SKSize(maxWidth, maxHeight);
+            LayoutInternal(maxWidth, maxHeight);
         }
 
-        protected abstract void LayoutChildren();
+        protected abstract void LayoutInternal(float maxWidth, float maxHeight);
 
         protected override void DrawInternal(SKCanvas canvas)
         {

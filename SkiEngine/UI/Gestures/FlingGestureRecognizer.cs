@@ -14,27 +14,23 @@ namespace SkiEngine.UI.Gestures
     public class FlingGestureRecognizer : SkiGestureRecognizer
     {
         private SkiAnimation _animation;
-        private readonly SkiView _view;
         private readonly Func<bool> _canFlingHorizontally;
         private readonly Func<bool> _canFlingVertically;
         private readonly Func<SKPoint, bool> _onMove;
         
         public FlingGestureRecognizer(
-            SkiView view, 
+            SkiView view,
             Func<bool> canFlingHorizontally, 
             Func<bool> canFlingVertically,
             Func<SKPoint, bool> onMove
-        )
+        ) : base(view)
         {
-            _view = view;
             _canFlingHorizontally = canFlingHorizontally;
             _canFlingVertically = canFlingVertically;
             _onMove = onMove;
         }
 
         public override bool IsMultiTouchEnabled => true;
-
-        private SkiUiComponent UiComponent => _view.UiComponent;
 
         private readonly Dictionary<long, FlingTouchTracker> _touchTrackers = new Dictionary<long, FlingTouchTracker>();
         protected override GestureTouchResult OnPressedInternal(SkiTouch touch)

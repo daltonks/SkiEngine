@@ -1,9 +1,17 @@
 ﻿using SkiEngine.Input;
+using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI.Gestures
 {
     public abstract class SkiGestureRecognizer
     {
+        public SkiGestureRecognizer(SkiView view)
+        {
+            View = view;
+        }
+
+        public SkiView View { get; }
+        public SkiUiComponent UiComponent => View.UiComponent;
         public virtual bool IsMultiTouchEnabled => false;
         public virtual GestureTouchResult MultiTouchIgnoredResult => GestureTouchResult.CancelLowerListeners;
         public int NumPressedTouches { get; private set; }

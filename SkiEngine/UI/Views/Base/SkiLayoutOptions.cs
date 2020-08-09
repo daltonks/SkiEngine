@@ -1,4 +1,4 @@
-﻿namespace SkiEngine.UI.Views
+﻿namespace SkiEngine.UI.Views.Base
 {
     public enum SkiLayoutOptions
     {

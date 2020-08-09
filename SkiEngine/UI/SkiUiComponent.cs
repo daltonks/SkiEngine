@@ -65,6 +65,8 @@ namespace SkiEngine.UI
             }
         }
 
+        public SkiView FocusedView { get; internal set; }
+
         public UpdateableComponentPart UpdateablePart { get; }
 
         public void InvalidateSurface()
@@ -138,7 +140,7 @@ namespace SkiEngine.UI
                     case SKTouchAction.Pressed:
                         touchTracker = UiPressedTouchTracker.Get();
                         _touchTrackers[touch.Id] = touchTracker;
-                        touchTracker.OnPressed(View, touch);
+                        touchTracker.OnPressed(this, touch);
                         break;
                     case SKTouchAction.Moved:
                         if (_touchTrackers.TryGetValue(touch.Id, out touchTracker))
