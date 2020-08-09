@@ -9,7 +9,17 @@ namespace SkiEngine.UI.Views
         {
             CanScrollHorizontally = true;
             CanScrollVertically = false;
-            SizeRequest = new SKSize(-1, 40);
+
+            Content = Label = new SkiLabel();
+        }
+
+        public SkiLabel Label { get; }
+
+        public LinkedProperty<SKColor> BackgroundColorProp { get; }
+        public SKColor BackgroundColor
+        {
+            get => BackgroundColorProp.Value;
+            set => BackgroundColorProp.Value = value;
         }
     }
 }

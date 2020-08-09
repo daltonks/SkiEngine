@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using SkiaSharp;
 using SkiEngine.UI.Gestures;
 
@@ -7,9 +8,32 @@ namespace SkiEngine.UI.Views.Base
 {
     public abstract class SkiView
     {
+        private bool _allowViewPreferredWidth = true;
+        private bool _allowViewPreferredHeight = true;
+        private bool _updatingViewPreferredSize;
+
         public SkiView()
         {
-            SizeRequestProp = new LinkedProperty<SKSize>(this, new SKSize(-1, -1));
+            WidthRequestProp = new LinkedProperty<float?>(
+                this, 
+                valueChanged: (sender, oldValue, newValue) =>
+                {
+                    if (!_updatingViewPreferredSize)
+                    {
+                        _allowViewPreferredWidth = false;
+                    }
+                }
+            );
+            HeightRequestProp = new LinkedProperty<float?>(
+                this, 
+                valueChanged: (sender, oldValue, newValue) =>
+                {
+                    if (!_updatingViewPreferredSize)
+                    {
+                        _allowViewPreferredHeight = false;
+                    }
+                }
+            );
             SizeProp = new LinkedProperty<SKSize>(this);
             HorizontalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
             VerticalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
@@ -34,11 +58,48 @@ namespace SkiEngine.UI.Views.Base
             }
         }
 
-        public LinkedProperty<SKSize> SizeRequestProp { get; }
-        public SKSize SizeRequest
+        public LinkedProperty<float?> WidthRequestProp { get; }
+        public float? WidthRequest
         {
-            get => SizeRequestProp.Value;
-            protected set => SizeRequestProp.Value = value;
+            get => WidthRequestProp.Value;
+            set => WidthRequestProp.Value = value;
+        }
+
+        public LinkedProperty<float?> HeightRequestProp { get; }
+        public float? HeightRequest
+        {
+            get => HeightRequestProp.Value;
+            set => HeightRequestProp.Value = value;
+        }
+
+        protected float? ViewPreferredWidth
+        {
+            set
+            {
+                if (!_allowViewPreferredWidth)
+                {
+                    return;
+                }
+
+                _updatingViewPreferredSize = true;
+                WidthRequest = value;
+                _updatingViewPreferredSize = false;
+            }
+        }
+
+        protected float? ViewPreferredHeight
+        {
+            set
+            {
+                if (!_allowViewPreferredHeight)
+                {
+                    return;
+                }
+
+                _updatingViewPreferredSize = true;
+                HeightRequest = value;
+                _updatingViewPreferredSize = false;
+            }
         }
 
         public LinkedProperty<SKSize> SizeProp { get; }

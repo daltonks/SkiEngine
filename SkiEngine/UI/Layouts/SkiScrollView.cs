@@ -76,11 +76,15 @@ namespace SkiEngine.UI.Layouts
                 if (_content != null)
                 {
                     _content.Node.Destroy();
+                    _content.WidthRequestProp.ValueChanged -= OnContentWidthRequestChanged;
+                    _content.HeightRequestProp.ValueChanged -= OnContentHeightRequestChanged;
                     _content.SizeProp.ValueChanged -= OnContentSizeChanged;
                 }
                 
                 UpdateChildNode(value);
                 _content = value;
+                _content.WidthRequestProp.ValueChanged += OnContentWidthRequestChanged;
+                _content.HeightRequestProp.ValueChanged += OnContentHeightRequestChanged;
                 _content.SizeProp.ValueChanged += OnContentSizeChanged;
             }
         }
@@ -112,6 +116,16 @@ namespace SkiEngine.UI.Layouts
         public override IEnumerable<SkiView> ChildrenEnumerable
         {
             get { yield return Content; }
+        }
+
+        private void OnContentWidthRequestChanged(object sender, float? oldValue, float? newValue)
+        {
+            ViewPreferredWidth = newValue;
+        }
+
+        private void OnContentHeightRequestChanged(object sender, float? oldValue, float? newValue)
+        {
+            ViewPreferredHeight = newValue;
         }
 
         private void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)

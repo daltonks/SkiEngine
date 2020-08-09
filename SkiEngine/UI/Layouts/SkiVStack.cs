@@ -62,19 +62,21 @@ namespace SkiEngine.UI.Layouts
             void OnChildAdded(SkiView child)
             {
                 UpdateChildNode(child);
-                child.SizeRequestProp.ValueChanged += OnChildSizeRequestChanged;
+                child.WidthRequestProp.ValueChanged += OnChildSizeRequestChanged;
+                child.HeightRequestProp.ValueChanged += OnChildSizeRequestChanged;
                 child.HorizontalOptionsProp.ValueChanged += OnChildHorizontalOptionsChanged;
             }
 
             void OnChildRemoved(SkiView child)
             {
                 child.Node?.Destroy();
-                child.SizeRequestProp.ValueChanged -= OnChildSizeRequestChanged;
+                child.WidthRequestProp.ValueChanged -= OnChildSizeRequestChanged;
+                child.HeightRequestProp.ValueChanged -= OnChildSizeRequestChanged;
                 child.HorizontalOptionsProp.ValueChanged -= OnChildHorizontalOptionsChanged;
             }
         }
 
-        private void OnChildSizeRequestChanged(object sender, SKSize oldValue, SKSize newValue)
+        private void OnChildSizeRequestChanged(object sender, float? oldValue, float? newValue)
         {
             QueueLayoutChildren();
         }
@@ -118,7 +120,12 @@ namespace SkiEngine.UI.Layouts
 
                 foreach (var child in Children)
                 {
-                    child.Layout(_maxSize.Width, float.MaxValue);
+                    var width = child.WidthRequest == null
+                        ? _maxSize.Width
+                        : Math.Min(child.WidthRequest.Value, _maxSize.Width);
+                    var height = child.HeightRequest ?? _maxSize.Height;
+
+                    child.Layout(width, height);
                     child.Node.RelativePoint = new SKPoint(0, size.Height);
                     size.Height += child.Size.Height;
                     size.Width = Math.Max(size.Width, child.Size.Width);
@@ -132,14 +139,13 @@ namespace SkiEngine.UI.Layouts
                 var numNoHeightRequest = 0;
                 foreach (var child in Children)
                 {
-                    var childHeightRequest = child.SizeRequest.Height;
-                    if (childHeightRequest == -1)
+                    if (child.HeightRequest == null)
                     {
                         numNoHeightRequest++;
                     }
                     else
                     {
-                        totalHeightRequests += childHeightRequest;
+                        totalHeightRequests += child.HeightRequest.Value;
                     }
                 }
 
@@ -161,12 +167,14 @@ namespace SkiEngine.UI.Layouts
 
                 foreach (var child in Children)
                 {
-                    var childMaxHeight = child.SizeRequest.Height == -1 
-                        ? heightOfNoHeightRequestChildren 
-                        : child.SizeRequest.Height * scaleOfHeightRequestChildren;
+                    var width = child.WidthRequest == null
+                        ? _maxSize.Width
+                        : Math.Min(child.WidthRequest.Value, _maxSize.Width);
+                    var height = child.HeightRequest * scaleOfHeightRequestChildren ?? heightOfNoHeightRequestChildren;
 
-                    child.Layout(_maxSize.Width, childMaxHeight);
-                    size.Height += childMaxHeight;
+                    child.Layout(width, height);
+                    child.Node.RelativePoint = new SKPoint(0, size.Height);
+                    size.Height += height;
                     size.Width = Math.Max(size.Width, child.Size.Width);
                 }
             }
