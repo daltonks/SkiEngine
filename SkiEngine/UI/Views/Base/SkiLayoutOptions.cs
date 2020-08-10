@@ -2,9 +2,9 @@
 {
     public enum SkiLayoutOptions
     {
-        Start = 0,
-        Center = 1,
-        End = 2,
-        Fill = 3
+        Fill = 0,
+        Start = 1,
+        Center = 2,
+        End = 3
     }
 }

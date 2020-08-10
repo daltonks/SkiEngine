@@ -45,6 +45,8 @@ namespace SkiEngine.UI.Views
             };
         }
 
+        public SkiLabel Label { get; }
+
         private void OnTextChanged(object sender, string oldValue, string newValue)
         {
             UiComponent.SetHiddenEntryText(newValue);
@@ -75,8 +77,6 @@ namespace SkiEngine.UI.Views
             UiComponent.HiddenEntryCursorPositionChanged -= OnHiddenEntryCursorPositionChanged;
             UiComponent.HiddenEntryCompleted -= OnHiddenEntryCompleted;
         }
-
-        public SkiLabel Label { get; }
 
         private void OnTapped()
         {
