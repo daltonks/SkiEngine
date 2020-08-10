@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using SkiaSharp.Views.Forms;
 using SkiEngine.Camera;
 using SkiEngine.UI;
@@ -10,6 +11,8 @@ namespace SkiEngine.Xamarin
     {
         public override event Action<string> HiddenEntryTextChanged;
         public override event Action HiddenEntryUnfocused;
+        public override event Action<int> HiddenEntryCursorPositionChanged;
+        public override event Action HiddenEntryCompleted;
 
         private readonly SKCanvasView _canvasView;
         private readonly Entry _hiddenEntry;
@@ -24,6 +27,8 @@ namespace SkiEngine.Xamarin
         {
             _canvasView = canvasView;
             _hiddenEntry = hiddenEntry;
+            
+            _hiddenEntry.PropertyChanged += OnHiddenEntryPropertyChanged;
 
             _hiddenEntry.TextChanged += (sender, args) =>
             {
@@ -34,6 +39,19 @@ namespace SkiEngine.Xamarin
             {
                 HiddenEntryUnfocused?.Invoke();
             };
+
+            _hiddenEntry.Completed += (sender, args) =>
+            {
+                HiddenEntryCompleted?.Invoke();
+            };
+        }
+
+        private void OnHiddenEntryPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+            {
+                HiddenEntryCursorPositionChanged?.Invoke(_hiddenEntry.CursorPosition);
+            }
         }
 
         public override void FocusHiddenEntry()

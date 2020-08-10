@@ -23,6 +23,10 @@ namespace SkiEngine.UI.Views
                 16,
                 valueChanged: (sender, oldValue, newValue) => UpdateRichString()
             );
+            CursorPositionProp = new LinkedProperty<int?>(
+                this,
+                valueChanged: (sender, oldValue, newValue) => InvalidateSurface()
+            );
         }
 
         public LinkedProperty<string> TextProp { get; }
@@ -37,6 +41,13 @@ namespace SkiEngine.UI.Views
         {
             get => FontSizeProp.Value;
             set => FontSizeProp.Value = value;
+        }
+
+        public LinkedProperty<int?> CursorPositionProp { get; }
+        public int? CursorPosition
+        {
+            get => CursorPositionProp.Value;
+            set => CursorPositionProp.Value = value;
         }
 
         public override IEnumerable<SkiView> ChildrenEnumerable => Enumerable.Empty<SkiView>();
@@ -79,6 +90,14 @@ namespace SkiEngine.UI.Views
         protected override void DrawInternal(SKCanvas canvas)
         {
             _richString.Paint(canvas);
+            if (CursorPosition != null)
+            {
+                var cursorRectangle = _richString.GetCaretInfo(CursorPosition.Value).CaretRectangle;
+                using (var paint = new SKPaint { Color = SKColors.Black })
+                {
+                    canvas.DrawRect(cursorRectangle.Left, cursorRectangle.Top, 1, cursorRectangle.Height, paint);
+                }
+            }
         }
     }
 }

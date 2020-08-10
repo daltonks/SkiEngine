@@ -15,6 +15,8 @@ namespace SkiEngine.UI
     {
         public abstract event Action<string> HiddenEntryTextChanged;
         public abstract event Action HiddenEntryUnfocused;
+        public abstract event Action<int> HiddenEntryCursorPositionChanged;
+        public abstract event Action HiddenEntryCompleted;
 
         private readonly Queue<Action> _updateActions = new Queue<Action>();
         private readonly Action _invalidateSurface;
