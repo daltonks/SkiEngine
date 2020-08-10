@@ -19,12 +19,29 @@ namespace SkiEngine.UI.Views
             {
                 if (newValue)
                 {
-                    UiComponent.StartEntry(
-                        Label.Text, 
-                        textChanged: newText => Label.Text = newText
-                    );
+                    UiComponent.SetHiddenEntryText(Label.Text);
+                    UiComponent.FocusHiddenEntry();
+
+                    UiComponent.HiddenEntryTextChanged += OnHiddenEntryTextChanged;
+                    UiComponent.HiddenEntryUnfocused += OnUnfocused;
+                }
+                else
+                {
+                    OnUnfocused();
                 }
             };
+        }
+
+        private void OnHiddenEntryTextChanged(string text)
+        {
+            Label.Text = text;
+        }
+
+        private void OnUnfocused()
+        {
+            IsFocused = false;
+            UiComponent.HiddenEntryTextChanged -= OnHiddenEntryTextChanged;
+            UiComponent.HiddenEntryUnfocused -= OnUnfocused;
         }
 
         public SkiLabel Label { get; }

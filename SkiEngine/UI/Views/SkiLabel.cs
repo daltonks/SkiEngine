@@ -20,7 +20,7 @@ namespace SkiEngine.UI.Views
             );
             FontSizeProp = new LinkedProperty<float>(
                 this, 
-                12,
+                16,
                 valueChanged: (sender, oldValue, newValue) => UpdateRichString()
             );
         }

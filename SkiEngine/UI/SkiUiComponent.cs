@@ -7,13 +7,14 @@ using SkiEngine.Drawable;
 using SkiEngine.Input;
 using SkiEngine.UI.Views.Base;
 using SkiEngine.Updateable;
+using Topten.RichTextKit;
 
 namespace SkiEngine.UI
 {
     public abstract class SkiUiComponent : Component, IUpdateableComponent, IDrawableComponent
     {
-        protected abstract event Action<string> HiddenEntryTextChanged;
-        protected abstract event Action HiddenEntryUnfocused;
+        public abstract event Action<string> HiddenEntryTextChanged;
+        public abstract event Action HiddenEntryUnfocused;
 
         private readonly Queue<Action> _updateActions = new Queue<Action>();
         private readonly Action _invalidateSurface;
@@ -59,7 +60,7 @@ namespace SkiEngine.UI
                 {
                     return;
                 }
-
+                
                 _size = value;
                 View.Layout(_size.Width, _size.Height);
             }
@@ -74,28 +75,8 @@ namespace SkiEngine.UI
             _invalidateSurface();
         }
 
-        public void StartEntry(string text, Action<string> textChanged)
-        {
-            SetHiddenEntryText(text);
-            FocusHiddenEntry();
-
-            HiddenEntryTextChanged += OnHiddenEntryTextChanged;
-            HiddenEntryUnfocused += OnHiddenEntryUnfocused;
-
-            void OnHiddenEntryTextChanged(string newText)
-            {
-                textChanged(newText);
-            }
-
-            void OnHiddenEntryUnfocused()
-            {
-                HiddenEntryTextChanged -= OnHiddenEntryTextChanged;
-                HiddenEntryUnfocused -= OnHiddenEntryUnfocused;
-            }
-        }
-
-        protected abstract void SetHiddenEntryText(string text);
-        protected abstract void FocusHiddenEntry();
+        public abstract void SetHiddenEntryText(string text);
+        public abstract void FocusHiddenEntry();
         public abstract void StartAnimation(SkiAnimation skiAnimation);
         public abstract void AbortAnimation(SkiAnimation skiAnimation);
 

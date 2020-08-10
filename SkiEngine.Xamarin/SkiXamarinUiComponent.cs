@@ -8,8 +8,8 @@ namespace SkiEngine.Xamarin
 {
     public class SkiXamarinUiComponent : SkiUiComponent
     {
-        protected override event Action<string> HiddenEntryTextChanged;
-        protected override event Action HiddenEntryUnfocused;
+        public override event Action<string> HiddenEntryTextChanged;
+        public override event Action HiddenEntryUnfocused;
 
         private readonly SKCanvasView _canvasView;
         private readonly Entry _hiddenEntry;
@@ -36,12 +36,12 @@ namespace SkiEngine.Xamarin
             };
         }
 
-        protected override void FocusHiddenEntry()
+        public override void FocusHiddenEntry()
         {
             _hiddenEntry.Focus();
         }
 
-        protected override void SetHiddenEntryText(string text)
+        public override void SetHiddenEntryText(string text)
         {
             _hiddenEntry.Text = text;
         }
