@@ -5,6 +5,7 @@ using SkiaSharp;
 using SkiEngine.Camera;
 using SkiEngine.Drawable;
 using SkiEngine.Input;
+using SkiEngine.UI.Views;
 using SkiEngine.UI.Views.Base;
 using SkiEngine.Updateable;
 using Topten.RichTextKit;
@@ -13,11 +14,6 @@ namespace SkiEngine.UI
 {
     public abstract class SkiUiComponent : Component, IUpdateableComponent, IDrawableComponent
     {
-        public abstract event Action<string> HiddenEntryTextChanged;
-        public abstract event Action HiddenEntryUnfocused;
-        public abstract event Action<int> HiddenEntryCursorPositionChanged;
-        public abstract event Action HiddenEntryCompleted;
-
         private readonly Queue<Action> _updateActions = new Queue<Action>();
         private readonly Action _invalidateSurface;
         
@@ -77,8 +73,8 @@ namespace SkiEngine.UI
             _invalidateSurface();
         }
 
-        public abstract void SetHiddenEntryText(string text);
-        public abstract void FocusHiddenEntry();
+        public abstract void ShowNativeEntry(SkiEntry entry);
+        public abstract void HideNativeEntry();
         public abstract void StartAnimation(SkiAnimation skiAnimation);
         public abstract void AbortAnimation(SkiAnimation skiAnimation);
 

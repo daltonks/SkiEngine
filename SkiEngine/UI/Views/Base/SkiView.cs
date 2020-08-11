@@ -128,6 +128,9 @@ namespace SkiEngine.UI.Views.Base
             protected set => SizeProp.Value = value;
         }
 
+        public SKRect BoundsLocal => new SKRect(0, 0, Size.Width, Size.Height);
+        public SKRect BoundsWorld => Node.LocalToWorldMatrix.MapRect(BoundsLocal);
+
         public LinkedProperty<SkiLayoutOptions> HorizontalOptionsProp { get; }
         public SkiLayoutOptions HorizontalOptions
         {
@@ -149,7 +152,7 @@ namespace SkiEngine.UI.Views.Base
             set => IsFocusedProp.Value = value;
         }
 
-        public SKRect WorldBounds => Node.LocalToWorldMatrix.MapRect(new SKRect(0, 0, Size.Width, Size.Height));
+        
         public abstract IEnumerable<SkiView> ChildrenEnumerable { get; }
 
         public List<SkiGestureRecognizer> GestureRecognizers { get; } = new List<SkiGestureRecognizer>();
@@ -174,7 +177,7 @@ namespace SkiEngine.UI.Views.Base
             var drawMatrix = Node.LocalToWorldMatrix.PostConcat(UiComponent.Camera.WorldToPixelMatrix);
             canvas.SetMatrix(drawMatrix);
 
-            if (canvas.QuickReject(new SKRect(0, 0, Size.Width, Size.Height)))
+            if (canvas.QuickReject(BoundsLocal))
             {
                 return;
             }
@@ -190,7 +193,7 @@ namespace SkiEngine.UI.Views.Base
         public bool HitTest(SKPoint pointWorld)
         {
             var localPoint = Node.WorldToLocalMatrix.MapPoint(pointWorld);
-            return new SKRect(0, 0, Size.Width, Size.Height).Contains(localPoint);
+            return BoundsLocal.Contains(localPoint);
         }
     }
 

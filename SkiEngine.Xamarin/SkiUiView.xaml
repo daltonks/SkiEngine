@@ -1,17 +1,28 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <AbsoluteLayout xmlns="http://xamarin.com/schemas/2014/forms" 
-                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
-                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                    xmlns:forms="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
-                    mc:Ignorable="d"
-                    x:Class="SkiEngine.Xamarin.SkiUiView"
-                    HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-    <Entry AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
-           x:Name="HiddenEntry"/>
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:forms="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
+                xmlns:xamarin="clr-namespace:SkiEngine.Xamarin;assembly=SkiEngine.Xamarin"
+                mc:Ignorable="d"
+                x:Class="SkiEngine.Xamarin.SkiUiView"
+                Visual="Default">
     <forms:SKCanvasView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
                         x:Name="CanvasView"
                         PaintSurface="OnPaintSurface"
                         EnableTouchEvents="True"
                         Touch="OnTouch"/>
+    <ScrollView x:Name="NativeEntryLayout"
+                AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
+                IsVisible="False">
+        <ScrollView.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnCloseEntryTapped" />
+        </ScrollView.GestureRecognizers>
+        <AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <Entry x:Name="NativeEntry"
+                   AbsoluteLayout.LayoutFlags="None"
+                   IsTextPredictionEnabled="False"/>
+        </AbsoluteLayout>
+    </ScrollView>
 </AbsoluteLayout>

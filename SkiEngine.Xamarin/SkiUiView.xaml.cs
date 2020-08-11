@@ -11,7 +11,7 @@ namespace SkiEngine.Xamarin
     public partial class SkiUiView : AbsoluteLayout
     {
         private readonly SkiUiScene _skiUiScene;
-
+        
         public SkiUiView()
         {
             InitializeComponent();
@@ -26,8 +26,21 @@ namespace SkiEngine.Xamarin
 
             _skiUiScene = new SkiUiScene(
                 invalidateSurface, 
-                (node, camera, invalidate) => new SkiXamarinUiComponent(CanvasView, HiddenEntry, node, camera, invalidate)
+                (node, camera, invalidate) => UiComponent = new SkiXamarinUiComponent(
+                    CanvasView, NativeEntry, NativeEntryLayout, node, camera, invalidate
+                )
             );
+        }
+
+        private SkiXamarinUiComponent _uiComponent;
+        public SkiXamarinUiComponent UiComponent
+        {
+            get => _uiComponent;
+            private set
+            {
+                _uiComponent = value;
+                OnPropertyChanged();
+            }
         }
 
         protected override void OnBindingContextChanged()
@@ -47,6 +60,11 @@ namespace SkiEngine.Xamarin
             e.Handled = true;
 
             _skiUiScene.OnTouch(e.ToSkiTouch());
+        }
+
+        private void OnCloseEntryTapped(object sender, EventArgs e)
+        {
+            UiComponent.HideNativeEntry();
         }
     }
 }

@@ -1,67 +1,85 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using SkiEngine.Camera;
 using SkiEngine.UI;
+using SkiEngine.UI.Views;
 using Xamarin.Forms;
 
 namespace SkiEngine.Xamarin
 {
-    public class SkiXamarinUiComponent : SkiUiComponent
+    public class SkiXamarinUiComponent : SkiUiComponent, INotifyPropertyChanged
     {
-        public override event Action<string> HiddenEntryTextChanged;
-        public override event Action HiddenEntryUnfocused;
-        public override event Action<int> HiddenEntryCursorPositionChanged;
-        public override event Action HiddenEntryCompleted;
-
         private readonly SKCanvasView _canvasView;
-        private readonly Entry _hiddenEntry;
+        private readonly Entry _nativeEntry;
+        private readonly View _nativeEntryLayout;
+        private SkiEntry _currentSkiEntry;
 
         public SkiXamarinUiComponent(
             SKCanvasView canvasView, 
-            Entry hiddenEntry,
+            Entry nativeEntry,
+            View nativeEntryLayout,
             Node node, 
             CameraComponent camera, 
             Action invalidateSurface
         ) : base(node, camera, invalidateSurface)
         {
             _canvasView = canvasView;
-            _hiddenEntry = hiddenEntry;
+            _nativeEntry = nativeEntry;
+            _nativeEntryLayout = nativeEntryLayout;
+        }
+
+        public override void ShowNativeEntry(SkiEntry entry)
+        {
+            _currentSkiEntry = entry;
+
+            _nativeEntry.Text = entry.Label.Text;
+            _nativeEntry.FontSize = entry.Label.FontSize;
+
+            _nativeEntryLayout.IsVisible = true;
             
-            _hiddenEntry.PropertyChanged += OnHiddenEntryPropertyChanged;
+            Device.BeginInvokeOnMainThread(() => {
+                var dpRect = entry.Node.LocalToWorldMatrix
+                    .PostConcat(Camera.WorldToDpMatrix)
+                    .MapRect(entry.BoundsLocal);
+                AbsoluteLayout.SetLayoutBounds(_nativeEntry, new Rectangle(dpRect.Left, dpRect.Top, dpRect.Width, dpRect.Height));
 
-            _hiddenEntry.TextChanged += (sender, args) =>
-            {
-                HiddenEntryTextChanged?.Invoke(args.NewTextValue);
-            };
+                Device.BeginInvokeOnMainThread(() => {
+                    _nativeEntry.Focus();
 
-            _hiddenEntry.Unfocused += (sender, args) =>
-            {
-                HiddenEntryUnfocused?.Invoke();
-            };
-
-            _hiddenEntry.Completed += (sender, args) =>
-            {
-                HiddenEntryCompleted?.Invoke();
-            };
+                    _nativeEntry.TextChanged += OnNativeEntryTextChanged;
+                    _nativeEntry.Completed += OnNativeEntryCompleted;
+                });
+            });
         }
 
-        private void OnHiddenEntryPropertyChanged(object sender, PropertyChangedEventArgs e)
+        public override void HideNativeEntry()
         {
-            if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+            _nativeEntry.TextChanged -= OnNativeEntryTextChanged;
+            _nativeEntry.Completed -= OnNativeEntryCompleted;
+
+            _nativeEntry.Text = "";
+            _nativeEntry.Unfocus();
+            _nativeEntryLayout.IsVisible = false;
+
+            _currentSkiEntry.IsFocused = false;
+        }
+
+        private void OnNativeEntryTextChanged(object sender, TextChangedEventArgs e)
+        {
+            _currentSkiEntry.Label.Text = e.NewTextValue;
+        }
+
+        private void OnNativeEntryCompleted(object sender, EventArgs e)
+        {
+            _currentSkiEntry.OnNativeEntryCompleted();
+            if (Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.iOS)
             {
-                HiddenEntryCursorPositionChanged?.Invoke(_hiddenEntry.CursorPosition);
+                _currentSkiEntry.IsFocused = false;
             }
-        }
-
-        public override void FocusHiddenEntry()
-        {
-            _hiddenEntry.Focus();
-        }
-
-        public override void SetHiddenEntryText(string text)
-        {
-            _hiddenEntry.Text = text;
         }
 
         public override void StartAnimation(SkiAnimation skiAnimation)
@@ -82,6 +100,13 @@ namespace SkiEngine.Xamarin
         public override void AbortAnimation(SkiAnimation skiAnimation)
         {
             _canvasView.AbortAnimation(skiAnimation.Id);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

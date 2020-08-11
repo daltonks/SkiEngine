@@ -19,10 +19,9 @@ namespace SkiEngine.UI.Views
         {
             CanScrollHorizontally = true;
             CanScrollVertically = false;
-            HeightRequest = 20;
+            HeightRequest = 40;
 
-            Content = Label = new SkiLabel { CursorPosition = 0 };
-            Label.TextProp.ValueChanged += OnTextChanged;
+            Content = Label = new SkiLabel();
 
             GestureRecognizers.Insert(0, new TapGestureRecognizer(this, OnTapped));
 
@@ -30,52 +29,27 @@ namespace SkiEngine.UI.Views
             {
                 if (newValue)
                 {
-                    UiComponent.SetHiddenEntryText(Label.Text);
-                    UiComponent.FocusHiddenEntry();
-
-                    UiComponent.HiddenEntryTextChanged += OnHiddenEntryTextChanged;
-                    UiComponent.HiddenEntryUnfocused += OnUnfocused;
-                    UiComponent.HiddenEntryCursorPositionChanged += OnHiddenEntryCursorPositionChanged;
-                    UiComponent.HiddenEntryCompleted += OnHiddenEntryCompleted;
+                    UiComponent.ShowNativeEntry(this);
                 }
                 else
                 {
                     OnUnfocused();
                 }
+
+                InvalidateSurface();
             };
         }
 
         public SkiLabel Label { get; }
 
-        private void OnTextChanged(object sender, string oldValue, string newValue)
-        {
-            UiComponent.SetHiddenEntryText(newValue);
-        }
-
-        private void OnHiddenEntryCompleted()
+        public void OnNativeEntryCompleted()
         {
             _completedEventSource.Raise(this, true);
         }
 
-        private void OnHiddenEntryTextChanged(string text)
-        {
-            Label.Text = text;
-        }
-
-        private void OnHiddenEntryCursorPositionChanged(int cursorPosition)
-        {
-            Label.CursorPosition = cursorPosition;
-        }
-
         private void OnUnfocused()
         {
-            IsFocused = false;
-            Label.CursorPosition = null;
-
-            UiComponent.HiddenEntryTextChanged -= OnHiddenEntryTextChanged;
-            UiComponent.HiddenEntryUnfocused -= OnUnfocused;
-            UiComponent.HiddenEntryCursorPositionChanged -= OnHiddenEntryCursorPositionChanged;
-            UiComponent.HiddenEntryCompleted -= OnHiddenEntryCompleted;
+            UiComponent.HideNativeEntry();
         }
 
         private void OnTapped()
@@ -83,11 +57,31 @@ namespace SkiEngine.UI.Views
             IsFocused = true;
         }
 
-        public LinkedProperty<SKColor> BackgroundColorProp { get; }
-        public SKColor BackgroundColor
+        protected override void DrawInternal(SKCanvas canvas)
         {
-            get => BackgroundColorProp.Value;
-            set => BackgroundColorProp.Value = value;
+            // Only draw when not focused
+            if (!IsFocused)
+            {
+                base.DrawInternal(canvas);
+            }
+        }
+
+        protected override void DrawContent(SKCanvas canvas)
+        {
+            using (
+                var paint = new SKPaint
+                {
+                    Style = SKPaintStyle.Stroke, 
+                    IsAntialias = true,
+                    Color = 0xFFCCCCCC,
+                    StrokeWidth = 2
+                }
+            )
+            {
+                canvas.DrawRoundRect(BoundsLocal, 6, 6, paint);
+            }
+
+            base.DrawContent(canvas);
         }
     }
 }

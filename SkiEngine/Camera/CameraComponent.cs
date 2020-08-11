@@ -35,6 +35,7 @@ namespace SkiEngine.Camera
         public IEnumerable<IDrawableComponent> ReversedComponents => _drawableComponents.ReversedItems;
 
         public SKMatrix DpToWorldMatrix => DpToPixelMatrix.PostConcat(PixelToWorldMatrix);
+        public SKMatrix WorldToDpMatrix => WorldToPixelMatrix.PostConcat(PixelToDpMatrix);
 
         public ref SKMatrix DpToPixelMatrix => ref CanvasComponent.DpToPixelMatrix;
         public ref SKMatrix PixelToDpMatrix => ref CanvasComponent.PixelToDpMatrix;
