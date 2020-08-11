@@ -73,7 +73,7 @@ namespace SkiEngine.UI
             _invalidateSurface();
         }
 
-        public abstract void ShowNativeEntry(SkiEntry entry);
+        public abstract void ShowNativeEntry(SkiEntry entry, int cursorPosition);
         public abstract void HideNativeEntry();
         public abstract void StartAnimation(SkiAnimation skiAnimation);
         public abstract void AbortAnimation(SkiAnimation skiAnimation);

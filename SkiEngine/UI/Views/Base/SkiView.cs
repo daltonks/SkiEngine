@@ -8,6 +8,10 @@ namespace SkiEngine.UI.Views.Base
 {
     public abstract class SkiView
     {
+        private SKSize _maxSize;
+        private bool _layoutNeeded;
+        private bool _layoutQueued;
+
         private bool _allowViewPreferredWidth = true;
         private bool _allowViewPreferredHeight = true;
         private bool _updatingViewPreferredSize;
@@ -35,6 +39,10 @@ namespace SkiEngine.UI.Views.Base
                 }
             );
             SizeProp = new LinkedProperty<SKSize>(this);
+            PaddingProp = new LinkedProperty<SKRect>(
+                this,
+                valueChanged: (sender, oldValue, newValue) => QueueLayout()
+            );
             HorizontalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
             VerticalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
             IsFocusedProp = new LinkedProperty<bool>(
@@ -131,6 +139,13 @@ namespace SkiEngine.UI.Views.Base
         public SKRect BoundsLocal => new SKRect(0, 0, Size.Width, Size.Height);
         public SKRect BoundsWorld => Node.LocalToWorldMatrix.MapRect(BoundsLocal);
 
+        public LinkedProperty<SKRect> PaddingProp { get; }
+        public SKRect Padding
+        {
+            get => PaddingProp.Value;
+            set => PaddingProp.Value = value;
+        }
+
         public LinkedProperty<SkiLayoutOptions> HorizontalOptionsProp { get; }
         public SkiLayoutOptions HorizontalOptions
         {
@@ -168,8 +183,35 @@ namespace SkiEngine.UI.Views.Base
         }
 
         protected abstract void OnNodeChanged();
-        public abstract void Layout(float maxWidth, float maxHeight);
-        protected abstract void DrawInternal(SKCanvas canvas);
+        
+        protected void QueueLayout()
+        {
+            if (_layoutQueued || UiComponent == null)
+            {
+                return;
+            }
+
+            _layoutNeeded = true;
+            _layoutQueued = true;
+            UiComponent.RunNextUpdate(() => {
+                if (_layoutNeeded)
+                {
+                    Layout(_maxSize.Width, _maxSize.Height);
+                }
+                _layoutQueued = false;
+            });
+
+            InvalidateSurface();
+        }
+
+        public void Layout(float maxWidth, float maxHeight)
+        {
+            _maxSize = new SKSize(maxWidth, maxHeight);
+            LayoutInternal(maxWidth, maxHeight);
+            _layoutNeeded = false;
+        }
+
+        protected abstract void LayoutInternal(float maxWidth, float maxHeight);
 
         public void Draw(SKCanvas canvas)
         {
@@ -183,6 +225,8 @@ namespace SkiEngine.UI.Views.Base
 
             DrawInternal(canvas);
         }
+
+        protected abstract void DrawInternal(SKCanvas canvas);
 
         public void InvalidateSurface()
         {

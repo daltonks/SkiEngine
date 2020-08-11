@@ -16,10 +16,11 @@
     <ScrollView x:Name="NativeEntryLayout"
                 AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
                 IsVisible="False">
-        <ScrollView.GestureRecognizers>
-            <TapGestureRecognizer Tapped="OnCloseEntryTapped" />
-        </ScrollView.GestureRecognizers>
         <AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <AbsoluteLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseEntryTapped" />
+            </AbsoluteLayout.GestureRecognizers>
+
             <Entry x:Name="NativeEntry"
                    AbsoluteLayout.LayoutFlags="None"
                    IsTextPredictionEnabled="False"/>

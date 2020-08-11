@@ -16,13 +16,19 @@ namespace SkiEngine.UI.Views
             remove => _completedEventSource.Unsubscribe(value);
         }
 
+        private int _cursorPosition;
+
         public SkiEntry()
         {
             CanScrollHorizontally = true;
             CanScrollVertically = false;
             HeightRequest = 40;
+            Padding = new SKRect(8, 0, 8, 0);
 
-            Content = Label = new SkiLabel { VerticalOptions = SkiLayoutOptions.Center };
+            Content = Label = new SkiLabel
+            {
+                VerticalOptions = SkiLayoutOptions.Center
+            };
 
             GestureRecognizers.Insert(0, new TapGestureRecognizer(this, OnTapped));
 
@@ -30,11 +36,11 @@ namespace SkiEngine.UI.Views
             {
                 if (newValue)
                 {
-                    UiComponent.ShowNativeEntry(this);
+                    UiComponent.ShowNativeEntry(this, _cursorPosition);
                 }
                 else
                 {
-                    OnUnfocused();
+                    UiComponent.HideNativeEntry();
                 }
 
                 InvalidateSurface();
@@ -48,14 +54,11 @@ namespace SkiEngine.UI.Views
             _completedEventSource.Raise(this, true);
         }
 
-        private void OnUnfocused()
+        private void OnTapped(SKPoint pointWorld)
         {
-            UiComponent.HideNativeEntry();
-        }
-
-        private void OnTapped()
-        {
+            _cursorPosition = Label.GetClosestCharacterIndex(pointWorld);
             IsFocused = true;
+            _cursorPosition = 0;
         }
 
         protected override void DrawInternal(SKCanvas canvas)

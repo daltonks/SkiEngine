@@ -4,7 +4,7 @@ using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI.Layouts.Base
 {
-    public abstract class SkiSingleChildLayout : SkiLayout
+    public abstract class SkiSingleChildLayout : SkiView
     {
         public override IEnumerable<SkiView> ChildrenEnumerable
         {
@@ -33,17 +33,20 @@ namespace SkiEngine.UI.Layouts.Base
                 _content.HorizontalOptionsProp.ValueChanged += OnContentHorizontalOptionsChanged;
                 _content.VerticalOptionsProp.ValueChanged += OnContentVerticalOptionsChanged;
 
+                OnContentChanged();
+
                 QueueLayout();
             }
         }
-
-        protected abstract void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize);
-        protected abstract void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
-        protected abstract void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
 
         protected override void OnNodeChanged()
         {
             UpdateChildNode(Content);
         }
+
+        protected abstract void OnContentChanged();
+        protected abstract void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize);
+        protected abstract void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
+        protected abstract void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
     }
 }

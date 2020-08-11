@@ -9,7 +9,7 @@ namespace SkiEngine.UI.Views
 {
     public class SkiLabel : SkiView
     {
-        private RichString _richString = new RichString();
+        private TextBlock _textBlock = new TextBlock();
 
         public SkiLabel()
         {
@@ -56,23 +56,29 @@ namespace SkiEngine.UI.Views
 
         private void UpdateRichString()
         {
-            _richString = new RichString
+            _textBlock = new TextBlock
             {
-                MaxWidth = _richString.MaxWidth,
-                MaxHeight = _richString.MaxHeight
-            }
-                .FontSize(FontSize)
-                .Add(Text);
+                MaxWidth = _textBlock.MaxWidth,
+                MaxHeight = _textBlock.MaxHeight,
+            };
+            _textBlock.AddText(Text, StyleManager.Default.DefaultStyle);
 
             OnSizeChanged();
 
             InvalidateSurface();
         }
 
-        public override void Layout(float maxWidth, float maxHeight)
+        public int GetClosestCharacterIndex(SKPoint pointWorld)
         {
-            _richString.MaxWidth = maxWidth;
-            _richString.MaxHeight = maxHeight;
+            var localPoint = Node.WorldToLocalMatrix.MapPoint(pointWorld);
+            var codePointIndex = _textBlock.HitTest(localPoint.X, localPoint.Y).ClosestCodePointIndex;
+            return _textBlock.CodePointToCharacterIndex(codePointIndex);
+        }
+        
+        protected override void LayoutInternal(float maxWidth, float maxHeight)
+        {
+            _textBlock.MaxWidth = maxWidth;
+            _textBlock.MaxHeight = maxHeight;
 
             OnSizeChanged();
         }
@@ -80,8 +86,8 @@ namespace SkiEngine.UI.Views
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         private void OnSizeChanged()
         {
-            var width = _richString.MeasuredWidth;
-            var height = _richString.MeasuredHeight;
+            var width = _textBlock.MeasuredWidth;
+            var height = _textBlock.MeasuredHeight;
             ViewPreferredWidth = width;
             ViewPreferredHeight = height;
             Size = new SKSize(width, height);
@@ -89,10 +95,10 @@ namespace SkiEngine.UI.Views
 
         protected override void DrawInternal(SKCanvas canvas)
         {
-            _richString.Paint(canvas);
+            _textBlock.Paint(canvas);
             if (CursorPosition != null)
             {
-                var cursorRectangle = _richString.GetCaretInfo(CursorPosition.Value).CaretRectangle;
+                var cursorRectangle = _textBlock.GetCaretInfo(CursorPosition.Value).CaretRectangle;
                 using (var paint = new SKPaint { Color = SKColors.Black })
                 {
                     canvas.DrawRect(cursorRectangle.Left, cursorRectangle.Top, 1, cursorRectangle.Height, paint);

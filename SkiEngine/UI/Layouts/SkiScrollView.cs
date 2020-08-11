@@ -37,8 +37,8 @@ namespace SkiEngine.UI.Layouts
             ScrollMaxProp = new LinkedProperty<SKPoint>(
                 this,
                 updateValue: () => new SKPoint(
-                    CanScrollHorizontally ? Math.Max((Content?.Size.Width ?? 0) - Size.Width, 0) : 0, 
-                    CanScrollVertically ? Math.Max((Content?.Size.Height ?? 0) - Size.Height, 0) : 0
+                    CanScrollHorizontally ? Math.Max((Content?.Size.Width ?? 0) - Size.Width + Padding.Left + Padding.Right, 0) : 0, 
+                    CanScrollVertically ? Math.Max((Content?.Size.Height ?? 0) - Size.Height + Padding.Top + Padding.Bottom, 0) : 0
                 ),
                 valueChanged: (sender, oldValue, newValue) => AdjustScrollIfOutOfBounds()
             );
@@ -47,7 +47,7 @@ namespace SkiEngine.UI.Layouts
                 valueChanging: (oldValue, newValue) => AdjustScrollIfOutOfBounds(newValue), 
                 valueChanged: (sender, oldValue, newValue) =>
                 {
-                    Content.Node.RelativePoint = new SKPoint(-newValue.X, -newValue.Y);
+                    UpdateChildPoint();
                     InvalidateSurface();
                 }
             );
@@ -66,6 +66,11 @@ namespace SkiEngine.UI.Layouts
             );
 
             GestureRecognizers.Add(flingGestureRecognizer);
+
+            PaddingProp.ValueChanged += (sender, oldValue, newValue) =>
+            {
+                ScrollMaxProp.UpdateValue();
+            };
         }
 
         public LinkedProperty<bool> CanScrollHorizontallyProp { get; }
@@ -92,19 +97,96 @@ namespace SkiEngine.UI.Layouts
         public LinkedProperty<SKPoint> ScrollMaxProp { get; }
         public SKPoint ScrollMax => ScrollMaxProp.Value;
 
+        protected override void OnContentChanged()
+        {
+            UpdateChildPoint();
+        }
+
         protected override void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)
         {
             ScrollMaxProp.UpdateValue();
+            if (UpdateChildPoint())
+            {
+                InvalidateSurface();
+            }
         }
 
         protected override void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
         {
-            
+            if (UpdateChildPoint())
+            {
+                InvalidateSurface();
+            }
         }
 
         protected override void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
         {
-            
+            if (UpdateChildPoint())
+            {
+                InvalidateSurface();
+            }
+        }
+
+        private bool UpdateChildPoint()
+        {
+            if (Content?.Node == null)
+            {
+                return false;
+            }
+
+            var previousPoint = Content.Node.RelativePoint;
+            Content.Node.RelativePoint = new SKPoint(-Scroll.X + GetOffsetX() + Padding.Left, -Scroll.Y + GetOffsetY() + Padding.Top);
+            return Content.Node.RelativePoint != previousPoint;
+
+            float GetOffsetX()
+            {
+                switch (Content.HorizontalOptions)
+                {
+                    case SkiLayoutOptions.Fill:
+                        return 0;
+                    case SkiLayoutOptions.Start:
+                        return 0;
+                    case SkiLayoutOptions.Center:
+                        if (Content.Size.Width < Size.Width)
+                        {
+                            return Size.Width / 2 - Content.Size.Width / 2;
+                        }
+                        return 0;
+                    case SkiLayoutOptions.End:
+                        if (Content.Size.Width < Size.Width)
+                        {
+                            return Size.Width - Content.Size.Width;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            float GetOffsetY()
+            {
+                switch (Content.VerticalOptions)
+                {
+                    case SkiLayoutOptions.Fill:
+                        return 0;
+                    case SkiLayoutOptions.Start:
+                        return 0;
+                    case SkiLayoutOptions.Center:
+                        if (Content.Size.Height < Size.Height)
+                        {
+                            return Size.Height / 2 - Content.Size.Height / 2;
+                        }
+                        return 0;
+                    case SkiLayoutOptions.End:
+                        if (Content.Size.Height < Size.Height)
+                        {
+                            return Size.Height - Content.Size.Height;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
         }
 
         private void AdjustScrollIfOutOfBounds()
@@ -146,11 +228,12 @@ namespace SkiEngine.UI.Layouts
                 return;
             }
 
-            var contentWidth = CanScrollHorizontally ? float.MaxValue : Size.Width;
-            var contentHeight = CanScrollVertically ? float.MaxValue : Size.Height;
+            UpdateChildPoint();
+            var contentWidth = CanScrollHorizontally ? float.MaxValue : Size.Width - Padding.Left - Padding.Right;
+            var contentHeight = CanScrollVertically ? float.MaxValue : Size.Height - Padding.Top - Padding.Bottom;
             Content.Layout(contentWidth, contentHeight);
         }
-        
+
         protected override void DrawInternal(SKCanvas canvas)
         {
             canvas.Save();
