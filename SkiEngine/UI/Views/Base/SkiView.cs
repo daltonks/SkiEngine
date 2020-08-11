@@ -152,7 +152,6 @@ namespace SkiEngine.UI.Views.Base
             set => IsFocusedProp.Value = value;
         }
 
-        
         public abstract IEnumerable<SkiView> ChildrenEnumerable { get; }
 
         public List<SkiGestureRecognizer> GestureRecognizers { get; } = new List<SkiGestureRecognizer>();

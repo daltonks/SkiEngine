@@ -21,8 +21,8 @@ namespace SkiEngine.UI.Layouts
                 this,
                 valueChanged: (sender, oldValue, newValue) =>
                 {
-                    LayoutInternal();
                     ScrollMaxProp.UpdateValue();
+                    QueueLayout();
                 }
             );
             CanScrollVerticallyProp = new LinkedProperty<bool>(
@@ -30,8 +30,8 @@ namespace SkiEngine.UI.Layouts
                 true, 
                 valueChanged: (sender, oldValue, newValue) =>
                 {
-                    LayoutInternal();
                     ScrollMaxProp.UpdateValue();
+                    QueueLayout();
                 }
             );
             ScrollMaxProp = new LinkedProperty<SKPoint>(
@@ -97,6 +97,16 @@ namespace SkiEngine.UI.Layouts
             ScrollMaxProp.UpdateValue();
         }
 
+        protected override void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        {
+            
+        }
+
+        protected override void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        {
+            
+        }
+
         private void AdjustScrollIfOutOfBounds()
         {
             Scroll = AdjustScrollIfOutOfBounds(Scroll);
@@ -127,11 +137,18 @@ namespace SkiEngine.UI.Layouts
             return scroll;
         }
 
-        protected override void LayoutInternal()
+        protected override void LayoutInternal(float maxWidth, float maxHeight)
         {
+            Size = new SKSize(maxWidth, maxHeight);
+
+            if (Content == null)
+            {
+                return;
+            }
+
             var contentWidth = CanScrollHorizontally ? float.MaxValue : Size.Width;
             var contentHeight = CanScrollVertically ? float.MaxValue : Size.Height;
-            Content?.Layout(contentWidth, contentHeight);
+            Content.Layout(contentWidth, contentHeight);
         }
         
         protected override void DrawInternal(SKCanvas canvas)

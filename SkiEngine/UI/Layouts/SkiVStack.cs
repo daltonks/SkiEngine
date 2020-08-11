@@ -106,10 +106,10 @@ namespace SkiEngine.UI.Layouts
         {
             return child.HorizontalOptions switch
             {
+                SkiLayoutOptions.Fill => 0,
                 SkiLayoutOptions.Start => 0,
                 SkiLayoutOptions.Center => Size.Width / 2 - child.Size.Width / 2,
                 SkiLayoutOptions.End => Size.Width - child.Size.Width,
-                SkiLayoutOptions.Fill => 0,
                 _ => 0f
             };
         }

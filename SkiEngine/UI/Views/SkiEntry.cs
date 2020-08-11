@@ -2,6 +2,7 @@
 using SkiaSharp;
 using SkiEngine.UI.Gestures;
 using SkiEngine.UI.Layouts;
+using SkiEngine.UI.Views.Base;
 using WeakEvent;
 
 namespace SkiEngine.UI.Views
@@ -21,7 +22,7 @@ namespace SkiEngine.UI.Views
             CanScrollVertically = false;
             HeightRequest = 40;
 
-            Content = Label = new SkiLabel();
+            Content = Label = new SkiLabel { VerticalOptions = SkiLayoutOptions.Center };
 
             GestureRecognizers.Insert(0, new TapGestureRecognizer(this, OnTapped));
 

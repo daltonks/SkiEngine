@@ -41,18 +41,16 @@ namespace SkiEngine.Xamarin
 
             _nativeEntryLayout.IsVisible = true;
             
+            var dpRect = entry.Node.LocalToWorldMatrix
+                .PostConcat(Camera.WorldToDpMatrix)
+                .MapRect(entry.BoundsLocal);
+            AbsoluteLayout.SetLayoutBounds(_nativeEntry, new Rectangle(dpRect.Left, dpRect.Top, dpRect.Width, dpRect.Height));
+
             Device.BeginInvokeOnMainThread(() => {
-                var dpRect = entry.Node.LocalToWorldMatrix
-                    .PostConcat(Camera.WorldToDpMatrix)
-                    .MapRect(entry.BoundsLocal);
-                AbsoluteLayout.SetLayoutBounds(_nativeEntry, new Rectangle(dpRect.Left, dpRect.Top, dpRect.Width, dpRect.Height));
+                _nativeEntry.Focus();
 
-                Device.BeginInvokeOnMainThread(() => {
-                    _nativeEntry.Focus();
-
-                    _nativeEntry.TextChanged += OnNativeEntryTextChanged;
-                    _nativeEntry.Completed += OnNativeEntryCompleted;
-                });
+                _nativeEntry.TextChanged += OnNativeEntryTextChanged;
+                _nativeEntry.Completed += OnNativeEntryCompleted;
             });
         }
 
