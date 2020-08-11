@@ -11,7 +11,7 @@ using Xamarin.Forms;
 
 namespace SkiEngine.Xamarin
 {
-    public class SkiXamarinUiComponent : SkiUiComponent, INotifyPropertyChanged
+    public class SkiXamarinUiComponent : SkiUiComponent
     {
         private readonly SKCanvasView _canvasView;
         private readonly Entry _nativeEntry;
@@ -36,6 +36,8 @@ namespace SkiEngine.Xamarin
         {
             _currentSkiEntry = entry;
 
+            entry.Label.TextProp.ValueChanged += OnCurrentSkiEntryValueChanged;
+
             _nativeEntry.Text = entry.Label.Text;
             _nativeEntry.FontSize = entry.Label.FontSize;
 
@@ -56,6 +58,8 @@ namespace SkiEngine.Xamarin
 
         public override void HideNativeEntry()
         {
+            _currentSkiEntry.Label.TextProp.ValueChanged -= OnCurrentSkiEntryValueChanged;
+
             _nativeEntry.TextChanged -= OnNativeEntryTextChanged;
             _nativeEntry.Completed -= OnNativeEntryCompleted;
 
@@ -69,6 +73,11 @@ namespace SkiEngine.Xamarin
         private void OnNativeEntryTextChanged(object sender, TextChangedEventArgs e)
         {
             _currentSkiEntry.Label.Text = e.NewTextValue;
+        }
+
+        private void OnCurrentSkiEntryValueChanged(object sender, string oldValue, string newValue)
+        {
+            _nativeEntry.Text = newValue;
         }
 
         private void OnNativeEntryCompleted(object sender, EventArgs e)
@@ -98,13 +107,6 @@ namespace SkiEngine.Xamarin
         public override void AbortAnimation(SkiAnimation skiAnimation)
         {
             _canvasView.AbortAnimation(skiAnimation.Id);
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
