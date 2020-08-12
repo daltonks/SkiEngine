@@ -13,14 +13,14 @@ namespace SkiEngine.Xamarin
 {
     public class SkiXamarinUiComponent : SkiUiComponent
     {
-        private readonly SKCanvasView _canvasView;
+        private readonly SKGLView _skiaView;
         private readonly Entry _nativeEntry;
         private readonly View _nativeEntryLayout;
         private SkiEntry _currentSkiEntry;
         private bool _isNativeEntryShown;
 
         public SkiXamarinUiComponent(
-            SKCanvasView canvasView, 
+            SKGLView skiaView, 
             Entry nativeEntry,
             View nativeEntryLayout,
             Node node, 
@@ -28,7 +28,7 @@ namespace SkiEngine.Xamarin
             Action invalidateSurface
         ) : base(node, camera, invalidateSurface)
         {
-            _canvasView = canvasView;
+            _skiaView = skiaView;
             _nativeEntry = nativeEntry;
             _nativeEntryLayout = nativeEntryLayout;
 
@@ -122,7 +122,7 @@ namespace SkiEngine.Xamarin
                 Easing.CubicOut,
                 skiAnimation.Finished
             ).Commit(
-                _canvasView,
+                _skiaView,
                 skiAnimation.Id,
                 length: (uint) skiAnimation.Length.TotalMilliseconds
             );
@@ -130,7 +130,7 @@ namespace SkiEngine.Xamarin
 
         public override void AbortAnimation(SkiAnimation skiAnimation)
         {
-            _canvasView.AbortAnimation(skiAnimation.Id);
+            _skiaView.AbortAnimation(skiAnimation.Id);
         }
     }
 }

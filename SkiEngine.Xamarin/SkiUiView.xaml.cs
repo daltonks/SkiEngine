@@ -31,8 +31,6 @@ namespace SkiEngine.Xamarin
                     CanvasView, NativeEntry, NativeEntryLayout, node, camera, invalidate
                 )
             );
-
-            
         }
 
         protected override void OnBindingContextChanged()
@@ -42,9 +40,9 @@ namespace SkiEngine.Xamarin
             _skiUiScene.UiComponent.View = (SkiView) BindingContext;
         }
 
-        private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        private void OnPaintSurface(object sender, SKPaintGLSurfaceEventArgs args)
         {
-            _skiUiScene.OnPaintSurface(e.Surface.Canvas, Width, Height);
+            _skiUiScene.OnPaintSurface(args.Surface.Canvas, Width, Height);
         }
 
         private void OnTouch(object sender, SKTouchEventArgs e)

@@ -8,11 +8,11 @@
                 mc:Ignorable="d"
                 x:Class="SkiEngine.Xamarin.SkiUiView"
                 Visual="Default">
-    <forms:SKCanvasView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
-                        x:Name="CanvasView"
-                        PaintSurface="OnPaintSurface"
-                        EnableTouchEvents="True"
-                        Touch="OnTouch"/>
+    <forms:SKGLView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
+                    x:Name="CanvasView"
+                    PaintSurface="OnPaintSurface"
+                    EnableTouchEvents="True"
+                    Touch="OnTouch"/>
     <ScrollView x:Name="NativeEntryLayout"
                 AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
                 IsVisible="False">
