@@ -32,6 +32,7 @@ namespace SkiEngine.Xamarin
             _nativeEntry = nativeEntry;
             _nativeEntryLayout = nativeEntryLayout;
 
+            _nativeEntry.TextChanged += OnNativeEntryTextChanged;
             _nativeEntry.Completed += OnNativeEntryCompleted;
             _nativeEntry.PropertyChanged += OnNativeEntryPropertyChanged;
         }
@@ -74,7 +75,6 @@ namespace SkiEngine.Xamarin
             _isNativeEntryShown = false;
 
             _currentSkiEntry.Label.TextProp.ValueChanged -= OnCurrentSkiEntryValueChanged;
-            _currentSkiEntry.Label.Text = _nativeEntry.Text;
 
             _nativeEntry.Text = "";
             _nativeEntry.Unfocus();
@@ -88,9 +88,16 @@ namespace SkiEngine.Xamarin
             _nativeEntry.Text = newValue;
         }
 
+        private void OnNativeEntryTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isNativeEntryShown)
+            {
+                _currentSkiEntry.Label.Text = _nativeEntry.Text;
+            }
+        }
+
         private void OnNativeEntryCompleted(object sender, EventArgs e)
         {
-            _currentSkiEntry.Label.Text = _nativeEntry.Text;
             _currentSkiEntry.OnNativeEntryCompleted();
             if (Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.iOS)
             {
