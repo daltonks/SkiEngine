@@ -22,15 +22,24 @@ namespace SkiEngine.Xamarin
             // that invalidate the surface.
             // Because of this, use the dispatcher.
             var invalidateSurface = Device.RuntimePlatform == Device.UWP
-                ? () => Application.Current.Dispatcher.BeginInvokeOnMainThread(CanvasView.InvalidateSurface)
-                : (Action) CanvasView.InvalidateSurface;
+                ? () => Application.Current.Dispatcher.BeginInvokeOnMainThread(SkiaView.InvalidateSurface)
+                : (Action) SkiaView.InvalidateSurface;
 
             _skiUiScene = new SkiUiScene(
                 invalidateSurface, 
                 (node, camera, invalidate) => _uiComponent = new SkiXamarinUiComponent(
-                    CanvasView, NativeEntry, NativeEntryLayout, node, camera, invalidate
+                    SkiaView, NativeEntry, NativeEntryLayout, node, camera, invalidate
                 )
             );
+
+            // https://github.com/mono/SkiaSharp/issues/1377
+            if (Device.RuntimePlatform == Device.UWP)
+            {
+                SkiaView.SizeChanged += (sender, args) =>
+                {
+                    _skiUiScene.InvalidateSurface();
+                };
+            }
         }
 
         protected override void OnBindingContextChanged()

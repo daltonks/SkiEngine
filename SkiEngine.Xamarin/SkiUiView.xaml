@@ -9,7 +9,7 @@
                 x:Class="SkiEngine.Xamarin.SkiUiView"
                 Visual="Default">
     <forms:SKGLView AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
-                    x:Name="CanvasView"
+                    x:Name="SkiaView"
                     PaintSurface="OnPaintSurface"
                     EnableTouchEvents="True"
                     Touch="OnTouch"/>
