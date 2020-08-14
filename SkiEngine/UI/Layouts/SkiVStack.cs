@@ -24,22 +24,21 @@ namespace SkiEngine.UI.Layouts
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-        protected override void LayoutInternal(float maxWidth, float maxHeight)
+        protected override void LayoutInternal(float? maxWidth, float? maxHeight)
         {
             var size = new SKSize();
 
-            if (maxHeight == float.MaxValue)
+            // Fill
+            // Height request
+            // Otherwise: needs to be calculated
+
+            if (maxHeight == null)
             {
                 // There is no height limit
 
                 foreach (var child in Children)
                 {
-                    var width = child.WidthRequest == null
-                        ? maxWidth
-                        : Math.Min(child.WidthRequest.Value, maxWidth);
-                    var height = child.HeightRequest ?? maxHeight;
-
-                    child.Layout(width, height);
+                    child.Layout(child.WidthRequest ?? maxWidth, child.HeightRequest);
                     child.Node.RelativePoint = new SKPoint(0, size.Height);
                     size.Height += child.Size.Height;
                     size.Width = Math.Max(size.Width, child.Size.Width);
@@ -69,24 +68,21 @@ namespace SkiEngine.UI.Layouts
                 if (totalHeightRequests < maxHeight)
                 {
                     // All height requests can be honored
-                    heightOfNoHeightRequestChildren = (maxHeight - totalHeightRequests) / numNoHeightRequest;
+                    heightOfNoHeightRequestChildren = (maxHeight.Value - totalHeightRequests) / numNoHeightRequest;
                     scaleOfHeightRequestChildren = 1;
                 }
                 else
                 {
                     // Height requests are out-of-bounds, so they need to be shrunk
                     heightOfNoHeightRequestChildren = 0;
-                    scaleOfHeightRequestChildren = maxHeight / totalHeightRequests;
+                    scaleOfHeightRequestChildren = maxHeight.Value / totalHeightRequests;
                 }
 
                 foreach (var child in Children)
                 {
-                    var width = child.WidthRequest == null
-                        ? maxWidth
-                        : Math.Min(child.WidthRequest.Value, maxWidth);
                     var height = child.HeightRequest * scaleOfHeightRequestChildren ?? heightOfNoHeightRequestChildren;
 
-                    child.Layout(width, height);
+                    child.Layout(child.WidthRequest ?? maxWidth, height);
                     child.Node.RelativePoint = new SKPoint(0, size.Height);
                     size.Height += height;
                     size.Width = Math.Max(size.Width, child.Size.Width);

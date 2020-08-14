@@ -219,9 +219,9 @@ namespace SkiEngine.UI.Layouts
             return scroll;
         }
 
-        protected override void LayoutInternal(float maxWidth, float maxHeight)
+        protected override void LayoutInternal(float? maxWidth, float? maxHeight)
         {
-            Size = new SKSize(maxWidth, maxHeight);
+            Size = new SKSize(maxWidth ?? float.MaxValue, maxHeight ?? float.MaxValue);
 
             if (Content == null)
             {
@@ -229,9 +229,9 @@ namespace SkiEngine.UI.Layouts
             }
 
             UpdateChildPoint();
-            var contentWidth = CanScrollHorizontally ? float.MaxValue : Size.Width - Padding.Left - Padding.Right;
-            var contentHeight = CanScrollVertically ? float.MaxValue : Size.Height - Padding.Top - Padding.Bottom;
-            Content.Layout(contentWidth, contentHeight);
+            var contentMaxWidth = CanScrollHorizontally ? (float?) null : Size.Width - Padding.Left - Padding.Right;
+            var contentMaxHeight = CanScrollVertically ? (float?) null : Size.Height - Padding.Top - Padding.Bottom;
+            Content.Layout(contentMaxWidth, contentMaxHeight);
         }
 
         protected override void DrawInternal(SKCanvas canvas)

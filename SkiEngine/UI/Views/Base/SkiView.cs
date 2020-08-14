@@ -8,7 +8,8 @@ namespace SkiEngine.UI.Views.Base
 {
     public abstract class SkiView
     {
-        private SKSize _maxSize;
+        private float? _maxWidth;
+        private float? _maxHeight;
         private bool _layoutNeeded;
         private bool _layoutQueued;
 
@@ -196,7 +197,7 @@ namespace SkiEngine.UI.Views.Base
             UiComponent.RunNextUpdate(() => {
                 if (_layoutNeeded)
                 {
-                    Layout(_maxSize.Width, _maxSize.Height);
+                    Layout(_maxWidth, _maxHeight);
                 }
                 _layoutQueued = false;
             });
@@ -204,14 +205,15 @@ namespace SkiEngine.UI.Views.Base
             InvalidateSurface();
         }
 
-        public void Layout(float maxWidth, float maxHeight)
+        public void Layout(float? maxWidth, float? maxHeight)
         {
-            _maxSize = new SKSize(maxWidth, maxHeight);
+            _maxWidth = maxWidth;
+            _maxHeight = maxHeight;
             LayoutInternal(maxWidth, maxHeight);
             _layoutNeeded = false;
         }
 
-        protected abstract void LayoutInternal(float maxWidth, float maxHeight);
+        protected abstract void LayoutInternal(float? maxWidth, float? maxHeight);
 
         public void Draw(SKCanvas canvas)
         {

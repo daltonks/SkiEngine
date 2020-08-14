@@ -75,7 +75,7 @@ namespace SkiEngine.UI.Views
             return _textBlock.CodePointToCharacterIndex(codePointIndex);
         }
         
-        protected override void LayoutInternal(float maxWidth, float maxHeight)
+        protected override void LayoutInternal(float? maxWidth, float? maxHeight)
         {
             _textBlock.MaxWidth = maxWidth;
             _textBlock.MaxHeight = maxHeight;
