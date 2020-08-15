@@ -2,14 +2,13 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using SkiaSharp;
-using SkiEngine.UI.Views;
 using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI.Layouts.Base
 {
     public abstract class SkiMultiChildLayout : SkiView
     {
-        public SkiMultiChildLayout()
+        protected SkiMultiChildLayout()
         {
             Children.CollectionChanged += OnChildrenChanged;
         }
@@ -52,15 +51,15 @@ namespace SkiEngine.UI.Layouts.Base
                     break;
             }
 
-            QueueLayout();
+            InvalidateLayout();
 
             void OnChildAdded(SkiView child)
             {
                 UpdateChildNode(child);
                 child.WidthRequestProp.ValueChanged += OnChildSizeRequestChanged;
                 child.HeightRequestProp.ValueChanged += OnChildSizeRequestChanged;
-                child.HorizontalOptionsProp.ValueChanged += OnChildHorizontalOptionsChanged;
-                child.VerticalOptionsProp.ValueChanged += OnChildVerticalOptionsChanged;
+                child.HorizontalOptionsProp.ValueChanged += OnChildLayoutOptionsChanged;
+                child.VerticalOptionsProp.ValueChanged += OnChildLayoutOptionsChanged;
             }
 
             void OnChildRemoved(SkiView child)
@@ -68,18 +67,20 @@ namespace SkiEngine.UI.Layouts.Base
                 child.Node?.Destroy();
                 child.WidthRequestProp.ValueChanged -= OnChildSizeRequestChanged;
                 child.HeightRequestProp.ValueChanged -= OnChildSizeRequestChanged;
-                child.HorizontalOptionsProp.ValueChanged -= OnChildHorizontalOptionsChanged;
-                child.VerticalOptionsProp.ValueChanged -= OnChildVerticalOptionsChanged;
+                child.HorizontalOptionsProp.ValueChanged -= OnChildLayoutOptionsChanged;
+                child.VerticalOptionsProp.ValueChanged -= OnChildLayoutOptionsChanged;
             }
         }
 
         private void OnChildSizeRequestChanged(object sender, float? oldValue, float? newValue)
         {
-            QueueLayout();
+            InvalidateLayout();
         }
 
-        protected abstract void OnChildHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
-        protected abstract void OnChildVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
+        private void OnChildLayoutOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        {
+            InvalidateLayout();
+        }
 
         protected override void DrawInternal(SKCanvas canvas)
         {

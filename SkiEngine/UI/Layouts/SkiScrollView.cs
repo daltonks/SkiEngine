@@ -22,7 +22,7 @@ namespace SkiEngine.UI.Layouts
                 valueChanged: (sender, oldValue, newValue) =>
                 {
                     ScrollMaxProp.UpdateValue();
-                    QueueLayout();
+                    InvalidateLayout();
                 }
             );
             CanScrollVerticallyProp = new LinkedProperty<bool>(
@@ -31,7 +31,7 @@ namespace SkiEngine.UI.Layouts
                 valueChanged: (sender, oldValue, newValue) =>
                 {
                     ScrollMaxProp.UpdateValue();
-                    QueueLayout();
+                    InvalidateLayout();
                 }
             );
             ScrollMaxProp = new LinkedProperty<SKPoint>(
@@ -221,17 +221,17 @@ namespace SkiEngine.UI.Layouts
 
         protected override void LayoutInternal(float? maxWidth, float? maxHeight)
         {
-            Size = new SKSize(maxWidth ?? float.MaxValue, maxHeight ?? float.MaxValue);
+            Size = new SKSize(maxWidth ?? 400, maxHeight ?? 400);
 
             if (Content == null)
             {
                 return;
             }
 
-            UpdateChildPoint();
             var contentMaxWidth = CanScrollHorizontally ? (float?) null : Size.Width - Padding.Left - Padding.Right;
             var contentMaxHeight = CanScrollVertically ? (float?) null : Size.Height - Padding.Top - Padding.Bottom;
             Content.Layout(contentMaxWidth, contentMaxHeight);
+            UpdateChildPoint();
         }
 
         protected override void DrawInternal(SKCanvas canvas)

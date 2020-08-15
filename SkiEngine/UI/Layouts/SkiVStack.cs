@@ -1,48 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using SkiaSharp;
 using SkiEngine.UI.Layouts.Base;
-using SkiEngine.UI.Views;
 using SkiEngine.UI.Views.Base;
+using SkiEngine.Util;
 
 namespace SkiEngine.UI.Layouts
 {
     public class SkiVStack : SkiMultiChildLayout
     {
-        protected override void OnChildHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
-        {
-            var child = (SkiView) sender;
-            child.Node.RelativePoint = new SKPoint(GetChildX(child), child.Node.RelativePoint.Y);
-        }
-
-        protected override void OnChildVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
-        {
-
-        }
-
-        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         protected override void LayoutInternal(float? maxWidth, float? maxHeight)
         {
             var size = new SKSize();
-
-            // Fill
-            // Height request
-            // Otherwise: needs to be calculated
 
             if (maxHeight == null)
             {
                 // There is no height limit
 
+                float? width = null;
                 foreach (var child in Children)
                 {
-                    child.Layout(child.WidthRequest ?? maxWidth, child.HeightRequest);
+                    // Wait to layout horizontal Fill children,
+                    // because their width can depend on the
+                    // width of the other elements
+                    if (child.HorizontalOptions == SkiLayoutOptions.Fill)
+                    {
+                        continue;
+                    }
+                    child.Layout(MathNullable.Min(child.WidthRequest, maxWidth), child.HeightRequest);
+                    width = MathNullable.Max(width, child.Size.Width);
+                }
+
+                var fillChildMaxWidth = MathNullable.Max(width, maxWidth);
+
+                foreach (var child in Children)
+                {
+                    if (child.HorizontalOptions == SkiLayoutOptions.Fill)
+                    {
+                        child.Layout(fillChildMaxWidth, child.HeightRequest);
+                        width = MathNullable.Max(width, child.Size.Width);
+                    }
+
                     child.Node.RelativePoint = new SKPoint(0, size.Height);
                     size.Height += child.Size.Height;
-                    size.Width = Math.Max(size.Width, child.Size.Width);
                 }
+
+                size.Width = width ?? 0;
             }
             else
             {

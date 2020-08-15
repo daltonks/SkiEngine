@@ -35,7 +35,7 @@ namespace SkiEngine.UI.Layouts.Base
 
                 OnContentChanged();
 
-                QueueLayout();
+                InvalidateLayout();
             }
         }
 

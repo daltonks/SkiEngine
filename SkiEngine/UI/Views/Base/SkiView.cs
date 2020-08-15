@@ -42,7 +42,7 @@ namespace SkiEngine.UI.Views.Base
             SizeProp = new LinkedProperty<SKSize>(this);
             PaddingProp = new LinkedProperty<SKRect>(
                 this,
-                valueChanged: (sender, oldValue, newValue) => QueueLayout()
+                valueChanged: (sender, oldValue, newValue) => InvalidateLayout()
             );
             HorizontalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
             VerticalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
@@ -185,7 +185,7 @@ namespace SkiEngine.UI.Views.Base
 
         protected abstract void OnNodeChanged();
         
-        protected void QueueLayout()
+        protected void InvalidateLayout()
         {
             if (_layoutQueued || UiComponent == null)
             {
