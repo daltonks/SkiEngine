@@ -1,15 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using SkiaSharp;
-using SkiEngine.Input;
 using SkiEngine.UI.Gestures;
 using SkiEngine.UI.Layouts.Base;
-using SkiEngine.UI.Views.Base;
-using SkiEngine.Util.Extensions.SkiaSharp;
 
 namespace SkiEngine.UI.Layouts
 {
@@ -97,97 +89,13 @@ namespace SkiEngine.UI.Layouts
         public LinkedProperty<SKPoint> ScrollMaxProp { get; }
         public SKPoint ScrollMax => ScrollMaxProp.Value;
 
-        protected override void OnContentChanged()
-        {
-            UpdateChildPoint();
-        }
-
         protected override void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)
         {
             ScrollMaxProp.UpdateValue();
-            if (UpdateChildPoint())
-            {
-                InvalidateSurface();
-            }
+            base.OnContentSizeChanged(sender, oldSize, newSize);
         }
 
-        protected override void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
-        {
-            if (UpdateChildPoint())
-            {
-                InvalidateSurface();
-            }
-        }
-
-        protected override void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
-        {
-            if (UpdateChildPoint())
-            {
-                InvalidateSurface();
-            }
-        }
-
-        private bool UpdateChildPoint()
-        {
-            if (Content?.Node == null)
-            {
-                return false;
-            }
-
-            var previousPoint = Content.Node.RelativePoint;
-            Content.Node.RelativePoint = new SKPoint(-Scroll.X + GetOffsetX() + Padding.Left, -Scroll.Y + GetOffsetY() + Padding.Top);
-            return Content.Node.RelativePoint != previousPoint;
-
-            float GetOffsetX()
-            {
-                switch (Content.HorizontalOptions)
-                {
-                    case SkiLayoutOptions.Fill:
-                        return 0;
-                    case SkiLayoutOptions.Start:
-                        return 0;
-                    case SkiLayoutOptions.Center:
-                        if (Content.Size.Width < Size.Width)
-                        {
-                            return Size.Width / 2 - Content.Size.Width / 2;
-                        }
-                        return 0;
-                    case SkiLayoutOptions.End:
-                        if (Content.Size.Width < Size.Width)
-                        {
-                            return Size.Width - Content.Size.Width;
-                        }
-                        return 0;
-                    default:
-                        return 0;
-                }
-            }
-
-            float GetOffsetY()
-            {
-                switch (Content.VerticalOptions)
-                {
-                    case SkiLayoutOptions.Fill:
-                        return 0;
-                    case SkiLayoutOptions.Start:
-                        return 0;
-                    case SkiLayoutOptions.Center:
-                        if (Content.Size.Height < Size.Height)
-                        {
-                            return Size.Height / 2 - Content.Size.Height / 2;
-                        }
-                        return 0;
-                    case SkiLayoutOptions.End:
-                        if (Content.Size.Height < Size.Height)
-                        {
-                            return Size.Height - Content.Size.Height;
-                        }
-                        return 0;
-                    default:
-                        return 0;
-                }
-            }
-        }
+        protected override bool UpdateChildPoint() => UpdateChildPoint(new SKPoint(-Scroll.X, -Scroll.Y));
 
         private void AdjustScrollIfOutOfBounds()
         {

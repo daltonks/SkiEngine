@@ -6,7 +6,7 @@ using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI.Layouts.Base
 {
-    public abstract class SkiMultiChildLayout : SkiView
+    public abstract class SkiMultiChildLayout : SkiLayout
     {
         protected SkiMultiChildLayout()
         {
