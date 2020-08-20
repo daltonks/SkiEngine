@@ -24,6 +24,7 @@ namespace SkiEngine.UI.Views
             CanScrollVertically = false;
             HeightRequest = 40;
             Padding = new SKRect(8, 0, 8, 0);
+            VerticalOptions = SkiLayoutOptions.Start;
 
             Content = Label = new SkiLabel
             {

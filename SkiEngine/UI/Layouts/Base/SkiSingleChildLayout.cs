@@ -33,8 +33,6 @@ namespace SkiEngine.UI.Layouts.Base
                 _content.HorizontalOptionsProp.ValueChanged += OnContentHorizontalOptionsChanged;
                 _content.VerticalOptionsProp.ValueChanged += OnContentVerticalOptionsChanged;
 
-                OnContentChanged();
-
                 InvalidateLayout();
             }
         }
@@ -44,34 +42,9 @@ namespace SkiEngine.UI.Layouts.Base
             UpdateChildNode(Content);
         }
 
-        protected virtual void OnContentChanged()
-        {
-            UpdateChildPoint();
-        }
-
-        protected virtual void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)
-        {
-            if (UpdateChildPoint())
-            {
-                InvalidateSurface();
-            }
-        }
-
-        protected virtual void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
-        {
-            if (UpdateChildPoint())
-            {
-                InvalidateSurface();
-            }
-        }
-
-        protected virtual void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
-        {
-            if (UpdateChildPoint())
-            {
-                InvalidateSurface();
-            }
-        }
+        protected abstract void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize);
+        protected abstract void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
+        protected abstract void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
 
         protected virtual bool UpdateChildPoint() => UpdateChildPoint(new SKPoint());
 

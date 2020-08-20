@@ -16,16 +16,12 @@ namespace SkiEngine.UI.Views
             TextProp = new LinkedProperty<string>(
                 this, 
                 "",
-                valueChanged: (sender, oldValue, newValue) => UpdateRichString()
+                valueChanged: (sender, oldValue, newValue) => UpdateTextBlock()
             );
             FontSizeProp = new LinkedProperty<float>(
                 this, 
                 16,
-                valueChanged: (sender, oldValue, newValue) => UpdateRichString()
-            );
-            CursorPositionProp = new LinkedProperty<int?>(
-                this,
-                valueChanged: (sender, oldValue, newValue) => InvalidateSurface()
+                valueChanged: (sender, oldValue, newValue) => UpdateTextBlock()
             );
         }
 
@@ -43,18 +39,11 @@ namespace SkiEngine.UI.Views
             set => FontSizeProp.Value = value;
         }
 
-        public LinkedProperty<int?> CursorPositionProp { get; }
-        public int? CursorPosition
-        {
-            get => CursorPositionProp.Value;
-            set => CursorPositionProp.Value = value;
-        }
-
         public override IEnumerable<SkiView> ChildrenEnumerable => Enumerable.Empty<SkiView>();
 
         protected override void OnNodeChanged() { }
 
-        private void UpdateRichString()
+        private void UpdateTextBlock()
         {
             _textBlock = new TextBlock
             {
@@ -96,14 +85,6 @@ namespace SkiEngine.UI.Views
         protected override void DrawInternal(SKCanvas canvas)
         {
             _textBlock.Paint(canvas);
-            if (CursorPosition != null)
-            {
-                var cursorRectangle = _textBlock.GetCaretInfo(CursorPosition.Value).CaretRectangle;
-                using (var paint = new SKPaint { Color = SKColors.Black })
-                {
-                    canvas.DrawRect(cursorRectangle.Left, cursorRectangle.Top, 1, cursorRectangle.Height, paint);
-                }
-            }
         }
     }
 }

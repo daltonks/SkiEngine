@@ -2,6 +2,7 @@
 using SkiaSharp;
 using SkiEngine.UI.Gestures;
 using SkiEngine.UI.Layouts.Base;
+using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI.Layouts
 {
@@ -63,6 +64,8 @@ namespace SkiEngine.UI.Layouts
             {
                 ScrollMaxProp.UpdateValue();
             };
+
+            VerticalOptions = SkiLayoutOptions.Fill;
         }
 
         public LinkedProperty<bool> CanScrollHorizontallyProp { get; }
@@ -92,7 +95,26 @@ namespace SkiEngine.UI.Layouts
         protected override void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)
         {
             ScrollMaxProp.UpdateValue();
-            base.OnContentSizeChanged(sender, oldSize, newSize);
+            if (UpdateChildPoint())
+            {
+                InvalidateSurface();
+            }
+        }
+
+        protected override void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        {
+            if (UpdateChildPoint())
+            {
+                InvalidateSurface();
+            }
+        }
+
+        protected override void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        {
+            if (UpdateChildPoint())
+            {
+                InvalidateSurface();
+            }
         }
 
         protected override bool UpdateChildPoint() => UpdateChildPoint(new SKPoint(-Scroll.X, -Scroll.Y));

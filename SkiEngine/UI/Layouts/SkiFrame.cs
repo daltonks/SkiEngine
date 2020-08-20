@@ -13,35 +13,30 @@ namespace SkiEngine.UI.Layouts
         public SkiFrame()
         {
             Padding = new SKRect(10, 10, 10, 10);
-            HorizontalOptions = VerticalOptions = SkiLayoutOptions.Start;
+        }
+
+        protected override void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)
+        {
+            InvalidateLayout();
+        }
+
+        protected override void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        {
+            InvalidateLayout();
+        }
+
+        protected override void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        {
+            InvalidateLayout();
         }
 
         protected override void LayoutInternal(float? maxWidth, float? maxHeight)
         {
             Content.Layout(maxWidth - Padding.Left - Padding.Right, maxHeight - Padding.Top - Padding.Bottom);
-            float? width;
-            float? height;
-            switch (HorizontalOptions)
-            {
-                case SkiLayoutOptions.Fill:
-                    width = maxWidth;
-                    break;
-                default:
-                    width = Content.Size.Width + Padding.Left + Padding.Right;
-                    break;
-            }
-            switch (VerticalOptions)
-            {
-                case SkiLayoutOptions.Fill:
-                    height = maxHeight;
-                    break;
-                default:
-                    height = Content.Size.Height + Padding.Top + Padding.Bottom;
-                    break;
-            }
-            Size = new SKSize(width ?? float.MaxValue, height ?? float.MaxValue);
-            ViewPreferredWidth = Size.Width;
-            ViewPreferredHeight = Size.Height;
+            Size = new SKSize(
+                Content.Size.Width + Padding.Left + Padding.Right, 
+                Content.Size.Height + Padding.Top + Padding.Bottom
+            );
             UpdateChildPoint();
         }
 

@@ -22,19 +22,15 @@ namespace SkiEngine.UI.Layouts.Base
                 switch (child.HorizontalOptions)
                 {
                     case SkiLayoutOptions.Fill:
-                    case SkiLayoutOptions.FillAndExpand:
                     case SkiLayoutOptions.Start:
-                    case SkiLayoutOptions.StartAndExpand:
                         return bounds.Left;
                     case SkiLayoutOptions.Center:
-                    case SkiLayoutOptions.CenterAndExpand:
                         if (child.Size.Width < bounds.Width)
                         {
                             return bounds.MidX - child.Size.Width / 2;
                         }
                         return bounds.Left;
                     case SkiLayoutOptions.End:
-                    case SkiLayoutOptions.EndAndExpand:
                         if (child.Size.Width < bounds.Width)
                         {
                             return bounds.Right - child.Size.Width;
@@ -50,19 +46,15 @@ namespace SkiEngine.UI.Layouts.Base
                 switch (child.VerticalOptions)
                 {
                     case SkiLayoutOptions.Fill:
-                    case SkiLayoutOptions.FillAndExpand:
                     case SkiLayoutOptions.Start:
-                    case SkiLayoutOptions.StartAndExpand:
                         return bounds.Top;
                     case SkiLayoutOptions.Center:
-                    case SkiLayoutOptions.CenterAndExpand:
                         if (child.Size.Height < bounds.Height)
                         {
                             return bounds.MidY - child.Size.Height / 2;
                         }
                         return bounds.Top;
                     case SkiLayoutOptions.End:
-                    case SkiLayoutOptions.EndAndExpand:
                         if (child.Size.Height < bounds.Height)
                         {
                             return bounds.Bottom - child.Size.Height;
