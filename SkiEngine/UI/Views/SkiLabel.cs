@@ -50,7 +50,7 @@ namespace SkiEngine.UI.Views
                 MaxWidth = _textBlock.MaxWidth,
                 MaxHeight = _textBlock.MaxHeight,
             };
-            _textBlock.AddText(Text, StyleManager.Default.DefaultStyle);
+            _textBlock.AddText(Text, UiComponent.DefaultTextStyle);
 
             OnSizeChanged();
 

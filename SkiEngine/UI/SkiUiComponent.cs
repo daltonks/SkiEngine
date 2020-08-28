@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using SkiaSharp;
 using SkiEngine.Camera;
 using SkiEngine.Drawable;
@@ -67,6 +66,8 @@ namespace SkiEngine.UI
         public SkiView FocusedView { get; internal set; }
 
         public UpdateableComponentPart UpdateablePart { get; }
+
+        public Style DefaultTextStyle { get; } = new Style();
 
         public void InvalidateSurface()
         {

@@ -35,6 +35,16 @@ namespace SkiEngine.Xamarin
             _nativeEntry.TextChanged += OnNativeEntryTextChanged;
             _nativeEntry.Completed += OnNativeEntryCompleted;
             _nativeEntry.PropertyChanged += OnNativeEntryPropertyChanged;
+
+            switch (Device.RuntimePlatform)
+            {
+                case Device.UWP:
+                    DefaultTextStyle.FontFamily = "Segoe UI";
+                    break;
+                case Device.iOS:
+                    DefaultTextStyle.FontFamily = "San Francisco";
+                    break;
+            }
         }
 
         public override void ShowNativeEntry(SkiEntry entry, int cursorPosition)
