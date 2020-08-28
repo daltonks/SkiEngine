@@ -10,7 +10,7 @@
     <PackageReference Include="SkiaSharp" Version="2.80.1" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.80.1" />
     <PackageReference Include="ThomasLevesque.WeakEvent" Version="4.1.0" />
-    <PackageReference Include="Topten.RichTextKit" Version="0.3.129" />
+    <PackageReference Include="Topten.RichTextKit" Version="0.3.132" />
   </ItemGroup>
 
   <ItemGroup>

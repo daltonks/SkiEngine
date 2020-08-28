@@ -1,22 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SkiaSharp;
-using SkiEngine.UI.Layouts.Base;
 using SkiEngine.UI.Views.Base;
+using SkiEngine.UI.Views.Layouts.Base;
 using SkiEngine.Util;
 
-namespace SkiEngine.UI.Layouts
+namespace SkiEngine.UI.Views.Layouts
 {
     public class SkiVStack : SkiMultiChildLayout
     {
+        public SkiVStack()
+        {
+            SpacingProp = new LinkedProperty<float>(
+                this, 
+                10,
+                valueChanged: (sender, oldValue, newValue) => InvalidateLayout()
+            );
+        }
+
+        public LinkedProperty<float> SpacingProp { get; }
+        public float Spacing
+        {
+            get => SpacingProp.Value;
+            set => SpacingProp.Value = value;
+        }
+
         protected override void LayoutInternal(float? maxWidth, float? maxHeight)
         {
+            var visibleChildren = Children;
+
+            if (!visibleChildren.Any())
+            {
+                Size = new SKSize();
+                return;
+            }
+
             var width = 0f;
-            var height = 0f;
+            var height = (Children.Count - 1) * Spacing;
 
             var fillVerticallyChildren = new List<SkiView>();
 
-            foreach (var child in Children)
+            foreach (var child in visibleChildren)
             {
                 if (child.VerticalOptions == SkiLayoutOptions.Fill)
                 {
@@ -43,13 +68,22 @@ namespace SkiEngine.UI.Layouts
 
             // Update children points
             var y = 0f;
-            foreach (var child in Children)
+            foreach (var child in visibleChildren)
             {
                 UpdateChildPoint(child, SKRect.Create(0, y, maxWidth ?? child.Size.Width, child.Size.Height));
-                y += child.Size.Height;
+                y += child.Size.Height + Spacing;
             }
 
             Size = new SKSize(width, height);
+        }
+
+        protected override void DrawInternal(SKCanvas canvas)
+        {
+            DrawBackground(canvas);
+            foreach (var view in Children)
+            {
+                view.Draw(canvas);
+            }
         }
     }
 }

@@ -2,7 +2,7 @@
 using SkiaSharp;
 using SkiEngine.UI.Views.Base;
 
-namespace SkiEngine.UI.Layouts.Base
+namespace SkiEngine.UI.Views.Layouts.Base
 {
     public abstract class SkiLayout : SkiView
     {

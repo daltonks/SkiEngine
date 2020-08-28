@@ -1,10 +1,10 @@
 ﻿using System;
 using SkiaSharp;
 using SkiEngine.UI.Gestures;
-using SkiEngine.UI.Layouts.Base;
 using SkiEngine.UI.Views.Base;
+using SkiEngine.UI.Views.Layouts.Base;
 
-namespace SkiEngine.UI.Layouts
+namespace SkiEngine.UI.Views.Layouts
 {
     public class SkiScrollView : SkiSingleChildLayout
     {
@@ -71,7 +71,7 @@ namespace SkiEngine.UI.Layouts
         public LinkedProperty<bool> CanScrollHorizontallyProp { get; }
         public bool CanScrollHorizontally
         {
-            get => CanScrollHorizontallyProp.Value;
+            get => this.CanScrollHorizontallyProp.Value;
             set => CanScrollHorizontallyProp.Value = value;
         }
 
@@ -168,13 +168,14 @@ namespace SkiEngine.UI.Layouts
         {
             canvas.Save();
             canvas.ClipRect(BoundsLocal);
+            DrawBackground(canvas);
             DrawContent(canvas);
             canvas.Restore();
         }
 
         protected virtual void DrawContent(SKCanvas canvas)
         {
-            Content.Draw(canvas);
+            Content?.Draw(canvas);
         }
     }
 }

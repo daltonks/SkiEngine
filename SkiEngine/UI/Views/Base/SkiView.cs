@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using SkiaSharp;
 using SkiEngine.UI.Gestures;
+using SkiEngine.UI.Views.Backgrounds;
 
 namespace SkiEngine.UI.Views.Base
 {
@@ -63,6 +64,10 @@ namespace SkiEngine.UI.Views.Base
                         UiComponent.FocusedView = null;
                     }
                 }
+            );
+            BackgroundProp = new LinkedProperty<ISkiBackground>(
+                this,
+                valueChanged: (sender, oldValue, newValue) => InvalidateSurface()
             );
         }
 
@@ -167,6 +172,13 @@ namespace SkiEngine.UI.Views.Base
             set => IsFocusedProp.Value = value;
         }
 
+        public LinkedProperty<ISkiBackground> BackgroundProp { get; }
+        public ISkiBackground Background
+        {
+            get => BackgroundProp.Value;
+            set => BackgroundProp.Value = value;
+        }
+
         public abstract IEnumerable<SkiView> ChildrenEnumerable { get; }
 
         public List<SkiGestureRecognizer> GestureRecognizers { get; } = new List<SkiGestureRecognizer>();
@@ -175,7 +187,7 @@ namespace SkiEngine.UI.Views.Base
 
         public void UpdateChildNode(SkiView child, InitialNodeTransform transform = null)
         {
-            if (Node != null)
+            if (Node != null && child != null)
             {
                 child.UiComponent = UiComponent;
                 child.Node = Node.CreateChild(transform ?? new InitialNodeTransform());
@@ -228,6 +240,11 @@ namespace SkiEngine.UI.Views.Base
         }
 
         protected abstract void DrawInternal(SKCanvas canvas);
+
+        protected void DrawBackground(SKCanvas canvas)
+        {
+            Background?.Draw(canvas, Size);
+        }
 
         public void InvalidateSurface()
         {

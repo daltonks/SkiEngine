@@ -1,9 +1,8 @@
-﻿using System;
-using SkiaSharp;
-using SkiEngine.UI.Layouts.Base;
+﻿using SkiaSharp;
 using SkiEngine.UI.Views.Base;
+using SkiEngine.UI.Views.Layouts.Base;
 
-namespace SkiEngine.UI.Layouts
+namespace SkiEngine.UI.Views.Layouts
 {
     public class SkiFrame : SkiSingleChildLayout
     {
@@ -42,7 +41,19 @@ namespace SkiEngine.UI.Layouts
 
         protected override void DrawInternal(SKCanvas canvas)
         {
-            canvas.DrawRoundRect(BoundsLocal, 10, 10, Paint);
+            const float radius = 10;
+
+            canvas.DrawRoundRect(BoundsLocal, radius, radius, Paint);
+
+            if (Background != null)
+            {
+                using (new SKAutoCanvasRestore(canvas))
+                {
+                    canvas.ClipRoundRect(new SKRoundRect(BoundsLocal, radius));
+                    DrawBackground(canvas);
+                }
+            }
+
             Content.Draw(canvas);
         }
     }

@@ -84,6 +84,7 @@ namespace SkiEngine.UI.Views
 
         protected override void DrawInternal(SKCanvas canvas)
         {
+            DrawBackground(canvas);
             _textBlock.Paint(canvas);
         }
     }

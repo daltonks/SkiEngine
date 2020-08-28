@@ -2,13 +2,19 @@
 using SkiaSharp;
 using SkiEngine.UI.Views.Base;
 
-namespace SkiEngine.UI.Layouts.Base
+namespace SkiEngine.UI.Views.Layouts.Base
 {
     public abstract class SkiSingleChildLayout : SkiLayout
     {
         public override IEnumerable<SkiView> ChildrenEnumerable
         {
-            get { yield return Content; }
+            get
+            {
+                if (Content != null)
+                {
+                    yield return Content;
+                }
+            }
         }
 
         private SkiView _content;
