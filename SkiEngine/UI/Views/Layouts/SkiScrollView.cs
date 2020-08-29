@@ -167,11 +167,12 @@ namespace SkiEngine.UI.Views.Layouts
 
         protected override void DrawInternal(SKCanvas canvas)
         {
-            canvas.Save();
-            canvas.ClipRect(BoundsLocal);
-            DrawBackground(canvas);
-            DrawContent(canvas);
-            canvas.Restore();
+            using (new SKAutoCanvasRestore(canvas))
+            {
+                canvas.ClipRect(BoundsLocal);
+                DrawBackground(canvas);
+                DrawContent(canvas);
+            }
         }
 
         protected virtual void DrawContent(SKCanvas canvas)

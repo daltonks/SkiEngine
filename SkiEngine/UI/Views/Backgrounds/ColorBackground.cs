@@ -21,7 +21,7 @@ namespace SkiEngine.UI.Views.Backgrounds
             set => ColorProp.Value = value;
         }
 
-        public void Draw(SKCanvas canvas, SKSize size)
+        public void DrawBackground(SKCanvas canvas, SKSize size)
         {
             using var paint = new SKPaint { Style = SKPaintStyle.Fill, Color = Color };
             canvas.DrawRect(0, 0, size.Width, size.Height, paint);

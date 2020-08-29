@@ -184,6 +184,7 @@ namespace SkiEngine.UI.Views.Base
         public List<SkiGestureRecognizer> GestureRecognizers { get; } = new List<SkiGestureRecognizer>();
 
         public SKMatrix PixelToLocalMatrix => UiComponent.Camera.PixelToWorldMatrix.PostConcat(Node.WorldToLocalMatrix);
+        public SKMatrix LocalToPixelMatrix => Node.LocalToWorldMatrix.PostConcat(UiComponent.Camera.WorldToPixelMatrix);
 
         public void UpdateChildNode(SkiView child, InitialNodeTransform transform = null)
         {
@@ -228,8 +229,7 @@ namespace SkiEngine.UI.Views.Base
 
         public void Draw(SKCanvas canvas)
         {
-            var drawMatrix = Node.LocalToWorldMatrix.PostConcat(UiComponent.Camera.WorldToPixelMatrix);
-            canvas.SetMatrix(drawMatrix);
+            canvas.SetMatrix(LocalToPixelMatrix);
 
             if (canvas.QuickReject(BoundsLocal))
             {
@@ -243,7 +243,7 @@ namespace SkiEngine.UI.Views.Base
 
         protected void DrawBackground(SKCanvas canvas)
         {
-            Background?.Draw(canvas, Size);
+            Background?.DrawBackground(canvas, Size);
         }
 
         public void InvalidateSurface()

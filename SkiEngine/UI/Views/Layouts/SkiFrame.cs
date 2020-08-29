@@ -7,7 +7,11 @@ namespace SkiEngine.UI.Views.Layouts
     public class SkiFrame : SkiSingleChildLayout
     {
         private static readonly SKPaint Paint = new SKPaint
-            {IsAntialias = true, Color = SKColors.White, ImageFilter = SKImageFilter.CreateDropShadow(0, 5, 4, 4, SKColors.Gray)};
+        {
+            IsAntialias = true, 
+            Color = SKColors.White, 
+            ImageFilter = SKImageFilter.CreateDropShadow(0, 3, 3, 3, 0x66000000)
+        };
 
         public SkiFrame()
         {
@@ -49,7 +53,7 @@ namespace SkiEngine.UI.Views.Layouts
             {
                 using (new SKAutoCanvasRestore(canvas))
                 {
-                    canvas.ClipRoundRect(new SKRoundRect(BoundsLocal, radius));
+                    canvas.ClipRoundRect(new SKRoundRect(BoundsLocal, radius), antialias: true);
                     DrawBackground(canvas);
                 }
             }

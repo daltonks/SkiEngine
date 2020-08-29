@@ -1,14 +1,19 @@
 ﻿using System;
 using SkiaSharp;
 using SkiEngine.UI.Gestures;
+using SkiEngine.UI.Views.Backgrounds;
 using SkiEngine.UI.Views.Base;
 using SkiEngine.UI.Views.Layouts;
 using WeakEvent;
 
 namespace SkiEngine.UI.Views
 {
-    public class SkiEntry : SkiScrollView
+    public class SkiEntry : SkiScrollView, ISkiBackground
     {
+        private const float StrokeWidth = 1;
+        private const float HalfStrokeWidth = StrokeWidth / 2;
+        private const float Radius = 4;
+
         private readonly WeakEventSource<bool> _completedEventSource = new WeakEventSource<bool>();
         public event EventHandler<bool> Completed
         {
@@ -25,6 +30,7 @@ namespace SkiEngine.UI.Views
             HeightRequest = 40;
             Padding = new SKRect(7, 0, 7, 0);
             VerticalOptions = SkiLayoutOptions.Start;
+            Background = this;
 
             Content = Label = new SkiLabel
             {
@@ -71,27 +77,24 @@ namespace SkiEngine.UI.Views
             }
         }
 
-        protected override void DrawContent(SKCanvas canvas)
+        public void DrawBackground(SKCanvas canvas, SKSize size)
         {
-            const float strokeWidth = 1;
-            const float halfStrokeWidth = strokeWidth / 2;
-
-            using (
-                var paint = new SKPaint
-                {
-                    Style = SKPaintStyle.Stroke, 
-                    IsAntialias = true,
-                    Color = 0xFFCCCCCC,
-                    StrokeWidth = strokeWidth
-                }
-            )
+            using var paint = new SKPaint
             {
-                var rect = BoundsLocal;
-                rect.Inflate(-halfStrokeWidth, -halfStrokeWidth);
-                canvas.DrawRoundRect(rect, 4, 4, paint);
-            }
+                Style = SKPaintStyle.Fill, 
+                Color = SKColors.White,
+                IsAntialias = true
+            };
+            var rect = BoundsLocal;
+            rect.Inflate(-HalfStrokeWidth, -HalfStrokeWidth);
 
-            base.DrawContent(canvas);
+            // Fill
+            canvas.DrawRoundRect(rect, Radius, Radius, paint);
+
+            // Stroke
+            paint.Style = SKPaintStyle.Stroke;
+            paint.Color = 0xFFCCCCCC;
+            canvas.DrawRoundRect(rect, Radius, Radius, paint);
         }
     }
 }
