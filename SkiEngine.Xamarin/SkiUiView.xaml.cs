@@ -8,7 +8,7 @@ using Xamarin.Forms.Xaml;
 namespace SkiEngine.Xamarin
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class SkiUiView : AbsoluteLayout
+    public partial class SkiUiView : ScrollView
     {
         private readonly SkiUiScene _skiUiScene;
         private SkiXamarinUiComponent _uiComponent;
@@ -28,7 +28,7 @@ namespace SkiEngine.Xamarin
             _skiUiScene = new SkiUiScene(
                 invalidateSurface, 
                 (node, camera, invalidate) => _uiComponent = new SkiXamarinUiComponent(
-                    SkiaView, NativeEntry, NativeEntryLayout, node, camera, invalidate
+                    SkiaView, NativeEntry, node, camera, invalidate
                 )
             );
 
@@ -59,11 +59,6 @@ namespace SkiEngine.Xamarin
             e.Handled = true;
 
             _skiUiScene.OnTouch(e.ToSkiTouch());
-        }
-
-        private void OnCloseEntryTapped(object sender, EventArgs e)
-        {
-            _uiComponent.HideNativeEntry();
         }
     }
 }

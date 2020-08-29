@@ -78,6 +78,10 @@ namespace SkiEngine.UI
 
         public void OnTouch(SkiTouch touch)
         {
+            if (touch.InContact)
+            {
+                UiComponent.HideNativeEntry();
+            }
             _scene.OnTouch(touch);
         }
     }

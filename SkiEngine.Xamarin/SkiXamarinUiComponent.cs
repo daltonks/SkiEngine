@@ -15,14 +15,12 @@ namespace SkiEngine.Xamarin
     {
         private readonly SKGLView _skiaView;
         private readonly Entry _nativeEntry;
-        private readonly View _nativeEntryLayout;
         private SkiEntry _currentSkiEntry;
         private bool _isNativeEntryShown;
 
         public SkiXamarinUiComponent(
             SKGLView skiaView, 
             Entry nativeEntry,
-            View nativeEntryLayout,
             Node node, 
             CameraComponent camera, 
             Action invalidateSurface
@@ -30,7 +28,6 @@ namespace SkiEngine.Xamarin
         {
             _skiaView = skiaView;
             _nativeEntry = nativeEntry;
-            _nativeEntryLayout = nativeEntryLayout;
 
             _nativeEntry.TextChanged += OnNativeEntryTextChanged;
             _nativeEntry.Completed += OnNativeEntryCompleted;
@@ -62,12 +59,13 @@ namespace SkiEngine.Xamarin
 
             _nativeEntry.Text = entry.Label.Text;
             _nativeEntry.FontSize = entry.Label.FontSize;
-            _nativeEntryLayout.IsVisible = true;
 
             var dpRect = entry.Node.LocalToWorldMatrix
                 .PostConcat(Camera.WorldToDpMatrix)
                 .MapRect(entry.BoundsLocal);
             AbsoluteLayout.SetLayoutBounds(_nativeEntry, new Rectangle(dpRect.Left, dpRect.Top, dpRect.Width, dpRect.Height));
+
+            _nativeEntry.IsVisible = true;
 
             Device.BeginInvokeOnMainThread(() => {
                 _nativeEntry.Focus();
@@ -88,7 +86,7 @@ namespace SkiEngine.Xamarin
 
             _nativeEntry.Text = "";
             _nativeEntry.Unfocus();
-            _nativeEntryLayout.IsVisible = false;
+            _nativeEntry.IsVisible = false;
 
             _currentSkiEntry.IsFocused = false;
         }
