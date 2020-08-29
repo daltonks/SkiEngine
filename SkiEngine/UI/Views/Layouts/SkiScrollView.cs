@@ -3,6 +3,7 @@ using SkiaSharp;
 using SkiEngine.UI.Gestures;
 using SkiEngine.UI.Views.Base;
 using SkiEngine.UI.Views.Layouts.Base;
+using SkiEngine.Util;
 
 namespace SkiEngine.UI.Views.Layouts
 {
@@ -160,7 +161,7 @@ namespace SkiEngine.UI.Views.Layouts
 
             var contentMaxWidth = CanScrollHorizontally ? (float?) null : Size.Width - Padding.Left - Padding.Right;
             var contentMaxHeight = CanScrollVertically ? (float?) null : Size.Height - Padding.Top - Padding.Bottom;
-            Content.Layout(contentMaxWidth, contentMaxHeight);
+            Content.Layout(MathNullable.Min(contentMaxWidth, Content.WidthRequest), MathNullable.Min(contentMaxHeight, Content.HeightRequest));
             UpdateChildPoint();
         }
 
