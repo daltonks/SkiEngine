@@ -9,7 +9,7 @@ namespace SkiEngine.UI.Views
 {
     public class SkiLabel : SkiView
     {
-        private TextBlock _textBlock = new TextBlock();
+        private readonly TextBlock _textBlock = new TextBlock();
 
         public SkiLabel()
         {
@@ -45,14 +45,10 @@ namespace SkiEngine.UI.Views
 
         private void UpdateTextBlock()
         {
-            _textBlock = new TextBlock
-            {
-                MaxWidth = _textBlock.MaxWidth,
-                MaxHeight = _textBlock.MaxHeight,
-            };
+            _textBlock.Clear();
             _textBlock.AddText(Text, UiComponent.DefaultTextStyle);
 
-            OnSizeChanged();
+            UpdateSize();
 
             InvalidateSurface();
         }
@@ -69,17 +65,12 @@ namespace SkiEngine.UI.Views
             _textBlock.MaxWidth = maxWidth;
             _textBlock.MaxHeight = maxHeight;
 
-            OnSizeChanged();
+            UpdateSize();
         }
 
-        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
-        private void OnSizeChanged()
+        private void UpdateSize()
         {
-            var width = _textBlock.MeasuredWidth;
-            var height = _textBlock.MeasuredHeight;
-            ViewPreferredWidth = width;
-            ViewPreferredHeight = height;
-            Size = new SKSize(width, height);
+            Size = new SKSize(_textBlock.MeasuredWidth, _textBlock.MeasuredHeight);
         }
 
         protected override void DrawInternal(SKCanvas canvas)

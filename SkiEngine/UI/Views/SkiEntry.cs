@@ -23,7 +23,7 @@ namespace SkiEngine.UI.Views
             CanScrollHorizontally = true;
             CanScrollVertically = false;
             HeightRequest = 40;
-            Padding = new SKRect(8, 0, 8, 0);
+            Padding = new SKRect(7, 0, 7, 0);
             VerticalOptions = SkiLayoutOptions.Start;
 
             Content = Label = new SkiLabel
@@ -73,17 +73,22 @@ namespace SkiEngine.UI.Views
 
         protected override void DrawContent(SKCanvas canvas)
         {
+            const float strokeWidth = 1;
+            const float halfStrokeWidth = strokeWidth / 2;
+
             using (
                 var paint = new SKPaint
                 {
                     Style = SKPaintStyle.Stroke, 
                     IsAntialias = true,
                     Color = 0xFFCCCCCC,
-                    StrokeWidth = 2
+                    StrokeWidth = strokeWidth
                 }
             )
             {
-                canvas.DrawRoundRect(BoundsLocal, 6, 6, paint);
+                var rect = BoundsLocal;
+                rect.Inflate(-halfStrokeWidth, -halfStrokeWidth);
+                canvas.DrawRoundRect(rect, 4, 4, paint);
             }
 
             base.DrawContent(canvas);
