@@ -142,10 +142,5 @@ namespace SkiEngine.Xamarin
         {
             _skiaView.AbortAnimation(skiAnimation.Id);
         }
-
-        public override Task<Stream> OpenAppPackageFileAsync(string path)
-        {
-            return FileSystem.OpenAppPackageFileAsync(path);
-        }
     }
 }

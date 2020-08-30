@@ -80,7 +80,6 @@ namespace SkiEngine.UI
         public abstract void HideNativeEntry();
         public abstract void StartAnimation(SkiAnimation skiAnimation);
         public abstract void AbortAnimation(SkiAnimation skiAnimation);
-        public abstract Task<Stream> OpenAppPackageFileAsync(string path);
 
         public void RunNextUpdate(Action action)
         {
