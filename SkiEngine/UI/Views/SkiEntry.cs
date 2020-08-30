@@ -77,7 +77,7 @@ namespace SkiEngine.UI.Views
             }
         }
 
-        public void DrawBackground(SKCanvas canvas, SKSize size)
+        public void DrawBackground(SKCanvas canvas)
         {
             using var paint = new SKPaint
             {

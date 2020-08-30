@@ -39,8 +39,6 @@ namespace SkiEngine.UI.Views
             set => FontSizeProp.Value = value;
         }
 
-        public override IEnumerable<SkiView> ChildrenEnumerable => Enumerable.Empty<SkiView>();
-
         protected override void OnNodeChanged() { }
 
         private void UpdateTextBlock()

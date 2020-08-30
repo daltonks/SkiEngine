@@ -4,6 +4,6 @@ namespace SkiEngine.UI.Views.Backgrounds
 {
     public interface ISkiBackground
     {
-        void DrawBackground(SKCanvas canvas, SKSize size);
+        void DrawBackground(SKCanvas canvas);
     }
 }

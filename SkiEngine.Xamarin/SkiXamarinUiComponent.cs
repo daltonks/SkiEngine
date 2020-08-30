@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using SkiaSharp;
@@ -7,6 +8,7 @@ using SkiaSharp.Views.Forms;
 using SkiEngine.Camera;
 using SkiEngine.UI;
 using SkiEngine.UI.Views;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace SkiEngine.Xamarin
@@ -139,6 +141,11 @@ namespace SkiEngine.Xamarin
         public override void AbortAnimation(SkiAnimation skiAnimation)
         {
             _skiaView.AbortAnimation(skiAnimation.Id);
+        }
+
+        public override Task<Stream> OpenAppPackageFileAsync(string path)
+        {
+            return FileSystem.OpenAppPackageFileAsync(path);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SkiaSharp;
 using SkiEngine.UI.Gestures;
 using SkiEngine.UI.Views.Backgrounds;
@@ -179,7 +180,7 @@ namespace SkiEngine.UI.Views.Base
             set => BackgroundProp.Value = value;
         }
 
-        public abstract IEnumerable<SkiView> ChildrenEnumerable { get; }
+        public virtual IEnumerable<SkiView> ChildrenEnumerable => Enumerable.Empty<SkiView>();
 
         public List<SkiGestureRecognizer> GestureRecognizers { get; } = new List<SkiGestureRecognizer>();
 
@@ -243,7 +244,7 @@ namespace SkiEngine.UI.Views.Base
 
         protected void DrawBackground(SKCanvas canvas)
         {
-            Background?.DrawBackground(canvas, Size);
+            Background?.DrawBackground(canvas);
         }
 
         public void InvalidateSurface()

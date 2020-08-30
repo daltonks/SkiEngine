@@ -5,12 +5,15 @@ namespace SkiEngine.UI.Views.Backgrounds
 {
     public class ColorBackground : ISkiBackground
     {
+        private readonly SkiView _view;
+
         public ColorBackground(SkiView view, SKColor color)
         {
+            _view = view;
             ColorProp = new LinkedProperty<SKColor>(
                 this,
                 color,
-                valueChanged: (sender, oldValue, newValue) => view.InvalidateSurface()
+                valueChanged: (sender, oldValue, newValue) => _view.InvalidateSurface()
             );
         }
 
@@ -21,10 +24,10 @@ namespace SkiEngine.UI.Views.Backgrounds
             set => ColorProp.Value = value;
         }
 
-        public void DrawBackground(SKCanvas canvas, SKSize size)
+        public void DrawBackground(SKCanvas canvas)
         {
             using var paint = new SKPaint { Style = SKPaintStyle.Fill, Color = Color };
-            canvas.DrawRect(0, 0, size.Width, size.Height, paint);
+            canvas.DrawRect(0, 0, _view.Size.Width, _view.Size.Height, paint);
         }
     }
 }
