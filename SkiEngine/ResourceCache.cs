@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using SkiaSharp;
 
 namespace SkiEngine
 {
@@ -14,13 +15,14 @@ namespace SkiEngine
         public static long UnusedBytesLimit { get; set; } = 100_000_000;
         private static readonly HashSet<CachedResource> UnusedResources = new HashSet<CachedResource>();
 
-        public static CachedResourceUsage<T> GetAppPackageFile<T>(string path, Func<Stream, Task<T>> transform)
+        // ReSharper disable once InconsistentNaming
+        public static CachedResourceUsage<SKImage> GetAppPackageSKImage(string path)
         {
             return Get(
-                "PACKAGE_FILE",
+                $"{nameof(ResourceCache)}-SKImage",
                 path,
                 () => SkiFile.OpenAppPackageFileAsync(path),
-                transform
+                stream => Task.FromResult(SKImage.FromEncodedData(stream))
             );
         }
 
@@ -31,7 +33,7 @@ namespace SkiEngine
             Func<Stream, Task<TResource>> transform
         ) where TStream : Stream
         {
-            var key = $"{group}/{name}";
+            var key = $"{group}:{name}";
 
             lock (Resources)
             {

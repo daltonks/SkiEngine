@@ -7,6 +7,7 @@ namespace SkiEngine.Xamarin
         public static void Init()
         {
             SkiFile.OpenAppPackageFileFunc = FileSystem.OpenAppPackageFileAsync;
+            Display.DensityFunc = () => DeviceDisplay.MainDisplayInfo.Density;
         }
     }
 }
