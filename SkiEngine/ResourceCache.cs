@@ -14,9 +14,9 @@ namespace SkiEngine
         public static long UnusedBytesLimit { get; set; } = 100_000_000;
         private static readonly HashSet<CachedResource> UnusedResources = new HashSet<CachedResource>();
 
-        public static Task<CachedResourceUsage<T>> GetAppPackageFileAsync<T>(string path, Func<Stream, Task<T>> transform)
+        public static CachedResourceUsage<T> GetAppPackageFile<T>(string path, Func<Stream, Task<T>> transform)
         {
-            return GetAsync(
+            return Get(
                 "PACKAGE_FILE",
                 path,
                 () => SkiFile.OpenAppPackageFileAsync(path),
@@ -24,7 +24,7 @@ namespace SkiEngine
             );
         }
 
-        public static async Task<CachedResourceUsage<TResource>> GetAsync<TResource, TStream>(
+        public static CachedResourceUsage<TResource> Get<TResource, TStream>(
             string group, 
             string name, 
             Func<Task<TStream>> getStream, 
@@ -37,26 +37,31 @@ namespace SkiEngine
             {
                 if (Resources.TryGetValue(key, out var resource))
                 {
-                    return new CachedResourceUsage<TResource>(resource);
+                    return new CachedResourceUsage<TResource>(Task.FromResult(resource));
                 }
             }
 
-            using var stream = await getStream();
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
+            return new CachedResourceUsage<TResource>(LoadResourceAsync());
 
-            var value = await transform(memoryStream);
-            var valueBytes = memoryStream.Length;
-
-            lock (Resources)
+            async Task<CachedResource> LoadResourceAsync()
             {
-                if (!Resources.TryGetValue(key, out var resource))
-                {
-                    resource = Resources[key] = new CachedResource(key, value, valueBytes);
-                }
+                using var stream = await getStream();
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
 
-                return new CachedResourceUsage<TResource>(resource);
+                var value = await transform(memoryStream);
+                var valueBytes = memoryStream.Length;
+
+                lock (Resources)
+                {
+                    if (!Resources.TryGetValue(key, out var resource))
+                    {
+                        resource = Resources[key] = new CachedResource(key, value, valueBytes);
+                    }
+
+                    return resource;
+                }
             }
         }
 
@@ -124,6 +129,8 @@ namespace SkiEngine
         public string Key { get; }
 
         private readonly object _value;
+        
+
         public object Value
         {
             get
@@ -148,26 +155,39 @@ namespace SkiEngine
 
     public class CachedResourceUsage<T> : IDisposable
     {
-        private bool _isDisposed;
-        private readonly CachedResource _resource;
+        private readonly Task<CachedResource> _loadingTask;
 
-        public CachedResourceUsage(CachedResource resource)
+        internal CachedResourceUsage(Task<CachedResource> loadingTask)
         {
-            _resource = resource;
-            ResourceCache.AddUsage(_resource);
+            _loadingTask = loadingTask.ContinueWith(t => {
+                var cachedResource = t.Result;
+                Value = (T) cachedResource.Value;
+                ResourceCache.AddUsage(cachedResource);
+                return cachedResource;
+            });
         }
 
-        public T Value => (T) _resource.Value;
+        public bool IsDisposed { get; private set; }
+
+        public T Value { get; private set; }
+
+        public async Task WaitForLoadingAsync()
+        {
+            await _loadingTask;
+        }
 
         public void Dispose()
         {
-            if (_isDisposed)
+            if (IsDisposed)
             {
                 return;
             }
 
-            _isDisposed = true;
-            ResourceCache.RemoveUsage(_resource);
+            IsDisposed = true;
+
+            _loadingTask.ContinueWith(t => {
+                ResourceCache.RemoveUsage(t.Result);
+            });
         }
     }
 }

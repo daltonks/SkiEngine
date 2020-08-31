@@ -2,6 +2,7 @@
 using SkiaSharp.Views.Forms;
 using SkiEngine.UI;
 using SkiEngine.UI.Views.Base;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -23,7 +24,7 @@ namespace SkiEngine.Xamarin
             // Because of this, use the dispatcher.
             var invalidateSurface = Device.RuntimePlatform == Device.UWP
                 ? () => Application.Current.Dispatcher.BeginInvokeOnMainThread(SkiaView.InvalidateSurface)
-                : (Action) SkiaView.InvalidateSurface;
+                : (Action) (() => MainThread.BeginInvokeOnMainThread(SkiaView.InvalidateSurface));
 
             _skiUiScene = new SkiUiScene(
                 invalidateSurface, 
