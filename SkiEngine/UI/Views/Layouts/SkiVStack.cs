@@ -15,7 +15,7 @@ namespace SkiEngine.UI.Views.Layouts
             SpacingProp = new LinkedProperty<float>(
                 this, 
                 10,
-                valueChanged: (sender, oldValue, newValue) => InvalidateLayout()
+                valueChanged: (sender, args) => InvalidateLayout()
             );
         }
 
@@ -79,7 +79,7 @@ namespace SkiEngine.UI.Views.Layouts
 
         protected override void DrawInternal(SKCanvas canvas)
         {
-            DrawBackground(canvas);
+            DrawBackgroundInternal(canvas);
             foreach (var view in Children)
             {
                 view.Draw(canvas);

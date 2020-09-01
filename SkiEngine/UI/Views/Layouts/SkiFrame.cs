@@ -18,17 +18,19 @@ namespace SkiEngine.UI.Views.Layouts
             Padding = new SKRect(10, 10, 10, 10);
         }
 
-        protected override void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize)
+        protected override void OnContentSizeChanged(object sender, ValueChangedArgs<SKSize> args)
         {
             InvalidateLayout();
         }
 
-        protected override void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        protected override void OnContentHorizontalOptionsChanged(object sender,
+            ValueChangedArgs<SkiLayoutOptions> args)
         {
             InvalidateLayout();
         }
 
-        protected override void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        protected override void OnContentVerticalOptionsChanged(object sender,
+            ValueChangedArgs<SkiLayoutOptions> args)
         {
             InvalidateLayout();
         }
@@ -54,7 +56,7 @@ namespace SkiEngine.UI.Views.Layouts
                 using (new SKAutoCanvasRestore(canvas))
                 {
                     canvas.ClipRoundRect(new SKRoundRect(BoundsLocal, radius), antialias: true);
-                    DrawBackground(canvas);
+                    DrawBackgroundInternal(canvas);
                 }
             }
 

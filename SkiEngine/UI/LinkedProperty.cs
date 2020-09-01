@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using WeakEvent;
 
 namespace SkiEngine.UI
 {
     public class LinkedProperty<T>
     {
-        public delegate void ValueChangedDelegate(object sender, T oldValue, T newValue);
+        public delegate void ValueChangedDelegate(object sender, ValueChangedArgs<T> args);
 
-        public event ValueChangedDelegate ValueChanged;
+        private readonly WeakEventSource<ValueChangedArgs<T>> _valueChangedEventSource = new WeakEventSource<ValueChangedArgs<T>>();
+        public event EventHandler<ValueChangedArgs<T>> ValueChanged
+        {
+            add => _valueChangedEventSource.Subscribe(value);
+            remove => _valueChangedEventSource.Unsubscribe(value);
+        }
 
         private readonly object _owner;
         private readonly Func<T, T, T> _valueChanging;
@@ -28,7 +34,7 @@ namespace SkiEngine.UI
             _updateValue = updateValue;
             if (valueChanged != null)
             {
-                ValueChanged += valueChanged;
+                ValueChanged += (sender, args) => valueChanged(sender, args);
             }
 
             _value = startingValue;
@@ -70,7 +76,7 @@ namespace SkiEngine.UI
                     }
                 }
 
-                ValueChanged?.Invoke(_owner, previousValue, _value);
+                _valueChangedEventSource.Raise(_owner, new ValueChangedArgs<T>(previousValue, _value));
             }
         }
 
@@ -170,7 +176,7 @@ namespace SkiEngine.UI
                 }
             }
             
-            ValueChanged?.Invoke(_owner, Value, _value);
+            _valueChangedEventSource.Raise(this, new ValueChangedArgs<T>(Value, Value));
         }
 
         public override string ToString()
@@ -182,5 +188,17 @@ namespace SkiEngine.UI
         {
             UnlinkAll();
         }
+    }
+
+    public struct ValueChangedArgs<T>
+    {
+        public ValueChangedArgs(T oldValue, T newValue)
+        {
+            OldValue = oldValue;
+            NewValue = newValue;
+        }
+
+        public T OldValue { get; }
+        public T NewValue { get; }
     }
 }

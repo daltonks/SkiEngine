@@ -39,9 +39,9 @@ namespace SkiEngine.UI.Views
 
             GestureRecognizers.Insert(0, new TapGestureRecognizer(this, OnTapped));
 
-            IsFocusedProp.ValueChanged += (sender, oldValue, newValue) =>
+            IsFocusedProp.ValueChanged += (sender, args) =>
             {
-                if (newValue)
+                if (args.NewValue)
                 {
                     UiComponent.ShowNativeEntry(this, _cursorPosition);
                 }

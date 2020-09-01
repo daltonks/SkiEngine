@@ -93,9 +93,9 @@ namespace SkiEngine.Xamarin
             _currentSkiEntry.IsFocused = false;
         }
 
-        private void OnCurrentSkiEntryValueChanged(object sender, string oldValue, string newValue)
+        private void OnCurrentSkiEntryValueChanged(object sender, ValueChangedArgs<string> args)
         {
-            _nativeEntry.Text = newValue;
+            _nativeEntry.Text = args.NewValue;
         }
 
         private void OnNativeEntryTextChanged(object sender, TextChangedEventArgs e)

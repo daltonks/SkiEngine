@@ -48,9 +48,9 @@ namespace SkiEngine.UI.Views.Layouts.Base
             UpdateChildNode(Content);
         }
 
-        protected abstract void OnContentSizeChanged(object sender, SKSize oldSize, SKSize newSize);
-        protected abstract void OnContentHorizontalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
-        protected abstract void OnContentVerticalOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue);
+        protected abstract void OnContentSizeChanged(object sender, ValueChangedArgs<SKSize> args);
+        protected abstract void OnContentHorizontalOptionsChanged(object sender, ValueChangedArgs<SkiLayoutOptions> args);
+        protected abstract void OnContentVerticalOptionsChanged(object sender, ValueChangedArgs<SkiLayoutOptions> args);
 
         protected virtual bool UpdateChildPoint() => UpdateChildPoint(new SKPoint());
 

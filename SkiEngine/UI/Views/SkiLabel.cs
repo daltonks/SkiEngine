@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using SkiaSharp;
+﻿using SkiaSharp;
 using SkiEngine.UI.Views.Base;
 using Topten.RichTextKit;
 
@@ -16,12 +13,12 @@ namespace SkiEngine.UI.Views
             TextProp = new LinkedProperty<string>(
                 this, 
                 "",
-                valueChanged: (sender, oldValue, newValue) => UpdateTextBlock()
+                valueChanged: (sender, args) => UpdateTextBlock()
             );
             FontSizeProp = new LinkedProperty<float>(
                 this, 
                 16,
-                valueChanged: (sender, oldValue, newValue) => UpdateTextBlock()
+                valueChanged: (sender, args) => UpdateTextBlock()
             );
         }
 
@@ -73,7 +70,7 @@ namespace SkiEngine.UI.Views
 
         protected override void DrawInternal(SKCanvas canvas)
         {
-            DrawBackground(canvas);
+            DrawBackgroundInternal(canvas);
             _textBlock.Paint(canvas);
         }
     }

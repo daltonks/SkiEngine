@@ -72,12 +72,12 @@ namespace SkiEngine.UI.Views.Layouts.Base
             }
         }
 
-        private void OnChildSizeRequestChanged(object sender, float? oldValue, float? newValue)
+        private void OnChildSizeRequestChanged(object sender, ValueChangedArgs<float?> args)
         {
             InvalidateLayout();
         }
 
-        private void OnChildLayoutOptionsChanged(object sender, SkiLayoutOptions oldValue, SkiLayoutOptions newValue)
+        private void OnChildLayoutOptionsChanged(object sender, ValueChangedArgs<SkiLayoutOptions> args)
         {
             InvalidateLayout();
         }

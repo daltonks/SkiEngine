@@ -13,7 +13,7 @@ namespace SkiEngine.UI.Views.Backgrounds
             ColorProp = new LinkedProperty<SKColor>(
                 this,
                 color,
-                valueChanged: (sender, oldValue, newValue) => _view.InvalidateSurface()
+                valueChanged: (sender, args) => _view.InvalidateSurface()
             );
         }
 

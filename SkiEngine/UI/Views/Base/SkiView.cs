@@ -22,7 +22,7 @@ namespace SkiEngine.UI.Views.Base
         {
             WidthRequestProp = new LinkedProperty<float?>(
                 this, 
-                valueChanged: (sender, oldValue, newValue) =>
+                valueChanged: (sender, args) =>
                 {
                     if (!_updatingViewPreferredSize)
                     {
@@ -32,7 +32,7 @@ namespace SkiEngine.UI.Views.Base
             );
             HeightRequestProp = new LinkedProperty<float?>(
                 this, 
-                valueChanged: (sender, oldValue, newValue) =>
+                valueChanged: (sender, args) =>
                 {
                     if (!_updatingViewPreferredSize)
                     {
@@ -43,16 +43,16 @@ namespace SkiEngine.UI.Views.Base
             SizeProp = new LinkedProperty<SKSize>(this);
             PaddingProp = new LinkedProperty<SKRect>(
                 this,
-                valueChanged: (sender, oldValue, newValue) => InvalidateLayout()
+                valueChanged: (sender, args) => InvalidateLayout()
             );
             HorizontalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
             VerticalOptionsProp = new LinkedProperty<SkiLayoutOptions>(this);
             IsFocusedProp = new LinkedProperty<bool>(
                 this, 
-                valueChanged: (sender, oldValue, newValue) =>
+                valueChanged: (sender, args) =>
                 {
                     var previousFocusedView = UiComponent.FocusedView;
-                    if (newValue)
+                    if (args.NewValue)
                     {
                         if (previousFocusedView != null)
                         {
@@ -68,7 +68,7 @@ namespace SkiEngine.UI.Views.Base
             );
             BackgroundProp = new LinkedProperty<ISkiBackground>(
                 this,
-                valueChanged: (sender, oldValue, newValue) => InvalidateSurface()
+                valueChanged: (sender, args) => InvalidateSurface()
             );
         }
 
@@ -242,7 +242,7 @@ namespace SkiEngine.UI.Views.Base
 
         protected abstract void DrawInternal(SKCanvas canvas);
 
-        protected void DrawBackground(SKCanvas canvas)
+        protected void DrawBackgroundInternal(SKCanvas canvas)
         {
             Background?.DrawBackground(canvas);
         }

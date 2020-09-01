@@ -9,13 +9,13 @@ namespace SkiEngine.UI.Views
         {
             ImageUsageProp = new LinkedProperty<CachedResourceUsage<SKImage>>(
                 this,
-                valueChanged: async (sender, oldValue, newValue) =>
+                valueChanged: async (sender, args) =>
                 {
-                    oldValue?.Dispose();
+                    args.OldValue?.Dispose();
 
-                    if (newValue != null)
+                    if (args.NewValue != null)
                     {
-                        await newValue.WaitForLoadingAsync();
+                        await args.NewValue.WaitForLoadingAsync();
                     }
 
                     InvalidateSurface();
