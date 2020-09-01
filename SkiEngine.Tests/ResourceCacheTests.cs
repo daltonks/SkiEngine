@@ -8,8 +8,10 @@ namespace SkiEngine.Tests
     public class ResourceCacheTests
     {
         [Test]
-        public async Task Tests()
+        public async Task Use_and_unuse()
         {
+            ResourceCache.ClearAllUnusedResources();
+
             ResourceCache.UnusedBytesLimit = 1000;
 
             var resource1Usage = GetTestResourceUsage("resource1");

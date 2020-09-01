@@ -67,24 +67,40 @@ namespace SkiEngine
             }
         }
 
-        internal static void AddUsage(CachedResource resource)
+        public static void ClearAllUnusedResources()
+        {
+            lock (Resources)
+            lock (UnusedResources)
+            {
+                foreach (var unusedResource in UnusedResources)
+                {
+                    Resources.Remove(unusedResource.Key);
+                    unusedResource.Dispose();
+                }
+
+                UnusedResources.Clear();
+                UnusedBytes = 0;
+            }
+        }
+
+        internal static void AddUsage(CachedResource resource, Guid usageId)
         {
             lock (UnusedResources)
             {
-                resource.Usages++;
-                if (resource.Usages == 1 && UnusedResources.Remove(resource))
+                resource.Usages.Add(usageId);
+                if (resource.Usages.Count == 1 && UnusedResources.Remove(resource))
                 {
                     UnusedBytes -= resource.Bytes;
                 }
             }
         }
 
-        internal static void RemoveUsage(CachedResource resource)
+        internal static void RemoveUsage(CachedResource resource, Guid usageId)
         {
             lock (UnusedResources)
             {
-                resource.Usages--;
-                if (resource.Usages == 0)
+                resource.Usages.Remove(usageId);
+                if (resource.Usages.Count == 0)
                 {
                     UnusedResources.Add(resource);
                     UnusedBytes += resource.Bytes;
@@ -132,7 +148,6 @@ namespace SkiEngine
 
         private readonly object _value;
         
-
         public object Value
         {
             get
@@ -143,8 +158,8 @@ namespace SkiEngine
         }
 
         public long Bytes { get; }
-        public int Usages { get; set; }
         public DateTimeOffset LastAccessed { get; private set; }
+        public HashSet<Guid> Usages { get; } = new HashSet<Guid>();
 
         public void Dispose()
         {
@@ -162,16 +177,21 @@ namespace SkiEngine
         internal CachedResourceUsage(Task<CachedResource> loadingTask)
         {
             _loadingTask = loadingTask.ContinueWith(t => {
+                if (IsDisposed)
+                {
+                    return null;
+                }
+
                 var cachedResource = t.Result;
                 Value = (T) cachedResource.Value;
-                ResourceCache.AddUsage(cachedResource);
+                ResourceCache.AddUsage(cachedResource, Id);
                 return cachedResource;
             });
         }
 
-        public bool IsDisposed { get; private set; }
-
+        public Guid Id { get; } = Guid.NewGuid();
         public T Value { get; private set; }
+        public bool IsDisposed { get; private set; }
 
         public async Task WaitForLoadingAsync()
         {
@@ -188,8 +208,24 @@ namespace SkiEngine
             IsDisposed = true;
 
             _loadingTask.ContinueWith(t => {
-                ResourceCache.RemoveUsage(t.Result);
+                var cachedResource = t.Result;
+                if (cachedResource != null)
+                {
+                    ResourceCache.RemoveUsage(t.Result, Id);
+                }
             });
+        }
+
+        ~CachedResourceUsage()
+        {
+            if (!IsDisposed)
+            {
+                IsDisposed = true;
+                if (_loadingTask.IsCompleted)
+                {
+                    ResourceCache.RemoveUsage(_loadingTask.Result, Id);
+                }
+            }
         }
     }
 }

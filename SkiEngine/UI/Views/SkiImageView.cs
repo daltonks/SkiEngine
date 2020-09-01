@@ -1,14 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using SkiaSharp;
+﻿using SkiaSharp;
 using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI.Views
 {
     public class SkiImageView : SkiView
     {
-        // TODO: Dispose ImageUsage when removed from layout and reload when added to layout
-
         public SkiImageView(CachedResourceUsage<SKImage> imageUsage)
         {
             ImageUsageProp = new LinkedProperty<CachedResourceUsage<SKImage>>(
