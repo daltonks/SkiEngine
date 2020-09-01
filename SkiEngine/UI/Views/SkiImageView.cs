@@ -51,7 +51,8 @@ namespace SkiEngine.UI.Views
             var image = ImageUsage?.Value;
             if (image != null)
             {
-                canvas.DrawImage(image, BoundsLocal);
+                using var paint = new SKPaint{ FilterQuality = SKFilterQuality.High };
+                canvas.DrawImage(image, BoundsLocal, paint);
             }
         }
     }

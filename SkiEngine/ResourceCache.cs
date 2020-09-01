@@ -19,7 +19,7 @@ namespace SkiEngine
         public static CachedResourceUsage<SKImage> GetAppPackageSKImage(string path)
         {
             return Get(
-                $"{nameof(ResourceCache)}-SKImage",
+                $"{nameof(ResourceCache)}-AppPackage-{nameof(SKImage)}",
                 path,
                 () => SkiFile.OpenAppPackageFileAsync(path),
                 stream => Task.FromResult(SKImage.FromEncodedData(stream))
