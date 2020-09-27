@@ -13,7 +13,7 @@ namespace SkiEngine.Tests
             ResourceCache.ClearAllUnusedResources();
 
             ResourceCache.UnusedBytesLimit = 1000;
-
+            
             var resource1Usage = GetTestResourceUsage("resource1");
             await resource1Usage.WaitForLoadingAsync();
 
