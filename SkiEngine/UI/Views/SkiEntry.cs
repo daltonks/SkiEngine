@@ -39,22 +39,24 @@ namespace SkiEngine.UI.Views
 
             GestureRecognizers.Insert(0, new TapGestureRecognizer(this, OnTapped));
 
-            IsFocusedProp.ValueChanged += (sender, args) =>
-            {
-                if (args.NewValue)
-                {
-                    UiComponent.ShowNativeEntry(this, _cursorPosition);
-                }
-                else
-                {
-                    UiComponent.HideNativeEntry();
-                }
-
-                InvalidateSurface();
-            };
+            IsFocusedProp.ValueChanged += OnIsFocusedChanged;
         }
 
         public SkiLabel Label { get; }
+
+        private void OnIsFocusedChanged(object sender, ValueChangedArgs<bool> args)
+        {
+            if (args.NewValue)
+            {
+                UiComponent.ShowNativeEntry(this, _cursorPosition);
+            }
+            else
+            {
+                UiComponent.HideNativeEntry();
+            }
+
+            InvalidateSurface();
+        }
 
         public void OnNativeEntryCompleted()
         {

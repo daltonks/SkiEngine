@@ -151,5 +151,10 @@ namespace SkiEngine.UI
                 }
             }
         }
+
+        public RichString CreateRichString()
+        {
+            return new RichString { DefaultStyle = DefaultTextStyle };
+        }
     }
 }

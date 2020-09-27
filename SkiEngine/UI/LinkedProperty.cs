@@ -18,6 +18,9 @@ namespace SkiEngine.UI
 
         private readonly object _owner;
         private readonly Func<T, T, T> _valueChanging;
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+        // Can't be converted to a local param because it won't work with the weak event
+        private readonly ValueChangedDelegate _valueChangedConstructorParam;
         private readonly Func<T> _updateValue;
         private readonly List<WeakReference<LinkedProperty<T>>> _links = new List<WeakReference<LinkedProperty<T>>>();
 
@@ -31,13 +34,16 @@ namespace SkiEngine.UI
         {
             _owner = owner;
             _valueChanging = valueChanging;
+            _valueChangedConstructorParam = valueChanged;
             _updateValue = updateValue;
             if (valueChanged != null)
             {
-                ValueChanged += (sender, args) => valueChanged(sender, args);
+                ValueChanged += OnValueChangedForConstructorParam;
             }
 
             _value = startingValue;
+
+            void OnValueChangedForConstructorParam(object sender, ValueChangedArgs<T> args) => _valueChangedConstructorParam(sender, args);
         }
 
         private T _value;

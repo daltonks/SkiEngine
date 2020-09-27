@@ -45,7 +45,7 @@ namespace SkiEngine.UI.Views.Layouts
                     InvalidateSurface();
                 }
             );
-            SizeProp.ValueChanged += (sender, args) => ScrollMaxProp.UpdateValue();
+            SizeProp.ValueChanged += OnSizeChanged;
 
             var flingGestureRecognizer = new FlingGestureRecognizer(
                 this,
@@ -61,10 +61,7 @@ namespace SkiEngine.UI.Views.Layouts
 
             GestureRecognizers.Add(flingGestureRecognizer);
 
-            PaddingProp.ValueChanged += (sender, args) =>
-            {
-                ScrollMaxProp.UpdateValue();
-            };
+            PaddingProp.ValueChanged += OnPaddingChanged;
 
             VerticalOptions = SkiLayoutOptions.Fill;
         }
@@ -92,6 +89,16 @@ namespace SkiEngine.UI.Views.Layouts
         
         public LinkedProperty<SKPoint> ScrollMaxProp { get; }
         public SKPoint ScrollMax => ScrollMaxProp.Value;
+
+        private void OnSizeChanged(object sender, ValueChangedArgs<SKSize> args)
+        {
+            ScrollMaxProp.UpdateValue();
+        }
+
+        private void OnPaddingChanged(object sender, ValueChangedArgs<SKRect> args)
+        {
+            ScrollMaxProp.UpdateValue();
+        }
 
         protected override void OnContentSizeChanged(object sender, ValueChangedArgs<SKSize> args)
         {
