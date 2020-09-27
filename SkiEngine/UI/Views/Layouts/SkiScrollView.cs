@@ -15,7 +15,7 @@ namespace SkiEngine.UI.Views.Layouts
                 this,
                 valueChanged: (sender, args) =>
                 {
-                    ScrollMaxProp.UpdateValue();
+                    UpdateScrollMax();
                     InvalidateLayout();
                 }
             );
@@ -24,16 +24,12 @@ namespace SkiEngine.UI.Views.Layouts
                 true, 
                 valueChanged: (sender, args) =>
                 {
-                    ScrollMaxProp.UpdateValue();
+                    UpdateScrollMax();
                     InvalidateLayout();
                 }
             );
             ScrollMaxProp = new LinkedProperty<SKPoint>(
                 this,
-                updateValue: () => new SKPoint(
-                    CanScrollHorizontally ? Math.Max((Content?.Size.Width ?? 0) - Size.Width + Padding.Left + Padding.Right, 0) : 0, 
-                    CanScrollVertically ? Math.Max((Content?.Size.Height ?? 0) - Size.Height + Padding.Top + Padding.Bottom, 0) : 0
-                ),
                 valueChanged: (sender, args) => AdjustScrollIfOutOfBounds()
             );
             ScrollProp = new LinkedProperty<SKPoint>(
@@ -88,21 +84,25 @@ namespace SkiEngine.UI.Views.Layouts
         }
         
         public LinkedProperty<SKPoint> ScrollMaxProp { get; }
-        public SKPoint ScrollMax => ScrollMaxProp.Value;
+        public SKPoint ScrollMax
+        {
+            get => ScrollMaxProp.Value;
+            private set => ScrollMaxProp.Value = value;
+        }
 
         private void OnSizeChanged(object sender, ValueChangedArgs<SKSize> args)
         {
-            ScrollMaxProp.UpdateValue();
+            UpdateScrollMax();
         }
 
         private void OnPaddingChanged(object sender, ValueChangedArgs<SKRect> args)
         {
-            ScrollMaxProp.UpdateValue();
+            UpdateScrollMax();
         }
 
         protected override void OnContentSizeChanged(object sender, ValueChangedArgs<SKSize> args)
         {
-            ScrollMaxProp.UpdateValue();
+            UpdateScrollMax();
             if (UpdateChildPoint())
             {
                 InvalidateSurface();
@@ -128,6 +128,18 @@ namespace SkiEngine.UI.Views.Layouts
         }
 
         protected override bool UpdateChildPoint() => UpdateChildPoint(new SKPoint(-Scroll.X, -Scroll.Y));
+
+        private void UpdateScrollMax()
+        {
+            ScrollMax = new SKPoint(
+                CanScrollHorizontally
+                    ? Math.Max((Content?.Size.Width ?? 0) - Size.Width + Padding.Left + Padding.Right, 0)
+                    : 0,
+                CanScrollVertically
+                    ? Math.Max((Content?.Size.Height ?? 0) - Size.Height + Padding.Top + Padding.Bottom, 0)
+                    : 0
+            );
+        }
 
         private void AdjustScrollIfOutOfBounds()
         {
