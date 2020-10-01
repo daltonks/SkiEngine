@@ -13,10 +13,10 @@ namespace SkiEngine.UI.Gestures
         public SkiView View { get; }
         public SkiUiComponent UiComponent => View.UiComponent;
         public virtual bool IsMultiTouchEnabled => false;
-        public virtual GestureTouchResult MultiTouchIgnoredResult => GestureTouchResult.CancelLowerListeners;
+        public virtual PressedGestureTouchResult MultiTouchIgnoredResult => PressedGestureTouchResult.CancelLowerListeners;
         public int NumPressedTouches { get; private set; }
 
-        public GestureTouchResult OnPressed(SkiTouch touch)
+        public PressedGestureTouchResult OnPressed(SkiTouch touch)
         {
             NumPressedTouches++;
             return OnPressedInternal(touch);
@@ -39,10 +39,18 @@ namespace SkiEngine.UI.Gestures
             OnCancelledInternal(touch);
         }
 
-        protected abstract GestureTouchResult OnPressedInternal(SkiTouch touch);
+        protected abstract PressedGestureTouchResult OnPressedInternal(SkiTouch touch);
         protected abstract GestureTouchResult OnMovedInternal(SkiTouch touch);
         protected abstract GestureTouchResult OnReleasedInternal(SkiTouch touch);
         protected abstract void OnCancelledInternal(SkiTouch touch);
+    }
+
+    public enum PressedGestureTouchResult
+    {
+        Ignore,
+        Passthrough,
+        CancelLowerListeners,
+        CancelOtherListeners
     }
 
     public enum GestureTouchResult

@@ -45,6 +45,7 @@ namespace SkiEngine.UI.Views.Layouts
 
             var flingGestureRecognizer = new FlingGestureRecognizer(
                 this,
+                allowMouseFling: false,
                 () => CanScrollHorizontally,
                 () => CanScrollVertically,
                 onMove: deltaPixels =>

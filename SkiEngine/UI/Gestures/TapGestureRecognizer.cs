@@ -15,10 +15,10 @@ namespace SkiEngine.UI.Gestures
         }
 
         private SKPoint _pressedPixels;
-        protected override GestureTouchResult OnPressedInternal(SkiTouch touch)
+        protected override PressedGestureTouchResult OnPressedInternal(SkiTouch touch)
         {
             _pressedPixels = touch.PointPixels;
-            return GestureTouchResult.Passthrough;
+            return PressedGestureTouchResult.Passthrough;
         }
 
         protected override GestureTouchResult OnMovedInternal(SkiTouch touch)

@@ -66,7 +66,13 @@ namespace SkiEngine.UI
             {
                 var recognizer = _recognizers[i];
 
-                var ignoreTouch = !recognizer.IsMultiTouchEnabled && recognizer.NumPressedTouches > 0;
+                var ignoreMultiTouch = !recognizer.IsMultiTouchEnabled && recognizer.NumPressedTouches > 0;
+
+                var touchResult = ignoreMultiTouch
+                    ? recognizer.MultiTouchIgnoredResult
+                    : recognizer.OnPressed(touch);
+
+                var ignoreTouch = touchResult == PressedGestureTouchResult.Ignore || ignoreMultiTouch;
 
                 if (ignoreTouch)
                 {
@@ -74,11 +80,7 @@ namespace SkiEngine.UI
                     i--;
                 }
 
-                var touchResult = ignoreTouch
-                    ? recognizer.MultiTouchIgnoredResult
-                    : recognizer.OnPressed(touch);
-
-                if (touchResult == GestureTouchResult.CancelLowerListeners)
+                if (touchResult == PressedGestureTouchResult.CancelLowerListeners)
                 {
                     while (i < _recognizers.Count - 1)
                     {
@@ -87,7 +89,7 @@ namespace SkiEngine.UI
 
                     break;
                 }
-                if (touchResult == GestureTouchResult.CancelOtherListeners)
+                if (touchResult == PressedGestureTouchResult.CancelOtherListeners)
                 {
                     _recognizers.Clear();
                     if (!ignoreTouch)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,17 +14,21 @@ namespace SkiEngine.UI.Gestures
     public class FlingGestureRecognizer : SkiGestureRecognizer
     {
         private SkiAnimation _animation;
+
+        private readonly bool _allowMouseFling;
         private readonly Func<bool> _canFlingHorizontally;
         private readonly Func<bool> _canFlingVertically;
         private readonly Func<SKPoint, bool> _onMove;
         
         public FlingGestureRecognizer(
             SkiView view,
+            bool allowMouseFling,
             Func<bool> canFlingHorizontally, 
             Func<bool> canFlingVertically,
             Func<SKPoint, bool> onMove
         ) : base(view)
         {
+            _allowMouseFling = allowMouseFling;
             _canFlingHorizontally = canFlingHorizontally;
             _canFlingVertically = canFlingVertically;
             _onMove = onMove;
@@ -33,8 +37,13 @@ namespace SkiEngine.UI.Gestures
         public override bool IsMultiTouchEnabled => true;
 
         private readonly Dictionary<long, FlingTouchTracker> _touchTrackers = new Dictionary<long, FlingTouchTracker>();
-        protected override GestureTouchResult OnPressedInternal(SkiTouch touch)
+        protected override PressedGestureTouchResult OnPressedInternal(SkiTouch touch)
         {
+            if (!_allowMouseFling && touch.DeviceType == SKTouchDeviceType.Mouse)
+            {
+                return PressedGestureTouchResult.Ignore;
+            }
+
             if (_animation != null)
             {
                 UiComponent.AbortAnimation(_animation);
@@ -42,7 +51,7 @@ namespace SkiEngine.UI.Gestures
             }
             _touchTrackers[touch.Id] = FlingTouchTracker.Get(touch);
 
-            return GestureTouchResult.CancelLowerListeners;
+            return PressedGestureTouchResult.CancelLowerListeners;
         }
 
         protected override GestureTouchResult OnMovedInternal(SkiTouch touch)
