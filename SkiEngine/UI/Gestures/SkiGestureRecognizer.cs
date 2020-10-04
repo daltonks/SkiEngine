@@ -18,8 +18,12 @@ namespace SkiEngine.UI.Gestures
 
         public PressedGestureTouchResult OnPressed(SkiTouch touch)
         {
-            NumPressedTouches++;
-            return OnPressedInternal(touch);
+            var result = OnPressedInternal(touch);
+            if (result != PressedGestureTouchResult.Ignore)
+            {
+                NumPressedTouches++;
+            }
+            return result;
         }
 
         public GestureTouchResult OnMoved(SkiTouch touch)

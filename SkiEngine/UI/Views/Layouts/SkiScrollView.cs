@@ -1,5 +1,6 @@
 ﻿using System;
 using SkiaSharp;
+using SkiEngine.Input;
 using SkiEngine.UI.Gestures;
 using SkiEngine.UI.Views.Base;
 using SkiEngine.UI.Views.Layouts.Base;
@@ -9,6 +10,8 @@ namespace SkiEngine.UI.Views.Layouts
 {
     public class SkiScrollView : SkiSingleChildLayout
     {
+        public const float VerticalScrollBarWidth = 20;
+
         public SkiScrollView()
         {
             CanScrollHorizontallyProp = new LinkedProperty<bool>(
@@ -43,6 +46,14 @@ namespace SkiEngine.UI.Views.Layouts
             );
             SizeProp.ValueChanged += OnSizeChanged;
 
+            PaddingProp.ValueChanged += OnPaddingChanged;
+
+            VerticalOptions = SkiLayoutOptions.Fill;
+            Padding = new SKRect(0, 0, VerticalScrollBarWidth, 0);
+
+            var handleGestureRecognizer = new ScrollHandleGestureRecognizer(this);
+            GestureRecognizers.Add(handleGestureRecognizer);
+
             var flingGestureRecognizer = new FlingGestureRecognizer(
                 this,
                 allowMouseFling: false,
@@ -57,10 +68,6 @@ namespace SkiEngine.UI.Views.Layouts
             );
 
             GestureRecognizers.Add(flingGestureRecognizer);
-
-            PaddingProp.ValueChanged += OnPaddingChanged;
-
-            VerticalOptions = SkiLayoutOptions.Fill;
         }
 
         public LinkedProperty<bool> CanScrollHorizontallyProp { get; }
@@ -91,6 +98,15 @@ namespace SkiEngine.UI.Views.Layouts
             private set => ScrollMaxProp.Value = value;
         }
 
+        private float HandleHeight => BoundsLocal.Height * BoundsLocal.Height / Content?.Size.Height ?? 0;
+
+        public SKRect HandleBounds => SKRect.Create(
+            BoundsLocal.Right - VerticalScrollBarWidth,
+            Scroll.Y / ScrollMax.Y * (BoundsLocal.Height - HandleHeight),
+            VerticalScrollBarWidth,
+            HandleHeight
+        );
+
         private void OnSizeChanged(object sender, ValueChangedArgs<SKSize> args)
         {
             UpdateScrollMax();
@@ -110,8 +126,7 @@ namespace SkiEngine.UI.Views.Layouts
             }
         }
 
-        protected override void OnContentHorizontalOptionsChanged(object sender,
-            ValueChangedArgs<SkiLayoutOptions> args)
+        protected override void OnContentHorizontalOptionsChanged(object sender, ValueChangedArgs<SkiLayoutOptions> args)
         {
             if (UpdateChildPoint())
             {
@@ -119,8 +134,7 @@ namespace SkiEngine.UI.Views.Layouts
             }
         }
 
-        protected override void OnContentVerticalOptionsChanged(object sender,
-            ValueChangedArgs<SkiLayoutOptions> args)
+        protected override void OnContentVerticalOptionsChanged(object sender, ValueChangedArgs<SkiLayoutOptions> args)
         {
             if (UpdateChildPoint())
             {
@@ -172,6 +186,13 @@ namespace SkiEngine.UI.Views.Layouts
             return scroll;
         }
 
+        public override bool OnMouseWheelScroll(double deltaDp)
+        {
+            Scroll -= new SKPoint(0, (float) deltaDp);
+
+            return true;
+        }
+
         protected override void LayoutInternal(float? maxWidth, float? maxHeight)
         {
             Size = new SKSize(maxWidth ?? 400, maxHeight ?? 400);
@@ -192,14 +213,90 @@ namespace SkiEngine.UI.Views.Layouts
             using (new SKAutoCanvasRestore(canvas))
             {
                 canvas.ClipRect(BoundsLocal);
+
                 DrawBackgroundInternal(canvas);
-                DrawContent(canvas);
+
+                using (new SKAutoCanvasRestore(canvas))
+                {
+                    DrawContent(canvas);
+                }
+
+                using var handlePaint = new SKPaint
+                {
+                    Color = 0xFFB5B5B5, 
+                    Style = SKPaintStyle.Fill,
+                    IsAntialias = true
+                };
+                canvas.DrawRoundRect(
+                    HandleBounds, 
+                    VerticalScrollBarWidth / 2,
+                    VerticalScrollBarWidth / 2,
+                    handlePaint
+                );
             }
         }
 
         protected virtual void DrawContent(SKCanvas canvas)
         {
             Content?.Draw(canvas);
+        }
+    }
+
+    public class ScrollHandleGestureRecognizer : SkiGestureRecognizer
+    {
+        private readonly SkiScrollView _scrollView;
+
+        public ScrollHandleGestureRecognizer(SkiScrollView view) : base(view)
+        {
+            _scrollView = view;
+        }
+
+        private SKPoint _previousPixels;
+        protected override PressedGestureTouchResult OnPressedInternal(SkiTouch touch)
+        {
+            var touchLocal = _scrollView.Node.WorldToLocalMatrix.MapPoint(touch.PointWorld);
+
+            if (touchLocal.X >= _scrollView.HandleBounds.Left)
+            {
+                if (!_scrollView.HandleBounds.Contains(touchLocal))
+                {
+                    // TODO: Simplify? And maybe put as a property in SkiScrollView
+                    var handleY = touchLocal.Y - _scrollView.HandleBounds.Height / 2;
+                    var scrollY = handleY /
+                        (_scrollView.BoundsLocal.Height -
+                         (_scrollView.BoundsLocal.Height * _scrollView.BoundsLocal.Height /
+                             _scrollView.Content?.Size.Height ?? 0)) * _scrollView.ScrollMax.Y;
+
+                    _scrollView.Scroll = new SKPoint(_scrollView.Scroll.X, scrollY);
+                }
+                
+                _previousPixels = touch.PointPixels;
+
+                return PressedGestureTouchResult.CancelLowerListeners;
+            }
+            return PressedGestureTouchResult.Ignore;
+        }
+
+        protected override GestureTouchResult OnMovedInternal(SkiTouch touch)
+        {
+            var deltaPixels = touch.PointPixels - _previousPixels;
+            var deltaScale = _scrollView.Size.Height / _scrollView.HandleBounds.Height;
+            var deltaDp = _scrollView.UiComponent.Camera.PixelToDpMatrix.MapVector(new SKPoint(0, deltaPixels.Y * deltaScale));
+            
+            _scrollView.Scroll += deltaDp;
+
+            _previousPixels = touch.PointPixels;
+            return GestureTouchResult.CancelLowerListeners;
+        }
+
+        protected override GestureTouchResult OnReleasedInternal(SkiTouch touch)
+        {
+            return GestureTouchResult.CancelLowerListeners;
+        }
+
+        protected override void OnCancelledInternal(SkiTouch touch)
+        {
+                
         }
     }
 }

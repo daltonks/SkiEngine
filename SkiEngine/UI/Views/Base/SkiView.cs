@@ -228,6 +228,8 @@ namespace SkiEngine.UI.Views.Base
 
         protected abstract void LayoutInternal(float? maxWidth, float? maxHeight);
 
+        public virtual bool OnMouseWheelScroll(double deltaDp) => false;
+
         public void Draw(SKCanvas canvas)
         {
             canvas.SetMatrix(LocalToPixelMatrix);

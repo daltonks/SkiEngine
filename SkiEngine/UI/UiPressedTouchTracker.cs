@@ -27,34 +27,36 @@ namespace SkiEngine.UI
             var queue = new Queue<SkiView>();
             queue.Enqueue(uiComponent.View);
 
-            var pressedOnFocusedView = false;
+            var pressedFocusedView = false;
             var pointWorld = touch.PointWorld;
             while (queue.Count > 0)
             {
                 var view = queue.Dequeue();
-                if (view.HitTest(pointWorld))
+                if (!view.HitTest(pointWorld))
                 {
-                    if (view == uiComponent.FocusedView)
-                    {
-                        pressedOnFocusedView = true;
-                    }
+                    continue;
+                }
 
-                    // Add recognizers in reverse-order, because all 
-                    // eligible recognizers will be reversed
-                    for (var i = view.GestureRecognizers.Count - 1; i >= 0; i--)
-                    {
-                        var recognizer = view.GestureRecognizers[i];
-                        _recognizers.Add(recognizer);
-                    }
+                if (view == uiComponent.FocusedView)
+                {
+                    pressedFocusedView = true;
+                }
 
-                    foreach (var child in view.ChildrenEnumerable)
-                    {
-                        queue.Enqueue(child);
-                    }
+                // Add recognizers in reverse-order, because all 
+                // eligible recognizers will be reversed
+                for (var i = view.GestureRecognizers.Count - 1; i >= 0; i--)
+                {
+                    var recognizer = view.GestureRecognizers[i];
+                    _recognizers.Add(recognizer);
+                }
+
+                foreach (var child in view.ChildrenEnumerable)
+                {
+                    queue.Enqueue(child);
                 }
             }
 
-            if (!pressedOnFocusedView && uiComponent.FocusedView != null)
+            if (!pressedFocusedView && uiComponent.FocusedView != null)
             {
                 uiComponent.FocusedView.IsFocused = false;
             }

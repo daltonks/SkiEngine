@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using SkiaSharp;
 using SkiEngine.Camera;
 using SkiEngine.Drawable;
@@ -106,7 +104,36 @@ namespace SkiEngine.UI
 
             if (touch.ActionType == SKTouchAction.WheelChanged)
             {
+                var hitTestViews = new List<SkiView>();
 
+                var queue = new Queue<SkiView>();
+                queue.Enqueue(View);
+                while (queue.Count > 0)
+                {
+                    var view = queue.Dequeue();
+                    if (!view.HitTest(touch.PointWorld))
+                    {
+                        continue;
+                    }
+
+                    hitTestViews.Add(view);
+
+                    foreach (var child in view.ChildrenEnumerable)
+                    {
+                        queue.Enqueue(child);
+                    }
+                }
+
+                hitTestViews.Reverse();
+
+                var wheelDeltaDp = Camera.PixelToDpMatrix.MapVector(new SKPoint(touch.WheelDelta, 0)).X;
+                foreach (var hitTestView in hitTestViews)
+                {
+                    if (hitTestView.OnMouseWheelScroll(wheelDeltaDp))
+                    {
+                        break;
+                    }
+                }
             }
             else if (!touch.InContact 
                      && touch.ActionType != SKTouchAction.Released 
