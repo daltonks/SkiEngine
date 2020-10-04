@@ -24,7 +24,7 @@ namespace SkiEngine.Xamarin
             // Because of this, use the dispatcher.
             var invalidateSurface = Device.RuntimePlatform == Device.UWP
                 ? () => Application.Current.Dispatcher.BeginInvokeOnMainThread(SkiaView.InvalidateSurface)
-                : (Action) (() => MainThread.InvokeOnMainThread(SkiaView.InvalidateSurface));
+                : (Action) (() => MainThread.InvokeOnMainThreadAsync(SkiaView.InvalidateSurface));
 
             _skiUiScene = new SkiUiScene(
                 invalidateSurface, 

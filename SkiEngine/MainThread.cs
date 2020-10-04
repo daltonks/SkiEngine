@@ -7,6 +7,6 @@ namespace SkiEngine
     {
         public static Func<Action, Task> InvokeOnMainThreadFunc { get; set; }
 
-        public static Task InvokeOnMainThread(Action action) => InvokeOnMainThreadFunc(action);
+        public static Task InvokeOnMainThreadAsync(Action action) => InvokeOnMainThreadFunc(action);
     }
 }
