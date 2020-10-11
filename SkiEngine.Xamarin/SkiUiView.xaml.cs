@@ -50,9 +50,9 @@ namespace SkiEngine.Xamarin
             _skiUiScene.UiComponent.View = (SkiView) BindingContext;
         }
 
-        private void OnPaintSurface(object sender, SKPaintGLSurfaceEventArgs args)
+        private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs skPaintSurfaceEventArgs)
         {
-            _skiUiScene.OnPaintSurface(args.Surface.Canvas, Width, Height);
+            _skiUiScene.OnPaintSurface(skPaintSurfaceEventArgs.Surface.Canvas, Width, Height);
         }
 
         private void OnTouch(object sender, SKTouchEventArgs e)

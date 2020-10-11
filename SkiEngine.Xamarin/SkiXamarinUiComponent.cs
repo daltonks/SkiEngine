@@ -15,13 +15,13 @@ namespace SkiEngine.Xamarin
 {
     public class SkiXamarinUiComponent : SkiUiComponent
     {
-        private readonly SKGLView _skiaView;
+        private readonly SKCanvasView _skiaView;
         private readonly Entry _nativeEntry;
         private SkiEntry _currentSkiEntry;
         private bool _isNativeEntryShown;
 
         public SkiXamarinUiComponent(
-            SKGLView skiaView, 
+            SKCanvasView skiaView, 
             Entry nativeEntry,
             Node node, 
             CameraComponent camera, 
