@@ -258,7 +258,7 @@ namespace SkiEngine.UI.Views.Layouts
         {
             var touchLocal = _scrollView.Node.WorldToLocalMatrix.MapPoint(touch.PointWorld);
 
-            if (!(touchLocal.X >= _scrollView.HandleBounds.Left))
+            if (touchLocal.X < _scrollView.HandleBounds.Left)
             {
                 return PressedGestureTouchResult.Ignore;
             }
