@@ -36,6 +36,15 @@ namespace SkiEngine.UI.Gestures
 
         public override bool IsMultiTouchEnabled => true;
 
+        public void AbortAnimation()
+        {
+            if (_animation != null)
+            {
+                UiComponent.AbortAnimation(_animation);
+                _animation = null;
+            }
+        }
+
         private readonly Dictionary<long, FlingTouchTracker> _touchTrackers = new Dictionary<long, FlingTouchTracker>();
         protected override PressedGestureTouchResult OnPressedInternal(SkiTouch touch)
         {
@@ -44,11 +53,7 @@ namespace SkiEngine.UI.Gestures
                 return PressedGestureTouchResult.Ignore;
             }
 
-            if (_animation != null)
-            {
-                UiComponent.AbortAnimation(_animation);
-                _animation = null;
-            }
+            AbortAnimation();
             _touchTrackers[touch.Id] = FlingTouchTracker.Get(touch);
 
             return PressedGestureTouchResult.CancelLowerListeners;
@@ -97,10 +102,9 @@ namespace SkiEngine.UI.Gestures
 
                         var continueAnimating = _onMove(flingPixelsPerSecond.Multiply(elapsedSeconds * multiplier));
 
-                        if (!continueAnimating && _animation != null)
+                        if (!continueAnimating)
                         {
-                            UiComponent.AbortAnimation(_animation);
-                            _animation = null;
+                            AbortAnimation();
                         }
                     },
                     1,

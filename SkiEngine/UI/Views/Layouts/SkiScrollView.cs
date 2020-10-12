@@ -54,7 +54,7 @@ namespace SkiEngine.UI.Views.Layouts
             var handleGestureRecognizer = new ScrollHandleGestureRecognizer(this);
             GestureRecognizers.Add(handleGestureRecognizer);
 
-            var flingGestureRecognizer = new FlingGestureRecognizer(
+            FlingGestureRecognizer = new FlingGestureRecognizer(
                 this,
                 allowMouseFling: false,
                 () => CanScrollHorizontally,
@@ -67,7 +67,7 @@ namespace SkiEngine.UI.Views.Layouts
                 }
             );
 
-            GestureRecognizers.Add(flingGestureRecognizer);
+            GestureRecognizers.Add(FlingGestureRecognizer);
         }
 
         public LinkedProperty<bool> CanScrollHorizontallyProp { get; }
@@ -106,6 +106,8 @@ namespace SkiEngine.UI.Views.Layouts
             VerticalScrollBarWidth,
             HandleHeight
         );
+
+        public FlingGestureRecognizer FlingGestureRecognizer { get; }
 
         private void OnSizeChanged(object sender, ValueChangedArgs<SKSize> args)
         {
@@ -256,25 +258,28 @@ namespace SkiEngine.UI.Views.Layouts
         {
             var touchLocal = _scrollView.Node.WorldToLocalMatrix.MapPoint(touch.PointWorld);
 
-            if (touchLocal.X >= _scrollView.HandleBounds.Left)
+            if (!(touchLocal.X >= _scrollView.HandleBounds.Left))
             {
-                if (!_scrollView.HandleBounds.Contains(touchLocal))
-                {
-                    // TODO: Simplify? And maybe put as a property in SkiScrollView
-                    var handleY = touchLocal.Y - _scrollView.HandleBounds.Height / 2;
-                    var scrollY = handleY /
-                        (_scrollView.BoundsLocal.Height -
-                         (_scrollView.BoundsLocal.Height * _scrollView.BoundsLocal.Height /
-                             _scrollView.Content?.Size.Height ?? 0)) * _scrollView.ScrollMax.Y;
-
-                    _scrollView.Scroll = new SKPoint(_scrollView.Scroll.X, scrollY);
-                }
-                
-                _previousPixels = touch.PointPixels;
-
-                return PressedGestureTouchResult.CancelLowerListeners;
+                return PressedGestureTouchResult.Ignore;
             }
-            return PressedGestureTouchResult.Ignore;
+
+            _scrollView.FlingGestureRecognizer.AbortAnimation();
+
+            if (!_scrollView.HandleBounds.Contains(touchLocal))
+            {
+                // TODO: Simplify? And maybe put as a property in SkiScrollView
+                var handleY = touchLocal.Y - _scrollView.HandleBounds.Height / 2;
+                var scrollY = handleY /
+                    (_scrollView.BoundsLocal.Height -
+                     (_scrollView.BoundsLocal.Height * _scrollView.BoundsLocal.Height /
+                         _scrollView.Content?.Size.Height ?? 0)) * _scrollView.ScrollMax.Y;
+
+                _scrollView.Scroll = new SKPoint(_scrollView.Scroll.X, scrollY);
+            }
+                
+            _previousPixels = touch.PointPixels;
+
+            return PressedGestureTouchResult.CancelLowerListeners;
         }
 
         protected override GestureTouchResult OnMovedInternal(SkiTouch touch)
