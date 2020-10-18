@@ -10,7 +10,7 @@ namespace SkiEngine.UI.Views.Layouts
 {
     public class SkiScrollView : SkiSingleChildLayout
     {
-        public const float VerticalScrollBarWidth = 20;
+        public const float VerticalScrollBarWidth = 8;
 
         public SkiScrollView()
         {
@@ -258,7 +258,7 @@ namespace SkiEngine.UI.Views.Layouts
         {
             var touchLocal = _scrollView.Node.WorldToLocalMatrix.MapPoint(touch.PointWorld);
 
-            if (touchLocal.X < _scrollView.HandleBounds.Left)
+            if (touchLocal.X < _scrollView.HandleBounds.Left || touch.DeviceType != SKTouchDeviceType.Mouse)
             {
                 return PressedGestureTouchResult.Ignore;
             }

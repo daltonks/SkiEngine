@@ -37,7 +37,8 @@ namespace SkiEngine.UI.Views.Layouts
             }
 
             var width = 0f;
-            var height = (Children.Count - 1) * Spacing;
+            var height = (Children.Count - 1) * Spacing + Padding.Top + Padding.Bottom;
+            var maxChildWidth = maxWidth - Padding.Left - Padding.Right;
 
             var fillVerticallyChildren = new List<SkiView>();
 
@@ -50,7 +51,7 @@ namespace SkiEngine.UI.Views.Layouts
                 }
 
                 // Child doesn't fill vertically, so Layout
-                child.Layout(MathNullable.Min(child.WidthRequest, maxWidth), child.HeightRequest);
+                child.Layout(MathNullable.Min(child.WidthRequest, maxChildWidth), child.HeightRequest);
                 width = Math.Max(width, child.Size.Width);
                 height += child.Size.Height;
             }
@@ -59,7 +60,7 @@ namespace SkiEngine.UI.Views.Layouts
             foreach (var child in fillVerticallyChildren)
             {
                 child.Layout(
-                    MathNullable.Min(child.WidthRequest, maxWidth), 
+                    MathNullable.Min(child.WidthRequest, maxChildWidth), 
                     MathNullable.Min(child.HeightRequest, heightPerFillVerticallyChild)
                 );
                 width = Math.Max(width, child.Size.Width);
@@ -67,10 +68,10 @@ namespace SkiEngine.UI.Views.Layouts
             }
 
             // Update children points
-            var y = 0f;
+            var y = Padding.Top;
             foreach (var child in visibleChildren)
             {
-                UpdateChildPoint(child, SKRect.Create(0, y, maxWidth ?? child.Size.Width, child.Size.Height));
+                UpdateChildPoint(child, SKRect.Create(Padding.Left, y, maxChildWidth ?? child.Size.Width, child.Size.Height));
                 y += child.Size.Height + Spacing;
             }
 
