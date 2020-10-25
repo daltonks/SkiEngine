@@ -9,8 +9,8 @@ namespace SkiEngine.UI.Views.Base
 {
     public abstract class SkiView
     {
-        private float? _maxWidth;
-        private float? _maxHeight;
+        protected float? MaxWidth;
+        protected float? MaxHeight;
         private bool _layoutNeeded;
         private bool _layoutQueued;
 
@@ -210,7 +210,7 @@ namespace SkiEngine.UI.Views.Base
             UiComponent.RunNextUpdate(() => {
                 if (_layoutNeeded)
                 {
-                    Layout(_maxWidth, _maxHeight);
+                    Layout(MaxWidth, MaxHeight);
                 }
                 _layoutQueued = false;
             });
@@ -220,8 +220,8 @@ namespace SkiEngine.UI.Views.Base
 
         public void Layout(float? maxWidth, float? maxHeight)
         {
-            _maxWidth = maxWidth;
-            _maxHeight = maxHeight;
+            MaxWidth = maxWidth;
+            MaxHeight = maxHeight;
             LayoutInternal(maxWidth, maxHeight);
             _layoutNeeded = false;
         }
