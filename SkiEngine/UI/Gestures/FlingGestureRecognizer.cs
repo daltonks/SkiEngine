@@ -36,6 +36,8 @@ namespace SkiEngine.UI.Gestures
 
         public override bool IsMultiTouchEnabled => true;
 
+        public bool FlingOnRelease { get; set; } = true;
+
         public void AbortAnimation()
         {
             if (_animation != null)
@@ -84,8 +86,10 @@ namespace SkiEngine.UI.Gestures
             {
                 flingPixelsPerSecond.Y = 0;
             }
+
             var shouldAnimate = 
-                NumPressedTouches == 0
+                FlingOnRelease
+                && NumPressedTouches == 0
                 && (Math.Abs(flingPixelsPerSecond.X) > 5 || Math.Abs(flingPixelsPerSecond.Y) > 5);
             if (shouldAnimate)
             {
