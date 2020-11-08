@@ -47,7 +47,10 @@ namespace SkiEngine.Xamarin
         {
             base.OnBindingContextChanged();
 
-            _skiUiScene.UiComponent.View = (SkiView) BindingContext;
+            if (BindingContext is SkiView skiView)
+            {
+                _skiUiScene.UiComponent.View = skiView;
+            }
         }
 
         private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs skPaintSurfaceEventArgs)
