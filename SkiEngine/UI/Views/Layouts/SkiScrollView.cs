@@ -223,18 +223,21 @@ namespace SkiEngine.UI.Views.Layouts
                     DrawContent(canvas);
                 }
 
-                using var handlePaint = new SKPaint
+                if (CanScrollVertically)
                 {
-                    Color = 0xFFB5B5B5, 
-                    Style = SKPaintStyle.Fill,
-                    IsAntialias = true
-                };
-                canvas.DrawRoundRect(
-                    HandleBounds, 
-                    VerticalScrollBarWidth / 2,
-                    VerticalScrollBarWidth / 2,
-                    handlePaint
-                );
+                    using var handlePaint = new SKPaint
+                    {
+                        Color = 0xFFB5B5B5, 
+                        Style = SKPaintStyle.Fill,
+                        IsAntialias = true
+                    };
+                    canvas.DrawRoundRect(
+                        HandleBounds, 
+                        VerticalScrollBarWidth / 2,
+                        VerticalScrollBarWidth / 2,
+                        handlePaint
+                    );
+                }
             }
         }
 
