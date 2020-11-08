@@ -89,6 +89,8 @@ namespace SkiEngine.UI.Views.Layouts
             get => ScrollProp.Value;
             set => ScrollProp.Value = value;
         }
+
+        protected virtual SKPoint DrawnScroll => Scroll;
         
         public LinkedProperty<SKPoint> ScrollMaxProp { get; }
         public SKPoint ScrollMax
@@ -143,7 +145,11 @@ namespace SkiEngine.UI.Views.Layouts
             }
         }
 
-        protected override bool UpdateChildPoint() => UpdateChildPoint(new SKPoint(-Scroll.X, -Scroll.Y));
+        protected override bool UpdateChildPoint()
+        {
+            var drawnScroll = DrawnScroll;
+            return UpdateChildPoint(new SKPoint(-drawnScroll.X, -drawnScroll.Y));
+        }
 
         private void UpdateScrollMax()
         {
