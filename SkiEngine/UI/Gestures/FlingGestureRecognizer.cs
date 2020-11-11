@@ -14,11 +14,18 @@ namespace SkiEngine.UI.Gestures
 {
     public class FlingGestureRecognizer : SkiGestureRecognizer
     {
-        private readonly WeakEventSource<EventArgs> _flingReleasedEventSource = new WeakEventSource<EventArgs>();
-        public event EventHandler<EventArgs> FlingReleased
+        private readonly WeakEventSource<EventArgs> _firstTouchPressedEventSource = new WeakEventSource<EventArgs>();
+        public event EventHandler<EventArgs> FirstTouchPressed
         {
-            add => _flingReleasedEventSource.Subscribe(value);
-            remove => _flingReleasedEventSource.Unsubscribe(value);
+            add => _firstTouchPressedEventSource.Subscribe(value);
+            remove => _firstTouchPressedEventSource.Unsubscribe(value);
+        }
+
+        private readonly WeakEventSource<EventArgs> _allTouchesReleasedEventSource = new WeakEventSource<EventArgs>();
+        public event EventHandler<EventArgs> AllTouchesReleased
+        {
+            add => _allTouchesReleasedEventSource.Subscribe(value);
+            remove => _allTouchesReleasedEventSource.Unsubscribe(value);
         }
 
         private SkiAnimation _animation;
@@ -58,6 +65,11 @@ namespace SkiEngine.UI.Gestures
             if (!AllowMouseFling && touch.DeviceType == SKTouchDeviceType.Mouse)
             {
                 return PressedGestureTouchResult.Ignore;
+            }
+
+            if (NumPressedTouches == 1)
+            {
+                _firstTouchPressedEventSource.Raise(this, new EventArgs());
             }
 
             AbortAnimation();
@@ -125,7 +137,7 @@ namespace SkiEngine.UI.Gestures
 
             if (NumPressedTouches == 0)
             {
-                _flingReleasedEventSource.Raise(this, new EventArgs());
+                _allTouchesReleasedEventSource.Raise(this, new EventArgs());
             }
 
             touchTracker.Recycle();
