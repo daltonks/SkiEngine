@@ -8,11 +8,19 @@ using SkiaSharp;
 using SkiEngine.Input;
 using SkiEngine.UI.Views.Base;
 using SkiEngine.Util.Extensions.SkiaSharp;
+using WeakEvent;
 
 namespace SkiEngine.UI.Gestures
 {
     public class FlingGestureRecognizer : SkiGestureRecognizer
     {
+        private readonly WeakEventSource<EventArgs> _flingReleasedEventSource = new WeakEventSource<EventArgs>();
+        public event EventHandler<EventArgs> FlingReleased
+        {
+            add => _flingReleasedEventSource.Subscribe(value);
+            remove => _flingReleasedEventSource.Unsubscribe(value);
+        }
+
         private SkiAnimation _animation;
         private readonly Func<bool> _canFlingHorizontally;
         private readonly Func<bool> _canFlingVertically;
@@ -113,6 +121,11 @@ namespace SkiEngine.UI.Gestures
                     TimeSpan.FromSeconds(animationSeconds)
                 );
                 UiComponent.StartAnimation(_animation);
+            }
+
+            if (NumPressedTouches == 0)
+            {
+                _flingReleasedEventSource.Raise(this, new EventArgs());
             }
 
             touchTracker.Recycle();
