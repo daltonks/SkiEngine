@@ -67,7 +67,7 @@ namespace SkiEngine.UI.Gestures
                 return PressedGestureTouchResult.Ignore;
             }
 
-            if (NumPressedTouches == 1)
+            if (NumPressedTouches == 0)
             {
                 _firstTouchPressedEventSource.Raise(this, new EventArgs());
             }
