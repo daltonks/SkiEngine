@@ -97,7 +97,6 @@ namespace SkiEngine.UI.Gestures
             return GestureTouchResult.CancelLowerListeners;
         }
 
-        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         protected override GestureTouchResult OnReleasedInternal(SkiTouch touch)
         {
             var touchTracker = _touchTrackers[touch.Id];
@@ -130,7 +129,6 @@ namespace SkiEngine.UI.Gestures
                         stopwatch.Restart();
 
                         var continueAnimating = _onMove(flingPixelsPerSecond.Multiply(elapsedSeconds * multiplier));
-
                         if (!continueAnimating)
                         {
                             AbortAnimation();
@@ -156,6 +154,11 @@ namespace SkiEngine.UI.Gestures
 
         protected override void OnCancelledInternal(SkiTouch touch)
         {
+            if (NumPressedTouches == 0)
+            {
+                _allTouchesReleasedEventSource.Raise(this, new EventArgs());
+            }
+
             _touchTrackers[touch.Id].Recycle();
             _touchTrackers.Remove(touch.Id);
         }
