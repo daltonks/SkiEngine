@@ -21,6 +21,13 @@ namespace SkiEngine.UI.Gestures
             remove => _firstTouchPressedEventSource.Unsubscribe(value);
         }
 
+        private readonly WeakEventSource<EventArgs> _touchMovedEventSource = new WeakEventSource<EventArgs>();
+        public event EventHandler<EventArgs> TouchMoved
+        {
+            add => _touchMovedEventSource.Subscribe(value);
+            remove => _touchMovedEventSource.Unsubscribe(value);
+        }
+
         private readonly WeakEventSource<EventArgs> _allTouchesReleasedEventSource = new WeakEventSource<EventArgs>();
         public event EventHandler<EventArgs> AllTouchesReleased
         {
@@ -83,6 +90,7 @@ namespace SkiEngine.UI.Gestures
             var previousPointPixels = _touchTrackers[touch.Id].GetLastPointPixels();
 
             _onMove(touch.PointPixels - previousPointPixels);
+            _touchMovedEventSource.Raise(this, new EventArgs());
 
             _touchTrackers[touch.Id].Add(touch);
 
