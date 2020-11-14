@@ -43,6 +43,7 @@ namespace SkiEngine.UI
                 if (Size.Width != 0 && Size.Height != 0)
                 {
                     View.Layout(Size.Width, Size.Height);
+                    InvalidateSurface();
                 }
             }
         }
