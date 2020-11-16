@@ -9,6 +9,8 @@ namespace SkiEngine.UI
 {
     public class SkiUiScene
     {
+        public static bool AllowInvalidateSurfaceIfDrawStillPending { get; set; }
+
         private readonly Scene _scene = new Scene();
         private readonly CanvasComponent _canvasComponent;
         private readonly CameraGroup _cameraGroup;
@@ -39,21 +41,16 @@ namespace SkiEngine.UI
         public SKColor BackgroundColor { get; set; } = SKColors.White;
 
         private bool _drawPending;
-        private DateTime _drawPendingTimeout = DateTime.MinValue;
         public void InvalidateSurface()
         {
             var nowUtc = DateTime.UtcNow;
 
-            // _drawPendingTimeout is a workaround for _drawPending
-            // getting stuck to 'true' when rotating devices
-            // (mostly seen on iOS)
-            if (_drawPending && nowUtc < _drawPendingTimeout)
+            if (!AllowInvalidateSurfaceIfDrawStillPending && _drawPending)
             {
                 return;
             }
 
             _drawPending = true;
-            _drawPendingTimeout = nowUtc + TimeSpan.FromSeconds(.25);
             _invalidateSurface();
         }
 
@@ -62,7 +59,6 @@ namespace SkiEngine.UI
         {
             _scene.Update();
             _drawPending = false;
-            _drawPendingTimeout = DateTime.MinValue;
 
             if (widthDp == 0 || widthDp == 0)
             {

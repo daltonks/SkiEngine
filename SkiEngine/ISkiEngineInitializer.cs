@@ -7,6 +7,7 @@ namespace SkiEngine
     public interface ISkiEngineInitializer
     {
         double DisplayDensity { get; }
+        bool AllowInvalidateSurfaceIfDrawStillPending { get; }
 
         Task InvokeOnMainThreadAsync(Action action);
         Task<Stream> OpenAppPackageFileAsync(string path);

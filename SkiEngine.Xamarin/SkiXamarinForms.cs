@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace SkiEngine.Xamarin
 {
@@ -15,6 +16,7 @@ namespace SkiEngine.Xamarin
         private class Initializer : ISkiEngineInitializer
         {
             public double DisplayDensity => DeviceDisplay.MainDisplayInfo.Density;
+            public bool AllowInvalidateSurfaceIfDrawStillPending => Device.RuntimePlatform == Device.iOS;
 
             public Task InvokeOnMainThreadAsync(Action action)
             {
