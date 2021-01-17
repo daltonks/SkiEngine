@@ -49,8 +49,20 @@ namespace SkiEngine.Camera
         public ref SKRect DpViewport => ref CanvasComponent.DpViewport;
         public ref SKRectI PixelViewport => ref CanvasComponent.PixelViewport;
 
-        private SKRect _worldViewPort;
-        public ref SKRect WorldViewport => ref _worldViewPort;
+        public SKSize WorldViewportSize
+        {
+            get
+            {
+                var worldViewportWidth = PixelToWorldMatrix
+                    .MapVector(0, PixelViewport.Width)
+                    .Length;
+                var worldViewportHeight = PixelToWorldMatrix
+                    .MapVector(0, PixelViewport.Height)
+                    .Length;
+
+                return new SKSize(worldViewportWidth, worldViewportHeight);
+            }
+        }
 
         private bool _enabled;
         public bool Enabled
@@ -185,8 +197,6 @@ namespace SkiEngine.Camera
             _worldToPixelMatrix = Node.WorldToLocalMatrix;
             SKMatrix.PostConcat(ref _worldToPixelMatrix, ref CanvasComponent.HalfPixelViewportTranslationMatrix);
             _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
-
-            WorldViewport = _pixelToWorldMatrix.MapRect(PixelViewport);
         }
 
         public IEnumerator<IDrawableComponent> GetEnumerator()
