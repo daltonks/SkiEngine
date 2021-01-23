@@ -80,9 +80,10 @@ namespace SkiEngine.Util
 
             var imageInfo = new SKImageInfo(useWidth, useHeight, original.ColorType, original.AlphaType, original.ColorSpace);
             using var surface = SKSurface.Create(imageInfo);
-            
+            var canvas = surface.Canvas;
+
             // Transform based on origin
-            transform.Invoke(surface.Canvas);
+            transform.Invoke(canvas);
 
             // Draw bitmap
             using var bitmapPaint = new SKPaint
@@ -90,9 +91,9 @@ namespace SkiEngine.Util
                 IsAntialias = true, 
                 FilterQuality = SKFilterQuality.High
             };
-            surface.Canvas.DrawBitmap(original, imageInfo.Rect, bitmapPaint);
+            canvas.DrawBitmap(original, imageInfo.Rect, bitmapPaint);
 
-            surface.Canvas.Flush();
+            canvas.Flush();
 
             // Return transformed snapshot
             return (surface.Snapshot(), encodedImageFormat);
