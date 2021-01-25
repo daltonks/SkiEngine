@@ -8,7 +8,7 @@ namespace SkiEngine.Util
     public static class SKImageUtil
     {
         // https://github.com/mono/SkiaSharp/issues/836#issuecomment-584895517
-        public static (SKImage SKImage, SKEncodedImageFormat EncodedImageFormat) FixImageOrientation(Stream stream)
+        public static (SKBitmap SKBitmap, SKEncodedImageFormat EncodedImageFormat) FixImageOrientation(Stream stream)
         {
             using var inputStream = new SKManagedStream(stream);
             using var codec = SKCodec.Create(inputStream);
@@ -22,7 +22,7 @@ namespace SkiEngine.Util
                 case SKEncodedOrigin.TopLeft:
                     // No transform needs to be applied.
                     // Return original image.
-                    return (SKImage.FromBitmap(original), encodedImageFormat);
+                    return (original, encodedImageFormat);
                 case SKEncodedOrigin.TopRight:
                     // flip along the x-axis
                     transform = canvas => canvas.Scale(-1, 1, useWidth / 2, useHeight / 2);
@@ -96,7 +96,8 @@ namespace SkiEngine.Util
             canvas.Flush();
 
             // Return transformed snapshot
-            return (surface.Snapshot(), encodedImageFormat);
+            using var image = surface.Snapshot();
+            return (SKBitmap.FromImage(image), encodedImageFormat);
         }
     }
 }
