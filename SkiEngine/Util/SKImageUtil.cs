@@ -13,7 +13,7 @@ namespace SkiEngine.Util
             using var inputStream = new SKManagedStream(stream);
             using var codec = SKCodec.Create(inputStream);
             var encodedImageFormat = codec.EncodedFormat;
-            using var original = SKBitmap.Decode(codec);
+            var original = SKBitmap.Decode(codec);
             var useWidth = original.Width;
             var useHeight = original.Height;
             Action<SKCanvas> transform = canvas => { };
@@ -78,26 +78,29 @@ namespace SkiEngine.Util
                     break;
             }
 
-            var imageInfo = new SKImageInfo(useWidth, useHeight, original.ColorType, original.AlphaType, original.ColorSpace);
-            using var surface = SKSurface.Create(imageInfo);
-            var canvas = surface.Canvas;
-
-            // Transform based on origin
-            transform.Invoke(canvas);
-
-            // Draw bitmap
-            using var bitmapPaint = new SKPaint
+            using (original)
             {
-                IsAntialias = true, 
-                FilterQuality = SKFilterQuality.High
-            };
-            canvas.DrawBitmap(original, imageInfo.Rect, bitmapPaint);
+                var imageInfo = new SKImageInfo(useWidth, useHeight, original.ColorType, original.AlphaType, original.ColorSpace);
+                using var surface = SKSurface.Create(imageInfo);
+                var canvas = surface.Canvas;
 
-            canvas.Flush();
+                // Transform based on origin
+                transform.Invoke(canvas);
 
-            // Return transformed snapshot
-            using var image = surface.Snapshot();
-            return (SKBitmap.FromImage(image), encodedImageFormat);
+                // Draw bitmap
+                using var bitmapPaint = new SKPaint
+                {
+                    IsAntialias = true, 
+                    FilterQuality = SKFilterQuality.High
+                };
+                canvas.DrawBitmap(original, imageInfo.Rect, bitmapPaint);
+
+                canvas.Flush();
+
+                // Return transformed snapshot
+                using var image = surface.Snapshot();
+                return (SKBitmap.FromImage(image), encodedImageFormat);
+            }
         }
     }
 }
