@@ -92,5 +92,28 @@ namespace SkiEngine.Util.Extensions.SkiaSharp
                 (int) Math.Round(rect.Bottom)
             );
         }
+
+        public static SKRect MovedInsideOf(this SKRect smallRect, SKRect bigRect)
+        {
+            if (smallRect.Left < bigRect.Left)
+            {
+                smallRect.Offset(bigRect.Left - smallRect.Left, 0);
+            }
+            else if (smallRect.Right > bigRect.Right)
+            {
+                smallRect.Offset(bigRect.Right - smallRect.Right, 0);
+            }
+
+            if (smallRect.Top < bigRect.Top)
+            {
+                smallRect.Offset(0, bigRect.Top - smallRect.Top);
+            }
+            else if (smallRect.Bottom > bigRect.Bottom)
+            {
+                smallRect.Offset(0, bigRect.Bottom - smallRect.Bottom);
+            }
+
+            return smallRect;
+        }
     }
 }
