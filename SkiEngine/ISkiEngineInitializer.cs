@@ -8,8 +8,8 @@ namespace SkiEngine
     {
         double DisplayDensity { get; }
         bool AllowInvalidateSurfaceIfDrawStillPending { get; }
-
-        Task InvokeOnMainThreadAsync(Action action);
+        
+        Task InvokeOnMainThreadAsync(Func<Task> func);
         Task<Stream> OpenAppPackageFileAsync(string path);
     }
 }

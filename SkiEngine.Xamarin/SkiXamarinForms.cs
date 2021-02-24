@@ -18,9 +18,9 @@ namespace SkiEngine.Xamarin
             public double DisplayDensity => DeviceDisplay.MainDisplayInfo.Density;
             public bool AllowInvalidateSurfaceIfDrawStillPending => Device.RuntimePlatform == Device.iOS;
 
-            public Task InvokeOnMainThreadAsync(Action action)
+            public Task InvokeOnMainThreadAsync(Func<Task> func)
             {
-                return global::Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync(action);
+                return global::Xamarin.Essentials.MainThread.InvokeOnMainThreadAsync(func);
             }
 
             public Task<Stream> OpenAppPackageFileAsync(string path)
