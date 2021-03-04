@@ -25,6 +25,18 @@ namespace SkiEngine.Input
         public Action Action { get; }
         public BehaviorWhenInputViewFocused BehaviorWhenInputViewFocused { get; }
     }
+    
+    public class SkiKeyCombination
+    {
+        public SkiKeyCombination(SkiVirtualKey key, IReadOnlyCollection<SkiVirtualKey> modifiers = null)
+        {
+            Key = key;
+            Modifiers = modifiers;
+        }
+
+        public SkiVirtualKey Key { get; }
+        public IReadOnlyCollection<SkiVirtualKey> Modifiers { get; }
+    }
 
     public enum BehaviorWhenInputViewFocused
     {

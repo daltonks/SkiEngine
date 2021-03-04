@@ -294,6 +294,7 @@
     Favorites = 171,
     /// <summary>The go home key.</summary>
     GoHome = 172,
+    Equals = 187,
     /// <summary>The gamepad A button.</summary>
     GamepadA = 195,
     /// <summary>The gamepad B button.</summary>
