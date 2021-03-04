@@ -6,21 +6,18 @@ namespace SkiEngine.Input
     public class SkiKeyBinding
     {
         public SkiKeyBinding(
-            SkiVirtualKey key, 
-            IReadOnlyCollection<SkiVirtualKey> modifiers,
+            SkiKeyCombination keyCombination,
             Func<bool> predicate,
             Action action,
             BehaviorWhenInputViewFocused behaviorWhenInputViewFocused)
         {
-            Key = key;
-            Modifiers = modifiers ?? new SkiVirtualKey[0];
+            KeyCombination = keyCombination;
             Action = action ?? (() => {});
             BehaviorWhenInputViewFocused = behaviorWhenInputViewFocused;
             Predicate = predicate ?? (() => true);
         }
-
-        public SkiVirtualKey Key { get; }
-        public IReadOnlyCollection<SkiVirtualKey> Modifiers { get; }
+        
+        public SkiKeyCombination KeyCombination { get; }
         public Func<bool> Predicate { get; }
         public Action Action { get; }
         public BehaviorWhenInputViewFocused BehaviorWhenInputViewFocused { get; }

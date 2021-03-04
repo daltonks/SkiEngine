@@ -42,9 +42,9 @@ namespace SkiEngine.Input
 
                     var keyBinding = keyBindings
                         .Where(b => !isInputViewFocused || b.BehaviorWhenInputViewFocused == BehaviorWhenInputViewFocused.Active)
-                        .Where(b => b.Modifiers.All(IsKeyDown))
+                        .Where(b => b.KeyCombination.Modifiers.All(IsKeyDown))
                         .Where(b => b.Predicate.Invoke())
-                        .OrderByDescending(b => b.Modifiers.Count)
+                        .OrderByDescending(b => b.KeyCombination.Modifiers.Count)
                         .FirstOrDefault();
 
                     keyBinding?.Action.Invoke();
@@ -81,9 +81,9 @@ namespace SkiEngine.Input
         {
             lock (_keyBindingsMap)
             {
-                if (!_keyBindingsMap.TryGetValue(keyBinding.Key, out var list))
+                if (!_keyBindingsMap.TryGetValue(keyBinding.KeyCombination.Key, out var list))
                 {
-                    list = _keyBindingsMap[keyBinding.Key] = new List<SkiKeyBinding>();
+                    list = _keyBindingsMap[keyBinding.KeyCombination.Key] = new List<SkiKeyBinding>();
                 }
 
                 list.Add(keyBinding);
@@ -94,7 +94,7 @@ namespace SkiEngine.Input
         {
             lock (_keyBindingsMap)
             {
-                if (!_keyBindingsMap.TryGetValue(keyBinding.Key, out var list))
+                if (!_keyBindingsMap.TryGetValue(keyBinding.KeyCombination.Key, out var list))
                 {
                     return;
                 }
@@ -103,7 +103,7 @@ namespace SkiEngine.Input
 
                 if (!list.Any())
                 {
-                    _keyBindingsMap.Remove(keyBinding.Key);
+                    _keyBindingsMap.Remove(keyBinding.KeyCombination.Key);
                 }
             }
         }
