@@ -195,7 +195,7 @@
     /// <summary>The separator key as located on a numeric pad.</summary>
     Separator = 108,
     /// <summary>The subtract (-) operation key as located on a numeric pad.</summary>
-    Subtract = 109,
+    SubtractNumPad = 109,
     /// <summary>The decimal (.) key as located on a numeric pad.</summary>
     Decimal = 110,
     /// <summary>The divide (/) operation key as located on a numeric pad.</summary>
@@ -295,6 +295,7 @@
     /// <summary>The go home key.</summary>
     GoHome = 172,
     Equals = 187,
+    Subtract = 189,
     /// <summary>The gamepad A button.</summary>
     GamepadA = 195,
     /// <summary>The gamepad B button.</summary>
