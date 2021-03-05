@@ -28,7 +28,7 @@ namespace SkiEngine.Input
         public SkiKeyCombination(SkiVirtualKey key, IReadOnlyCollection<SkiVirtualKey> modifiers = null)
         {
             Key = key;
-            Modifiers = modifiers;
+            Modifiers = modifiers ?? new SkiVirtualKey[0];
         }
 
         public SkiVirtualKey Key { get; }
