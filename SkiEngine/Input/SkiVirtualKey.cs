@@ -191,11 +191,11 @@
     /// <summary>The multiply (*) operation key as located on a numeric pad.</summary>
     Multiply = 106,
     /// <summary>The add (+) operation key as located on a numeric pad.</summary>
-    Add = 107,
+    NumberPadAdd = 107,
     /// <summary>The separator key as located on a numeric pad.</summary>
     Separator = 108,
     /// <summary>The subtract (-) operation key as located on a numeric pad.</summary>
-    SubtractNumPad = 109,
+    NumberPadSubtract = 109,
     /// <summary>The decimal (.) key as located on a numeric pad.</summary>
     Decimal = 110,
     /// <summary>The divide (/) operation key as located on a numeric pad.</summary>
