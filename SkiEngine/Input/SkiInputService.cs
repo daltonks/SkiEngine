@@ -40,14 +40,15 @@ namespace SkiEngine.Input
                 {
                     var isInputViewFocused = IsInputViewFocused;
 
-                    var keyBinding = keyBindings
+                    var matchedKeyBindings = keyBindings
                         .Where(b => !isInputViewFocused || b.BehaviorWhenInputViewFocused == BehaviorWhenInputViewFocused.Active)
                         .Where(b => b.KeyCombination.Modifiers.All(IsKeyDown))
-                        .Where(b => b.Predicate.Invoke())
-                        .OrderByDescending(b => b.KeyCombination.Modifiers.Count)
-                        .FirstOrDefault();
+                        .Where(b => b.Predicate.Invoke());
 
-                    keyBinding?.Action.Invoke();
+                    foreach (var matchedKeyBinding in matchedKeyBindings)
+                    {
+                        matchedKeyBinding.OnPressed();
+                    }
                 }
             }
 
@@ -59,6 +60,18 @@ namespace SkiEngine.Input
             lock (_downKeys)
             {
                 _downKeys.Remove(key);
+            }
+
+            lock (_keyBindingsMap)
+            {
+                if (_keyBindingsMap.TryGetValue(key, out var keyBindings))
+                {
+                    var matchedKeyBindings = keyBindings.Where(b => b.IsPressed);
+                    foreach (var matchedKeyBinding in matchedKeyBindings)
+                    {
+                        matchedKeyBinding.OnReleased();
+                    }
+                }
             }
 
             KeyUp.Invoke(key);

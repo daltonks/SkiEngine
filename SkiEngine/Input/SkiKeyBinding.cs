@@ -5,22 +5,40 @@ namespace SkiEngine.Input
 {
     public class SkiKeyBinding
     {
+        private readonly Action _pressedAction;
+        private readonly Action _releasedAction;
+
         public SkiKeyBinding(
             SkiKeyCombination keyCombination,
             Func<bool> predicate,
-            Action action,
+            Action pressed,
+            Action released,
             BehaviorWhenInputViewFocused behaviorWhenInputViewFocused)
         {
             KeyCombination = keyCombination;
-            Action = action ?? (() => {});
+            _pressedAction = pressed ?? (() => {});
+            _releasedAction = released ?? (() => {});
             BehaviorWhenInputViewFocused = behaviorWhenInputViewFocused;
             Predicate = predicate ?? (() => true);
         }
         
         public SkiKeyCombination KeyCombination { get; }
         public Func<bool> Predicate { get; }
-        public Action Action { get; }
         public BehaviorWhenInputViewFocused BehaviorWhenInputViewFocused { get; }
+
+        public bool IsPressed { get; private set; }
+
+        public void OnPressed()
+        {
+            IsPressed = true;
+            _pressedAction();
+        }
+
+        public void OnReleased()
+        {
+            IsPressed = false;
+            _releasedAction();
+        }
     }
     
     public class SkiKeyCombination

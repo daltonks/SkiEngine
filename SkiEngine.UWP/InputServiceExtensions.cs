@@ -21,18 +21,20 @@ namespace SkiEngine.UWP
 
             SkiInputService.Instance.IsInputViewFocusedFunc = () => FocusManager.GetFocusedElement() is TextBox;
 
-            window.KeyDown += (sender, args) =>
+            window.Dispatcher.AcceleratorKeyActivated += (sender, args) =>
             {
                 var intKey = (int) args.VirtualKey;
                 var skiVirtualKey = (SkiVirtualKey) intKey;
-                SkiInputService.Instance.OnKeyDown(skiVirtualKey);
-            };
 
-            window.KeyUp += (sender, args) =>
-            {
-                var intKey = (int) args.VirtualKey;
-                var skiVirtualKey = (SkiVirtualKey) intKey;
-                SkiInputService.Instance.OnKeyUp(skiVirtualKey);
+                var keyStatus = args.KeyStatus;
+                if (keyStatus.IsKeyReleased)
+                {
+                    SkiInputService.Instance.OnKeyUp(skiVirtualKey);
+                }
+                else if (!keyStatus.WasKeyDown)
+                {
+                    SkiInputService.Instance.OnKeyDown(skiVirtualKey);
+                }
             };
         }
     }

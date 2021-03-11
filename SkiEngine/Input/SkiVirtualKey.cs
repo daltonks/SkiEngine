@@ -27,9 +27,9 @@
     /// <summary>The Shift key. This is the general Shift case, applicable to key layouts with only one Shift key or that do not need to differentiate between left Shift and right Shift keystrokes.</summary>
     Shift = 16,
     /// <summary>The Ctrl key. This is the general Ctrl case, applicable to key layouts with only one Ctrl key or that do not need to differentiate between left Ctrl and right Ctrl keystrokes.</summary>
-    Control = 17,
-    /// <summary>The menu key or button.</summary>
-    Menu = 18,
+    Ctrl = 17,
+    /// <summary>The alt/menu key or button.</summary>
+    Alt = 18,
     /// <summary>The Pause key or button.</summary>
     Pause = 19,
     /// <summary>The Caps Lock key or button.</summary>
