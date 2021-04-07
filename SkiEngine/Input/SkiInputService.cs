@@ -43,10 +43,19 @@ namespace SkiEngine.Input
                     var matchedKeyBindings = keyBindings
                         .Where(b => !isInputViewFocused || b.BehaviorWhenInputViewFocused == BehaviorWhenInputViewFocused.Active)
                         .Where(b => b.KeyCombination.Modifiers.All(IsKeyDown))
-                        .Where(b => b.Predicate.Invoke());
+                        .Where(b => b.Predicate.Invoke())
+                        .OrderByDescending(b => b.KeyCombination.Modifiers.Count);
 
+                    var maxModifierCount = 0;
                     foreach (var matchedKeyBinding in matchedKeyBindings)
                     {
+                        var keyCombinationModifierCount = matchedKeyBinding.KeyCombination.Modifiers.Count;
+                        if (maxModifierCount > keyCombinationModifierCount)
+                        {
+                            break;
+                        }
+
+                        maxModifierCount = keyCombinationModifierCount;
                         matchedKeyBinding.OnPressed();
                     }
                 }
