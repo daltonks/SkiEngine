@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using SkiaSharp;
 
 namespace SkiEngine
@@ -15,7 +16,7 @@ namespace SkiEngine
 
     public class ConcurrentRenderer : IDisposable
     {
-        private readonly Action<Action> _queueDrawAction;
+        private readonly Func<Action, Task> _queueDrawFunc;
         private readonly DrawDelegate _drawAction;
         private readonly Action _drawCompleteAction;
         
@@ -32,14 +33,14 @@ namespace SkiEngine
         private double _heightDp;
 
         public ConcurrentRenderer(
-            Action<Action> queueDrawAction,
+            Func<Action, Task> queueDrawFunc,
             DrawDelegate drawAction,
             Action drawCompleteAction
         )
         {
             _drawAction = drawAction;
             _drawCompleteAction = drawCompleteAction;
-            _queueDrawAction = queueDrawAction;
+            _queueDrawFunc = queueDrawFunc;
 
             _snapshotHandler = new SnapshotHandler(this);
         }
@@ -62,25 +63,27 @@ namespace SkiEngine
         }
 
         private readonly object _pendingDrawLock = new object();
-        public void TryQueueDraw()
+        public Task TryDrawAsync()
         {
-            var shouldQueueDraw = false;
+            var shouldDraw = false;
 
             lock (_pendingDrawLock)
             {
                 if (!_pendingDraw)
                 {
                     _pendingDraw = true;
-                    shouldQueueDraw = true;
+                    shouldDraw = true;
                 }
             }
 
-            if (shouldQueueDraw)
+            if (shouldDraw)
             {
-                _queueDrawAction(() => {
+                return _queueDrawFunc(() => {
                     Draw(false);
                 });
             }
+
+            return Task.CompletedTask;
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
@@ -117,7 +120,7 @@ namespace SkiEngine
             _widthDp = widthDp;
             _heightDp = heightDp;
             
-            _queueDrawAction(() => {
+            _queueDrawFunc(() => {
                 // Recreate _surface
                 _surface?.Dispose();
 
