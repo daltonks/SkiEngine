@@ -30,7 +30,7 @@ namespace SkiEngine.Util
 
             await QueueAsync(() => {
                 result = function.Invoke();
-            });
+            }).ConfigureAwait(false);
 
             return result;
         }
@@ -40,8 +40,8 @@ namespace SkiEngine.Util
             T result = default;
 
             await QueueAsync(async () => {
-                result = await asyncFunction.Invoke();
-            });
+                result = await asyncFunction.Invoke().ConfigureAwait(false);
+            }).ConfigureAwait(false);
 
             return result;
         }
@@ -71,7 +71,7 @@ namespace SkiEngine.Util
 
                         try
                         {
-                            await asyncAction();
+                            await asyncAction().ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
