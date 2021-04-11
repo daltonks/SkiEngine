@@ -54,6 +54,7 @@ namespace SkiEngine.UI
             _invalidateSurface();
         }
 
+        private static readonly DrawOptions DrawOptions = new DrawOptions();
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         public void OnPaintSurface(SKCanvas canvas, double widthDp, double heightDp)
         {
@@ -78,7 +79,7 @@ namespace SkiEngine.UI
             canvas.Clear(BackgroundColor);
             _canvasComponent.StartDraw(canvas, widthDp, heightDp);
 
-            _cameraGroup.Draw(canvas);
+            _cameraGroup.Draw(canvas, DrawOptions);
         }
 
         public void OnTouch(SkiTouch touch)

@@ -77,11 +77,11 @@ namespace SkiEngine.Camera
             Remove((CameraComponent) component);
         }
 
-        public void Draw(SKCanvas canvas)
+        public void Draw(SKCanvas canvas, DrawOptions options)
         {
             foreach (var cameraComponent in _enabledCameras)
             {
-                cameraComponent.Draw(canvas);
+                cameraComponent.Draw(canvas, options);
             }
         }
 

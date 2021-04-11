@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using SkiaSharp;
 using SkiEngine.Canvas;
@@ -79,7 +81,7 @@ namespace SkiEngine.Camera
                 EnabledChanged?.Invoke(this);
             }
         }
-
+        
         private int _drawOrder;
         public int DrawOrder
         {
@@ -96,6 +98,8 @@ namespace SkiEngine.Camera
                 DrawOrderChanged?.Invoke(this, previousDrawOrder);
             }
         }
+
+        public double Opacity { get; set; } = 1;
 
         internal void OnZChanged(IDrawableComponent drawableComponent, float previousZ)
         {
@@ -172,8 +176,23 @@ namespace SkiEngine.Camera
             Node.RelativeScale = Node.RelativeScale.Multiply(1 + zoomDelta);
         }
 
-        public void Draw(SKCanvas canvas)
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
+        public void Draw(SKCanvas canvas, DrawOptions options)
         {
+            if (options.UseOpacity && Opacity != 1)
+            {
+                using var layerPaint = new SKPaint
+                {
+                    Color = new SKColor(
+                        byte.MaxValue, 
+                        byte.MaxValue, 
+                        byte.MaxValue, 
+                        (byte)Math.Round(Opacity * byte.MaxValue)
+                    )
+                };
+                canvas.SaveLayer(CanvasComponent.PixelViewport, layerPaint);
+            }
+
             RecalculatePixelMatrices();
 
             foreach (var component in _drawableComponents)
@@ -184,6 +203,11 @@ namespace SkiEngine.Camera
                 canvas.SetMatrix(drawMatrix);
 
                 component.Draw(canvas, this);
+            }
+
+            if (options.UseOpacity && Opacity != 1)
+            {
+                canvas.Restore();
             }
         }
 
