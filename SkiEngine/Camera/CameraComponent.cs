@@ -99,7 +99,7 @@ namespace SkiEngine.Camera
             }
         }
 
-        public double Opacity { get; set; } = 1;
+        public float Opacity { get; set; } = 1;
 
         internal void OnZChanged(IDrawableComponent drawableComponent, float previousZ)
         {
@@ -179,6 +179,11 @@ namespace SkiEngine.Camera
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         public void Draw(SKCanvas canvas, DrawOptions options)
         {
+            if (options.UseOpacity && Opacity == 0)
+            {
+                return;
+            }
+
             if (options.UseOpacity && Opacity != 1)
             {
                 using var layerPaint = new SKPaint
@@ -190,7 +195,7 @@ namespace SkiEngine.Camera
                         (byte)Math.Round(Opacity * byte.MaxValue)
                     )
                 };
-                canvas.SaveLayer(CanvasComponent.PixelViewport, layerPaint);
+                canvas.SaveLayer(layerPaint);
             }
 
             RecalculatePixelMatrices();
