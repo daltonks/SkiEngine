@@ -23,6 +23,14 @@ namespace SkiEngine.Input
                 result = new SkiTouch();
             }
 
+            if (mouseButton == SKMouseButton.Unknown && (inContact || type == SKTouchAction.Released || type == SKTouchAction.Cancelled))
+            {
+                // Unknown mouse button presses are not currently handled (extra mouse buttons),
+                // so update them to act as a hover
+                type = SKTouchAction.Moved;
+                inContact = false;
+            }
+
             result.Id = id;
             result.ActionType = type;
             result.MouseButton = mouseButton;
