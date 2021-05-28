@@ -13,5 +13,16 @@ namespace SkiEngine
             action();
             return Task.CompletedTask;
         });
+
+        public static async Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func)
+        {
+            T result = default;
+
+            await InvokeOnMainThreadAsync(async () => {
+                result = await func().ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+            return result;
+        }
     }
 }
