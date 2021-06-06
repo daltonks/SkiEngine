@@ -14,6 +14,8 @@ namespace SkiEngine
             return Task.CompletedTask;
         });
 
+        public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) => InvokeOnMainThreadAsync(() => Task.FromResult(func()));
+
         public static async Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func)
         {
             T result = default;
