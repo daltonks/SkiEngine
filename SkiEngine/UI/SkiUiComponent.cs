@@ -60,7 +60,7 @@ namespace SkiEngine.UI
                 }
                 
                 _size = value;
-                View.Layout(_size.Width, _size.Height);
+                View?.Layout(_size.Width, _size.Height);
             }
         }
 
@@ -95,7 +95,7 @@ namespace SkiEngine.UI
 
         public void Draw(SKCanvas canvas, CameraComponent camera)
         {
-            View.Draw(canvas);
+            View?.Draw(canvas);
         }
 
         private readonly Dictionary<long, UiPressedTouchTracker> _touchTrackers = new Dictionary<long, UiPressedTouchTracker>();
