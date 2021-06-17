@@ -99,8 +99,7 @@ namespace SkiEngine
         {
             lock (UnusedResources)
             {
-                resource.Usages.Remove(usageId);
-                if (resource.Usages.Count == 0)
+                if (resource.Usages.Remove(usageId) && resource.Usages.Count == 0)
                 {
                     UnusedResources.Add(resource);
                     UnusedBytes += resource.Bytes;
@@ -173,19 +172,23 @@ namespace SkiEngine
     public class CachedResourceUsage<T> : IDisposable
     {
         private readonly Task<CachedResource> _loadingTask;
+        private readonly object _usageLock = new object();
 
         internal CachedResourceUsage(Task<CachedResource> loadingTask)
         {
             _loadingTask = loadingTask.ContinueWith(t => {
-                if (IsDisposed)
+                lock (_usageLock)
                 {
-                    return null;
-                }
+                    if (IsDisposed)
+                    {
+                        return null;
+                    }
 
-                var cachedResource = t.Result;
-                Value = (T) cachedResource.Value;
-                ResourceCache.AddUsage(cachedResource, Id);
-                return cachedResource;
+                    var cachedResource = t.Result;
+                    Value = (T) cachedResource.Value;
+                    ResourceCache.AddUsage(cachedResource, Id);
+                    return cachedResource;
+                }
             });
         }
 
@@ -220,9 +223,9 @@ namespace SkiEngine
         {
             if (!IsDisposed)
             {
-                IsDisposed = true;
-                if (_loadingTask.IsCompleted)
+                lock (_usageLock)
                 {
+                    IsDisposed = true;
                     ResourceCache.RemoveUsage(_loadingTask.Result, Id);
                 }
             }

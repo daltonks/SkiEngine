@@ -1,11 +1,12 @@
-﻿using SkiaSharp;
+using System.Threading.Tasks;
+using SkiaSharp;
 using SkiEngine.UI.Views.Base;
 
 namespace SkiEngine.UI.Views
 {
     public class SkiImageView : SkiView
     {
-        public SkiImageView(CachedResourceUsage<SKImage> imageUsage)
+        public SkiImageView(CachedResourceUsage<SKImage> imageUsage = null)
         {
             ImageUsageProp = new LinkedProperty<CachedResourceUsage<SKImage>>(
                 this,

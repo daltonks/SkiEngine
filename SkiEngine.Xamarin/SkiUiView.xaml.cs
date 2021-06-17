@@ -11,6 +11,13 @@ namespace SkiEngine.Xamarin
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class SkiUiView : ScrollView
     {
+        public static readonly BindableProperty SkiViewProperty = BindableProperty.Create(
+            nameof(SkiView),
+            typeof(SkiView),
+            typeof(SkiUiView),
+            propertyChanged: (bindable, oldValue, newValue) => ((SkiUiView) bindable).OnSkiViewChanged()
+        );
+        
         private readonly SkiUiScene _skiUiScene;
         private SkiXamarinUiComponent _uiComponent;
         
@@ -43,14 +50,15 @@ namespace SkiEngine.Xamarin
             }
         }
 
-        protected override void OnBindingContextChanged()
+        public SkiView SkiView
         {
-            base.OnBindingContextChanged();
+            get => (SkiView) GetValue(SkiViewProperty);
+            set => SetValue(SkiViewProperty, value);
+        }
 
-            if (BindingContext is SkiView skiView)
-            {
-                _skiUiScene.UiComponent.View = skiView;
-            }
+        private void OnSkiViewChanged()
+        {
+            _skiUiScene.UiComponent.View = SkiView;
         }
 
         private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs skPaintSurfaceEventArgs)
