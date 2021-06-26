@@ -86,10 +86,10 @@ namespace SkiEngine.Util.Extensions.SkiaSharp
         public static SKRectI ToSKRectI(this SKRect rect)
         {
             return new SKRectI(
-                (int) Math.Round(rect.Left),
-                (int) Math.Round(rect.Top),
-                (int) Math.Round(rect.Right),
-                (int) Math.Round(rect.Bottom)
+                (int) Math.Floor(rect.Left),
+                (int) Math.Floor(rect.Top),
+                (int) Math.Ceiling(rect.Right),
+                (int) Math.Ceiling(rect.Bottom)
             );
         }
 
