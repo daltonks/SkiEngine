@@ -184,19 +184,16 @@ namespace SkiEngine.Camera
                 return;
             }
 
-            if (options.UseOpacity && Opacity != 1)
+            using var layerPaint = new SKPaint
             {
-                using var layerPaint = new SKPaint
-                {
-                    Color = new SKColor(
-                        byte.MaxValue, 
-                        byte.MaxValue, 
-                        byte.MaxValue, 
-                        (byte)Math.Round(Opacity * byte.MaxValue)
-                    )
-                };
-                canvas.SaveLayer(layerPaint);
-            }
+                Color = new SKColor(
+                    byte.MaxValue, 
+                    byte.MaxValue, 
+                    byte.MaxValue, 
+                    (byte)Math.Round(Opacity * byte.MaxValue)
+                )
+            };
+            canvas.SaveLayer(layerPaint);
 
             RecalculatePixelMatrices();
 
@@ -210,10 +207,7 @@ namespace SkiEngine.Camera
                 component.Draw(canvas, this);
             }
 
-            if (options.UseOpacity && Opacity != 1)
-            {
-                canvas.Restore();
-            }
+            canvas.Restore();
         }
 
         public void RecalculatePixelMatrices()
