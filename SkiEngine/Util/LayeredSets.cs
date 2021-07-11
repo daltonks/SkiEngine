@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SkiEngine.Util
 {
@@ -89,20 +90,26 @@ namespace SkiEngine.Util
             return Remove(item, _getLayerFunc.Invoke(item));
         }
 
-        public bool Remove(TItem item, TLayer previousLayer)
+        public bool Remove(TItem item, TLayer layer)
         {
             var removedItem = false;
 
-            if (_layers.TryGetValue(previousLayer, out var layerSet))
+            if (_layers.TryGetValue(layer, out var layerSet))
             {
                 removedItem = layerSet.Remove(item);
 
                 if (layerSet.Count == 0)
                 {
-                    _layers.Remove(previousLayer);
+                    // Remove layer entirely
+                    _layers.Remove(layer);
 
-                    var layerSetOrderIndex = _orderedLayers.BinarySearch(previousLayer, _layerComparer);
+                    var layerSetOrderIndex = _orderedLayers.BinarySearch(layer, _layerComparer);
                     _orderedLayers.RemoveAt(layerSetOrderIndex);
+                }
+                else if (layerSet.Count == 1)
+                {
+                    // Memory optimization for many layers with usually 1 item in each layer.
+                    layerSet.TrimExcess();
                 }
             }
 
