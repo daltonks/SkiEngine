@@ -8,8 +8,7 @@ namespace SkiEngine.Input.Touch
     {
         private const int TapDistanceDp = 25;
 
-        public event Action<SkiTouch> FirstTouchMovedPastATap;
-        public event Action<SkiTouch> SubsequentTouchMovedPastATap;
+        public event Action<SkiTouch> TouchMovedWhileDragging;
 
         private readonly Func<float, float> _convertPixelsToDp;
 
@@ -37,15 +36,8 @@ namespace SkiEngine.Input.Touch
 
             if (_movementDistanceDp > TapDistanceDp)
             {
-                if (MovedTooFarToBeATap)
-                {
-                    SubsequentTouchMovedPastATap?.Invoke(touch);
-                }
-                else
-                {
-                    MovedTooFarToBeATap = true;
-                    FirstTouchMovedPastATap?.Invoke(touch);
-                }
+                MovedTooFarToBeATap = true;
+                TouchMovedWhileDragging?.Invoke(touch);
             }
         }
 
