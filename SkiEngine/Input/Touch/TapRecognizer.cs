@@ -6,8 +6,6 @@ namespace SkiEngine.Input.Touch
 {
     public class TapRecognizer
     {
-        private const int TapDistanceDp = 25;
-
         public event Action<SkiTouch> TouchMovedWhileDragging;
 
         private readonly Func<float, float> _convertPixelsToDp;
@@ -34,7 +32,7 @@ namespace SkiEngine.Input.Touch
             _movementDistanceDp += _convertPixelsToDp.Invoke((float) _lastTouchPixels.Distance(pointPixels));
             _lastTouchPixels = pointPixels;
 
-            if (_movementDistanceDp > TapDistanceDp)
+            if (_movementDistanceDp > GetTapDistanceDp(touch.DeviceType))
             {
                 MovedTooFarToBeATap = true;
                 TouchMovedWhileDragging?.Invoke(touch);
@@ -43,7 +41,14 @@ namespace SkiEngine.Input.Touch
 
         public bool OnTouchReleased(SkiTouch touch)
         {
-            return _movementDistanceDp <= TapDistanceDp;
+            return _movementDistanceDp <= GetTapDistanceDp(touch.DeviceType);
+        }
+
+        private static int GetTapDistanceDp(SKTouchDeviceType deviceType)
+        {
+            return deviceType == SKTouchDeviceType.Mouse 
+                ? 10 
+                : 25;
         }
     }
 }
