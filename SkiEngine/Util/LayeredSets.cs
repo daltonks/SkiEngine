@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SkiEngine.Util
 {
@@ -114,6 +113,12 @@ namespace SkiEngine.Util
             }
 
             return removedItem;
+        }
+
+        public void Clear()
+        {
+            _layers.Clear();
+            _orderedLayers.Clear();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
