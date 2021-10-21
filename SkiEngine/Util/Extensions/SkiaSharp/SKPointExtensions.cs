@@ -27,6 +27,11 @@ namespace SkiEngine.Util.Extensions.SkiaSharp
             return new SKPoint((float) (point.X / length), (float) (point.Y / length));
         }
 
+        public static SKPoint MidPointTo(this SKPoint p1, SKPoint p2)
+        {
+            return (p1 + p2).Divide(2);
+        }
+
         public static double DistanceSquared(this SKPoint p1, SKPoint p2)
         {
             var xDif = p1.X - p2.X;
