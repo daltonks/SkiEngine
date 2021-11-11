@@ -101,6 +101,12 @@ namespace SkiEngine.Util.Extensions.SkiaSharp
             return p2 - p1;
         }
 
+        public static SKPoint Lerp(this SKPoint p1, SKPoint p2, float l)
+        {
+            var vector = p2 - p1;
+            return p1 + vector.Multiply(l);
+        }
+
         public static double AngleTo(this SKPoint vector, SKPoint otherVector)
         {
             var normalized = vector.Normalized();
