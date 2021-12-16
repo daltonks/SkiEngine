@@ -31,7 +31,10 @@ namespace SkiEngine.Input
         {
             lock (_downKeys)
             {
-                _downKeys.Add(key);
+                if (!_downKeys.Add(key))
+                {
+                    return;
+                }
             }
 
             lock (_keyBindingsMap)
@@ -68,7 +71,10 @@ namespace SkiEngine.Input
         {
             lock (_downKeys)
             {
-                _downKeys.Remove(key);
+                if (!_downKeys.Remove(key))
+                {
+                    return;
+                }
             }
 
             lock (_keyBindingsMap)
