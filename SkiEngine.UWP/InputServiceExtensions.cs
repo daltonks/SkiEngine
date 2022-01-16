@@ -13,7 +13,7 @@ namespace SkiEngine.UWP
         public static void InitializeSkiInputService(this Page _)
         {
             var window = CoreWindow.GetForCurrentThread();
-
+            
             SkiInputService.Instance.CalculateNumberOfMousePointersFunc = () =>
                 PointerDevice
                     .GetPointerDevices()
@@ -25,15 +25,15 @@ namespace SkiEngine.UWP
             {
                 var intKey = (int) args.VirtualKey;
                 var skiVirtualKey = (SkiVirtualKey) intKey;
-
-                var keyStatus = args.KeyStatus;
-                if (keyStatus.IsKeyReleased)
-                {
-                    SkiInputService.Instance.OnKeyUp(skiVirtualKey);
-                }
-                else if (!keyStatus.WasKeyDown)
+                var keyState = window.GetKeyState(args.VirtualKey);
+                
+                if (keyState.HasFlag(CoreVirtualKeyStates.Down))
                 {
                     SkiInputService.Instance.OnKeyDown(skiVirtualKey);
+                }
+                else
+                {
+                    SkiInputService.Instance.OnKeyUp(skiVirtualKey);
                 }
             };
         }
