@@ -54,17 +54,17 @@ namespace SkiEngine.Canvas
             {
                 DpViewport = new SKRect(0, 0, (float) widthDp, (float) heightDp);
 
-                _dpToPixelMatrix = SKMatrix.MakeScale(
+                _dpToPixelMatrix = SKMatrix.CreateScale(
                     (float) (PixelViewport.Width / widthDp),
                     (float) (PixelViewport.Height / heightDp)
                 );
 
-                _pixelToDpMatrix = SKMatrix.MakeScale(
+                _pixelToDpMatrix = SKMatrix.CreateScale(
                     (float) (widthDp / PixelViewport.Width),
                     (float) (heightDp / PixelViewport.Height)
                 );
 
-                _halfPixelViewportTranslationMatrix = SKMatrix.MakeTranslation(PixelViewport.Width / 2f, PixelViewport.Height / 2f);
+                _halfPixelViewportTranslationMatrix = SKMatrix.CreateTranslation(PixelViewport.Width / 2f, PixelViewport.Height / 2f);
                 _previousPixelViewport = PixelViewport;
             }
         }

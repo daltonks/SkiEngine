@@ -199,11 +199,8 @@ namespace SkiEngine.Camera
 
             foreach (var component in _drawableComponents)
             {
-                var drawMatrix = component.Node.LocalToWorldMatrix;
-                SKMatrix.PostConcat(ref drawMatrix, ref _worldToPixelMatrix);
-
+                var drawMatrix = component.Node.LocalToWorldMatrix.PostConcat(_worldToPixelMatrix);
                 canvas.SetMatrix(drawMatrix);
-
                 component.Draw(canvas, this);
             }
 
@@ -217,8 +214,7 @@ namespace SkiEngine.Camera
                 return;
             }
 
-            _worldToPixelMatrix = Node.WorldToLocalMatrix;
-            SKMatrix.PostConcat(ref _worldToPixelMatrix, ref CanvasComponent.HalfPixelViewportTranslationMatrix);
+            _worldToPixelMatrix = Node.WorldToLocalMatrix.PostConcat(CanvasComponent.HalfPixelViewportTranslationMatrix);
             _worldToPixelMatrix.TryInvert(out _pixelToWorldMatrix);
         }
 

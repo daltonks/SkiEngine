@@ -37,7 +37,7 @@ namespace SkiEngine
 
                     if (Parent != null)
                     {
-                        SKMatrix.PostConcat(ref _localToWorldMatrix, ref Parent.LocalToWorldMatrix);
+                        _localToWorldMatrix = _localToWorldMatrix.PostConcat(Parent.LocalToWorldMatrix);
                     }
 
                     _localToWorldDirty = false;
@@ -152,13 +152,11 @@ namespace SkiEngine
 
         public void CalculateLocalToParentMatrix(out SKMatrix result)
         {
-            var translationMatrix = SKMatrix.MakeTranslation(_relativePoint.X, _relativePoint.Y);
-            var rotationMatrix = SKMatrix.MakeRotation(_relativeRotation);
-            var scaleMatrix = SKMatrix.MakeScale(_relativeScale.X, _relativeScale.Y);
+            var scaleMatrix = SKMatrix.CreateScale(_relativeScale.X, _relativeScale.Y);
+            var rotationMatrix = SKMatrix.CreateRotation(_relativeRotation);
+            var translationMatrix = SKMatrix.CreateTranslation(_relativePoint.X, _relativePoint.Y);
 
-            result = translationMatrix;
-            SKMatrix.PreConcat(ref result, ref rotationMatrix);
-            SKMatrix.PreConcat(ref result, ref scaleMatrix);
+            result = scaleMatrix.PostConcat(rotationMatrix).PostConcat(translationMatrix);
         }
     }
 }
