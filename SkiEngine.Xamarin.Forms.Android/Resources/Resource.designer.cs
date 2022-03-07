@@ -5278,25 +5278,28 @@ namespace SkiEngine.Xamarin.Forms.Android
 			public static int view_offset_helper = 2131231029;
 			
 			// aapt resource value: 0x7F080136
-			public static int view_tree_saved_state_registry_owner = 2131231030;
+			public static int view_tree_lifecycle_owner = 2131231030;
 			
 			// aapt resource value: 0x7F080137
-			public static int visible = 2131231031;
+			public static int view_tree_saved_state_registry_owner = 2131231031;
 			
 			// aapt resource value: 0x7F080138
-			public static int visible_removing_fragment_view_tag = 2131231032;
-			
-			// aapt resource value: 0x7F08013A
-			public static int withinBounds = 2131231034;
+			public static int visible = 2131231032;
 			
 			// aapt resource value: 0x7F080139
-			public static int withText = 2131231033;
+			public static int visible_removing_fragment_view_tag = 2131231033;
 			
 			// aapt resource value: 0x7F08013B
-			public static int wrap_content = 2131231035;
+			public static int withinBounds = 2131231035;
+			
+			// aapt resource value: 0x7F08013A
+			public static int withText = 2131231034;
 			
 			// aapt resource value: 0x7F08013C
-			public static int zero_corner_chip = 2131231036;
+			public static int wrap_content = 2131231036;
+			
+			// aapt resource value: 0x7F08013D
+			public static int zero_corner_chip = 2131231037;
 			
 			static Id()
 			{
