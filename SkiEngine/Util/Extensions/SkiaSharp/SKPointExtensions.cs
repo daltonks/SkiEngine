@@ -202,5 +202,11 @@ namespace SkiEngine.Util.Extensions.SkiaSharp
                 return result;
             }
         }
+
+        public static bool AlmostEquals(this SKPoint p1, SKPoint p2, double delta = 0.01)
+        {
+            return Math.Abs(p1.X - p2.X) < delta 
+                   && Math.Abs(p1.Y - p2.Y) < delta;
+        }
     }
 }
