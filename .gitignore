@@ -220,3 +220,5 @@ SkiEngine\.TestApp/SkiEngine\.TestApp\.Android/Resources/Resource\.designer\.cs
 SkiEngine\.Protobuf/ProtobufModels\.cs
 
 *.DS_Store
+
+SkiEngine.Xamarin.Forms.Android/Resources/Resource.designer.cs
