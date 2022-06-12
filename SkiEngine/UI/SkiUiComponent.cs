@@ -140,7 +140,7 @@ namespace SkiEngine.UI
                      && touch.ActionType != SKTouchAction.Released 
                      && touch.ActionType != SKTouchAction.Cancelled)
             {
-
+                // Mouse hovering
             }
             else
             {
