@@ -12,7 +12,7 @@ namespace SkiEngine.UI.Gestures
     {
         private readonly Action _onPressDown;
         private readonly Action _onGestureEnded;
-        private readonly Action _onActivated;
+        private readonly Action<SKPoint> _onActivated;
 
         private readonly TapGestureRecognizer _tapGestureRecognizer;
 
@@ -20,7 +20,7 @@ namespace SkiEngine.UI.Gestures
             SkiView view, 
             Action onPressDown,
             Action onGestureEnded,
-            Action onActivated
+            Action<SKPoint> onActivated
         ) : base(view)
         {
             _onPressDown = onPressDown;
@@ -60,7 +60,7 @@ namespace SkiEngine.UI.Gestures
                         if (!longPressCancellationSource.IsCancellationRequested
                             && !_consideredNotATap)
                         {
-                            _onActivated.Invoke();
+                            _onActivated.Invoke(touch.PointWorld);
                             _longPressTriggered = true;
                             TryEndGesture();
                         }
@@ -98,7 +98,7 @@ namespace SkiEngine.UI.Gestures
                 if (touch.DeviceType == SKTouchDeviceType.Mouse
                     && touch.MouseButton == SKMouseButton.Right)
                 {
-                    _onActivated.Invoke();
+                    _onActivated.Invoke(touch.PointWorld);
                 }
 
                 result = GestureTouchResult.CancelOtherListeners;
