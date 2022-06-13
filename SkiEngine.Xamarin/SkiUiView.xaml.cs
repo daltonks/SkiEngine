@@ -19,7 +19,6 @@ namespace SkiEngine.Xamarin
         );
         
         private readonly SkiUiScene _skiUiScene;
-        private SkiXamarinUiComponent _uiComponent;
         
         public SkiUiView()
         {
@@ -35,10 +34,13 @@ namespace SkiEngine.Xamarin
 
             _skiUiScene = new SkiUiScene(
                 invalidateSurface, 
-                (node, camera, invalidate) => _uiComponent = new SkiXamarinUiComponent(
+                (node, camera, invalidate) => new SkiXamarinUiComponent(
                     SkiaView, NativeEntry, node, camera, invalidate
                 )
-            );
+            )
+            {
+                BackgroundColor = BackgroundColor.ToSKColor()
+            };
 
             // https://github.com/mono/SkiaSharp/issues/1377
             if (Device.RuntimePlatform == Device.UWP)
@@ -54,6 +56,17 @@ namespace SkiEngine.Xamarin
         {
             get => (SkiView) GetValue(SkiViewProperty);
             set => SetValue(SkiViewProperty, value);
+        }
+
+        protected override void OnPropertyChanged(string propertyName = null)
+        {
+            base.OnPropertyChanged(propertyName);
+
+            if (propertyName == BackgroundColorProperty.PropertyName)
+            {
+                _skiUiScene.BackgroundColor = BackgroundColor.ToSKColor();
+                _skiUiScene.InvalidateSurface();
+            }
         }
 
         private void OnSkiViewChanged()

@@ -232,7 +232,7 @@ namespace SkiEngine.UI.Views.Layouts
                 {
                     using var handlePaint = new SKPaint
                     {
-                        Color = 0xFFB5B5B5, 
+                        Color = 0xFF001826, 
                         Style = SKPaintStyle.Fill,
                         IsAntialias = true
                     };

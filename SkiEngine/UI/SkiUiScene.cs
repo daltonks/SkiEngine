@@ -43,8 +43,6 @@ namespace SkiEngine.UI
         private bool _drawPending;
         public void InvalidateSurface()
         {
-            var nowUtc = DateTime.UtcNow;
-
             if (!AllowInvalidateSurfaceIfDrawStillPending && _drawPending)
             {
                 return;
