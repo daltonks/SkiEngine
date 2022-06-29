@@ -16,7 +16,7 @@ namespace SkiEngine.UI.Views
 
                     if (args.NewValue != null)
                     {
-                        await args.NewValue.WaitForLoadingAsync();
+                        await args.NewValue.GetValueAsync();
                     }
 
                     InvalidateSurface();

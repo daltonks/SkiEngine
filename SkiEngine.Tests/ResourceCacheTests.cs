@@ -15,7 +15,7 @@ namespace SkiEngine.Tests
             ResourceCache.UnusedBytesLimit = 1000;
             
             var resource1Usage = GetTestResourceUsage("resource1");
-            await resource1Usage.WaitForLoadingAsync();
+            await resource1Usage.GetValueAsync();
 
             Assert.AreEqual(0, ResourceCache.UnusedBytes);
 
@@ -27,7 +27,7 @@ namespace SkiEngine.Tests
             Assert.IsFalse(resource1Usage.Value.IsDisposed);
 
             resource1Usage = GetTestResourceUsage("resource1");
-            await resource1Usage.WaitForLoadingAsync();
+            await resource1Usage.GetValueAsync();
             // Used again, so it's removed from the unused collection
             Assert.AreEqual(0, ResourceCache.UnusedBytes);
 
@@ -42,7 +42,7 @@ namespace SkiEngine.Tests
             for (var i = 0; i < 31; i++)
             {
                 var resourceUsage = GetTestResourceUsage($"loopResource{i}");
-                await resourceUsage.WaitForLoadingAsync();
+                await resourceUsage.GetValueAsync();
                 resourceUsage.Dispose();
             }
 

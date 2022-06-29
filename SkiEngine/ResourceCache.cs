@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,13 +48,26 @@ namespace SkiEngine
 
             async Task<CachedResource> LoadResourceAsync()
             {
-                using var stream = await getStream();
-                using var memoryStream = new MemoryStream();
-                await stream.CopyToAsync(memoryStream);
-                memoryStream.Position = 0;
+                TResource value;
+                long valueBytes;
+                try
+                {
+                    using var stream = await getStream();
+                    using var memoryStream = new MemoryStream();
+                    await stream.CopyToAsync(memoryStream);
 
-                var value = await transform(memoryStream);
-                var valueBytes = memoryStream.Length;
+                    valueBytes = memoryStream.Position;
+                    memoryStream.Position = 0;
+
+                    value = await transform(memoryStream);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+
+                    value = default;
+                    valueBytes = 0;
+                }
 
                 lock (Resources)
                 {
@@ -69,8 +83,8 @@ namespace SkiEngine
 
         public static void ClearAllUnusedResources()
         {
-            lock (Resources)
             lock (UnusedResources)
+            lock (Resources)
             {
                 foreach (var unusedResource in UnusedResources)
                 {
@@ -196,9 +210,10 @@ namespace SkiEngine
         public T Value { get; private set; }
         public bool IsDisposed { get; private set; }
 
-        public async Task WaitForLoadingAsync()
+        public async Task<T> GetValueAsync()
         {
             await _loadingTask;
+            return Value;
         }
 
         public void Dispose()
