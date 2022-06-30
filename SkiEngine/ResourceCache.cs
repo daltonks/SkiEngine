@@ -13,7 +13,7 @@ namespace SkiEngine
         private static readonly Dictionary<string, CachedResource> Resources = new Dictionary<string, CachedResource>();
 
         public static long UnusedBytes { get; private set; }
-        public static long UnusedBytesLimit { get; set; } = 100_000_000;
+        public static long UnusedBytesLimit { get; set; } = 10_000_000;
         private static readonly HashSet<CachedResource> UnusedResources = new HashSet<CachedResource>();
 
         // ReSharper disable once InconsistentNaming
@@ -31,7 +31,7 @@ namespace SkiEngine
             string group, 
             string name, 
             Func<Task<TStream>> getStream, 
-            Func<Stream, Task<TResource>> transform
+            Func<MemoryStream, Task<TResource>> transform
         ) where TStream : Stream
         {
             var key = $"{group}:{name}";
