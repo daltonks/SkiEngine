@@ -59,7 +59,7 @@ namespace SkiEngine.Tests
             return ResourceCache.Get(
                 "TEST",
                 name,
-                () => Task.FromResult(new MemoryStream(new byte[100])),
+                () => Task.FromResult<Stream>(new MemoryStream(new byte[100])),
                 stream => Task.FromResult(new TestResource())
             );
         }

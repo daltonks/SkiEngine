@@ -27,58 +27,33 @@ namespace SkiEngine
             );
         }
 
-        public static CachedResourceUsage<TResource> Get<TResource, TStream>(
+        public static CachedResourceUsage<TResource> Get<TResource>(
             string group, 
             string name, 
-            Func<Task<TStream>> getStream, 
+            Func<Task<Stream>> getStream, 
             Func<MemoryStream, Task<TResource>> transform
-        ) where TStream : Stream
+        )
         {
             var key = $"{group}:{name}";
 
+            CachedResource resource;
+
             lock (Resources)
             {
-                if (Resources.TryGetValue(key, out var resource))
+                if (!Resources.TryGetValue(key, out resource))
                 {
-                    return new CachedResourceUsage<TResource>(Task.FromResult(resource));
+                    resource = Resources[key] = new CachedResource(
+                        key, 
+                        getStream, 
+                        async memoryStream => await transform(memoryStream)
+                    );
                 }
             }
 
-            return new CachedResourceUsage<TResource>(LoadResourceAsync());
-
-            async Task<CachedResource> LoadResourceAsync()
-            {
-                TResource value;
-                long valueBytes;
-                try
-                {
-                    using var stream = await getStream();
-                    using var memoryStream = new MemoryStream();
-                    await stream.CopyToAsync(memoryStream);
-
-                    valueBytes = memoryStream.Position;
-                    memoryStream.Position = 0;
-
-                    value = await transform(memoryStream);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex);
-
-                    value = default;
-                    valueBytes = 0;
-                }
-
-                lock (Resources)
-                {
-                    if (!Resources.TryGetValue(key, out var resource))
-                    {
-                        resource = Resources[key] = new CachedResource(key, value, valueBytes);
-                    }
-
-                    return resource;
-                }
-            }
+            return new CachedResourceUsage<TResource>(async () => {
+                await resource.WaitForLoadAsync();
+                return resource;
+            });
         }
 
         public static void ClearAllUnusedResources()
@@ -149,18 +124,41 @@ namespace SkiEngine
 
     public class CachedResource : IDisposable
     {
-        public CachedResource(string key, object value, long bytes)
+        private readonly Task _loadTask;
+
+        public CachedResource(string key, Func<Task<Stream>> getStream, Func<MemoryStream, Task<object>> transform)
         {
             Key = key;
-            _value = value;
-            Bytes = bytes;
             LastAccessed = DateTimeOffset.UtcNow;
+
+            _loadTask = LoadAsync(getStream, transform);
+        }
+
+        private async Task LoadAsync(Func<Task<Stream>> getStream, Func<MemoryStream, Task<object>> transform)
+        {
+            try
+            {
+                using var stream = await getStream();
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+
+                Bytes = memoryStream.Position;
+                memoryStream.Position = 0;
+
+                Value = await transform(memoryStream);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+
+                Value = default;
+                Bytes = 0;
+            }
         }
 
         public string Key { get; }
 
-        private readonly object _value;
-        
+        private object _value;
         public object Value
         {
             get
@@ -168,18 +166,27 @@ namespace SkiEngine
                 LastAccessed = DateTimeOffset.UtcNow;
                 return _value;
             }
+            private set => _value = value;
         }
 
-        public long Bytes { get; }
+        public long Bytes { get; private set; }
         public DateTimeOffset LastAccessed { get; private set; }
         public HashSet<Guid> Usages { get; } = new HashSet<Guid>();
 
+        public Task WaitForLoadAsync()
+        {
+            return _loadTask;
+        }
+
         public void Dispose()
         {
-            if (Value is IDisposable disposableValue)
-            {
-                disposableValue.Dispose();
-            }
+            _ = Task.Run(async () => {
+                await _loadTask;
+                if (Value is IDisposable disposableValue)
+                {
+                    disposableValue.Dispose();
+                }
+            });
         }
     }
 
@@ -188,9 +195,9 @@ namespace SkiEngine
         private readonly Task<CachedResource> _loadingTask;
         private readonly object _usageLock = new object();
 
-        internal CachedResourceUsage(Task<CachedResource> loadingTask)
+        internal CachedResourceUsage(Func<Task<CachedResource>> loadingTask)
         {
-            _loadingTask = loadingTask.ContinueWith(t => {
+            _loadingTask = loadingTask.Invoke().ContinueWith(t => {
                 lock (_usageLock)
                 {
                     if (IsDisposed)
@@ -208,6 +215,7 @@ namespace SkiEngine
 
         public Guid Id { get; } = Guid.NewGuid();
         public T Value { get; private set; }
+        public bool LoadingIsFinished => _loadingTask.IsCompleted;
         public bool IsDisposed { get; private set; }
 
         public async Task<T> GetValueAsync()
