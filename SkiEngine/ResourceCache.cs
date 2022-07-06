@@ -13,7 +13,7 @@ namespace SkiEngine
         private static readonly Dictionary<string, CachedResource> Resources = new Dictionary<string, CachedResource>();
 
         public static long UnusedBytes { get; private set; }
-        public static long UnusedBytesLimit { get; set; } = 10_000_000;
+        public static long UnusedBytesLimit { get; set; } = 0;
         private static readonly HashSet<CachedResource> UnusedResources = new HashSet<CachedResource>();
 
         // ReSharper disable once InconsistentNaming
