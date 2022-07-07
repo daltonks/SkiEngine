@@ -31,10 +31,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="SkiUiView.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>
