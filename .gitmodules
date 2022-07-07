@@ -1,0 +1,3 @@
+[submodule "RichTextKit"]
+	path = RichTextKit
+	url = https://github.com/daltonks/RichTextKit
