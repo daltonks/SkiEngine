@@ -57,6 +57,7 @@ namespace SkiEngine.UI
         public void OnPaintSurface(SKCanvas canvas, double widthDp, double heightDp)
         {
             _scene.Update();
+            _canvasComponent.StartDraw(canvas, widthDp, heightDp);
             _drawPending = false;
 
             if (widthDp == 0 || widthDp == 0)
@@ -75,8 +76,7 @@ namespace SkiEngine.UI
             _camera.Node.RelativePoint = new SKPoint(widthPixels / 2f, heightPixels / 2f);
 
             canvas.Clear(BackgroundColor);
-            _canvasComponent.StartDraw(canvas, widthDp, heightDp);
-
+            
             _cameraGroup.Draw(canvas, DrawOptions);
         }
 

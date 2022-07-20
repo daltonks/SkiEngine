@@ -49,6 +49,11 @@ namespace SkiEngine.Canvas
         private SKRectI _previousPixelViewport;
         public void StartDraw(SKCanvas canvas, double widthDp, double heightDp)
         {
+            if (widthDp == 0 || heightDp == 0)
+            {
+                return;
+            }
+
             PixelViewport = canvas.DeviceClipBounds;
             if (PixelViewport != _previousPixelViewport)
             {
@@ -66,6 +71,14 @@ namespace SkiEngine.Canvas
 
                 _halfPixelViewportTranslationMatrix = SKMatrix.CreateTranslation(PixelViewport.Width / 2f, PixelViewport.Height / 2f);
                 _previousPixelViewport = PixelViewport;
+
+                foreach (var cameraGroup in _cameraGroups)
+                {
+                    foreach (var camera in cameraGroup.Cameras)
+                    {
+                        camera.RecalculatePixelMatrices();
+                    }
+                }
             }
         }
 

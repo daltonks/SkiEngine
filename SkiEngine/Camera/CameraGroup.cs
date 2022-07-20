@@ -17,6 +17,8 @@ namespace SkiEngine.Camera
             CanvasComponent = canvasComponent;
         }
 
+        public IEnumerable<CameraComponent> Cameras => _cameras;
+
         public CanvasComponent CanvasComponent { get; }
 
         public void Add(CameraComponent camera)
