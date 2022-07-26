@@ -131,6 +131,11 @@ namespace SkiEngine.Util.Extensions.SkiaSharp
 
         public static SKPoint Rotate(this SKPoint vector, double radians)
         {
+            if (radians == 0)
+            {
+                return vector;
+            }
+            
             var cos = Math.Cos(radians);
             var sin = Math.Sin(radians);
 
