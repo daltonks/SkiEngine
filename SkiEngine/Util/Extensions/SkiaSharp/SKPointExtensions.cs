@@ -207,6 +207,46 @@ namespace SkiEngine.Util.Extensions.SkiaSharp
                 return result;
             }
         }
+        
+        public static SKRectI BoundingBox(this IEnumerable<SKPointI> points)
+        {
+            using (var enumerator = points.GetEnumerator())
+            {
+                var hasAtLeastOnePoint = enumerator.MoveNext();
+                if (!hasAtLeastOnePoint)
+                {
+                    return SKRectI.Empty;
+                }
+
+                var firstPoint = enumerator.Current;
+                var result = SKRectI.Create(firstPoint.X, firstPoint.Y, 0, 0);
+
+                while (enumerator.MoveNext())
+                {
+                    var point = enumerator.Current;
+
+                    if (point.X < result.Left)
+                    {
+                        result.Left = point.X;
+                    }
+                    else if (point.X > result.Right)
+                    {
+                        result.Right = point.X;
+                    }
+
+                    if (point.Y < result.Top)
+                    {
+                        result.Top = point.Y;
+                    }
+                    else if (point.Y > result.Bottom)
+                    {
+                        result.Bottom = point.Y;
+                    }
+                }
+
+                return result;
+            }
+        }
 
         public static bool AlmostEquals(this SKPoint p1, SKPoint p2, double delta = 0.01)
         {
