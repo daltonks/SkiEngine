@@ -1,28 +1,20 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SkiEngine.Util
 {
-    public class TaskQueue : INotifyPropertyChanged
+    public class TaskQueue
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event Action<int> NumTasksQueuedChanged;
 
         private readonly object _locker = new object();
         private volatile Task _lastTask = Task.CompletedTask;
         private volatile bool _isShutdown;
-        private readonly bool _enablePropertyChanged;
 
         private volatile int _numTasksQueued;
         public int NumTasksQueued => _numTasksQueued;
-
-        public TaskQueue(bool enablePropertyChanged = false)
-        {
-            _enablePropertyChanged = enablePropertyChanged;
-        }
 
         public async Task<T> QueueAsync<T>(Func<T> function)
         {
@@ -53,11 +45,12 @@ namespace SkiEngine.Util
                 return Task.CompletedTask;
             });
         }
-
+        
         public Task QueueAsync(Func<Task> asyncAction)
         {
-            Interlocked.Increment(ref _numTasksQueued);
-            OnPropertyChanged(nameof(NumTasksQueued));
+            NumTasksQueuedChanged?.Invoke(
+                Interlocked.Increment(ref _numTasksQueued)
+            );
 
             lock (_locker)
             {
@@ -78,8 +71,9 @@ namespace SkiEngine.Util
                             Debug.WriteLine(ex);
                         }
 
-                        Interlocked.Decrement(ref _numTasksQueued);
-                        OnPropertyChanged(nameof(NumTasksQueued));
+                        NumTasksQueuedChanged?.Invoke(
+                            Interlocked.Decrement(ref _numTasksQueued)
+                        );
                     }, 
                     TaskContinuationOptions.RunContinuationsAsynchronously
                 ).Unwrap();
@@ -92,14 +86,6 @@ namespace SkiEngine.Util
             return QueueAsync(() => {
                 _isShutdown = true;
             });
-        }
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            if (_enablePropertyChanged)
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
         }
     }
 }
