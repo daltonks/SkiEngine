@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -57,25 +56,25 @@ namespace SkiEngine.Util
                 _lastTask = _lastTask.ContinueWith(
                     async _ =>
                     {
-                        if (_isShutdown)
-                        {
-                            throw new ObjectDisposedException(nameof(TaskQueue));
-                        }
-
                         try
                         {
+                            if (_isShutdown)
+                            {
+                                throw new ObjectDisposedException(nameof(TaskQueue));
+                            }
+
                             await asyncAction().ConfigureAwait(false);
                         }
-                        catch (Exception ex)
+                        finally
                         {
-                            Debug.WriteLine(ex);
+                            NumTasksQueuedChanged?.Invoke(
+                                Interlocked.Decrement(ref _numTasksQueued)
+                            );
                         }
-
-                        NumTasksQueuedChanged?.Invoke(
-                            Interlocked.Decrement(ref _numTasksQueued)
-                        );
-                    }, 
-                    TaskContinuationOptions.RunContinuationsAsynchronously
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.RunContinuationsAsynchronously,
+                    TaskScheduler.Default
                 ).Unwrap();
                 return _lastTask;
             }
